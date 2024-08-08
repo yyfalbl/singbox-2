@@ -409,22 +409,25 @@ menu() {
    purple "=== 转载老王脚本，去除tuic协议，增加UUID自动生成 ===\n"
    echo -e "${green}脚本地址：${re}${yellow}https://github.com/yyfalbl/singbox-2${re}\n"
    purple "转载请著名出处，请勿滥用\n"
-   green "1. 安装sing-box"
+  green "1. 安装sing-box"
    echo  "==============="
-   red "2. 卸载sing-box"
+    red "2. 卸载sing-box"
    echo  "==============="
-   green "3. 查看节点信息"
+  green "3. 查看节点信息"
+   echo  "==============="
+ yellow "4. 清理所有进程"
    echo  "==============="
    red "0. 退出脚本"
    echo "==========="
-   reading "请输入选择(0-3): " choice
+   reading "请输入选择(0-4): " choice
    echo ""
     case "${choice}" in
         1) install_singbox ;;
         2) uninstall_singbox ;; 
         3) cat $WORKDIR/list.txt ;; 
-        0) exit 0 ;;
-        *) red "无效的选项，请输入 0 到 3" ;;
+        4) kill_all_tasks ;;
+	0) exit 0 ;;
+        *) red "无效的选项，请输入 0 到 4" ;;
     esac
 }
 menu
