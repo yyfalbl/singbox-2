@@ -365,7 +365,7 @@ EOF
 }
 
 # running files
-run_sb() {
+run_sing-box() {
   if [ -e npm ]; then
     tlsPorts=("443" "8443" "2096" "2087" "2083" "2053")
     if [[ "${tlsPorts[*]}" =~ "${NEZHA_PORT}" ]]; then
