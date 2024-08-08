@@ -99,7 +99,7 @@ reading "\n确定继续安装吗？【y/n】: " choice
         # read_tuic_port
         download_singbox && wait
         generate_config
-        run_sb && sleep 3
+        run_sing-box && sleep 3
         get_links
       ;;
     [Nn]) exit 0 ;;
