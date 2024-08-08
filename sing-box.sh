@@ -446,7 +446,7 @@ menu() {
    purple "=== Serv00|sing-box一键安装脚本 ===\n"
    purple "=== 转载老王脚本，去除tuic协议，增加UUID自动生成 ===\n"
    echo -e "${green}脚本地址：${re}${yellow}https://github.com/eooce/Sing-box${re}\n"
-   purple "转载请著名出处，请勿滥用\n"
+   purple "*****转载请著名出处，请勿滥用*****\n"
    green "1. 安装sing-box"
    echo  "==============="
    red "2. 卸载sing-box"
