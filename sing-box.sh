@@ -16,18 +16,6 @@ USERNAME=$(whoami)
 HOSTNAME=$(hostname)
 UUID_FILE="$HOME/.singbox_uuid"  # Define a location to store the UUID
 
-# Check if UUID file exists
-if [ -f "$UUID_FILE" ]; then
-    export UUID=$(cat "$UUID_FILE")  # Read the existing UUID
-else
-    export UUID=$(uuidgen)  # Generate a new UUID
-    echo "$UUID" > "$UUID_FILE"  # Save the UUID to the file
-fi
-
-export NEZHA_SERVER=${NEZHA_SERVER:-''}
-export NEZHA_PORT=${NEZHA_PORT:-'5555'}     
-export NEZHA_KEY=${NEZHA_KEY:-''}
-
 [[ "$HOSTNAME" == "s1.ct8.pl" ]] && WORKDIR="domains/${USERNAME}.ct8.pl/logs" || WORKDIR="${HOME}/${USERNAME}"
 [ -d "$WORKDIR" ] || (mkdir -p "$WORKDIR" && chmod 777 "$WORKDIR")
 
@@ -99,7 +87,7 @@ reading "\n确定继续安装吗？【y/n】: " choice
         # read_tuic_port
         download_singbox && wait
         generate_config
-        run_sing-box && sleep 3
+        run_sb && sleep 3
         get_links
       ;;
     [Nn]) exit 0 ;;
@@ -125,9 +113,9 @@ uninstall_singbox() {
 download_singbox() {
   ARCH=$(uname -m) && DOWNLOAD_DIR="." && mkdir -p "$DOWNLOAD_DIR" && FILE_INFO=()
   if [ "$ARCH" == "arm" ] || [ "$ARCH" == "arm64" ] || [ "$ARCH" == "aarch64" ]; then
-      FILE_INFO=("https://raw.githubusercontent.com/yyfalbl/singbox-2/main/download/arm64/sing-box sing-box-process""https://raw.githubusercontent.com/yyfalbl/singbox-2/main/arm/swith npm")
+      FILE_INFO=("https://github.com/eooce/test/releases/download/arm64/sb web""https://github.com/eooce/test/releases/download/ARM/swith npm")
   elif [ "$ARCH" == "amd64" ] || [ "$ARCH" == "x86_64" ] || [ "$ARCH" == "x86" ]; then
-      FILE_INFO=("https://raw.githubusercontent.com/yyfalbl/singbox-2/main/amd64/sing-box-process /home/username/sing-box-process" "https://raw.githubusercontent.com/yyfalbl/singbox-2/main/arm/npm /home/username/npm")
+      FILE_INFO=("https://eooce.2go.us.kg/web web" "https://eooce.2go.us.kg/npm npm")
   else
       echo "Unsupported architecture: $ARCH"
       exit 1
@@ -149,7 +137,7 @@ download_singbox() {
 # Generating Configuration Files
 generate_config() {
 
-    output=$(/home/username/sing-box-process generate reality-keypair)
+    output=$(./web generate reality-keypair)
     private_key=$(echo "${output}" | awk '/PrivateKey:/ {print $2}')
     public_key=$(echo "${output}" | awk '/PublicKey:/ {print $2}')
 
@@ -365,8 +353,8 @@ EOF
 }
 
 # running files
-run_sing-box() {
-  if [ -e /home/username/npm ]; then
+run_sb() {
+  if [ -e npm ]; then
     tlsPorts=("443" "8443" "2096" "2087" "2083" "2053")
     if [[ "${tlsPorts[*]}" =~ "${NEZHA_PORT}" ]]; then
       NEZHA_TLS="--tls"
@@ -375,25 +363,25 @@ run_sing-box() {
     fi
     if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
         export TMPDIR=$(pwd)
-        nohup ./home/username/npm -s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY} ${NEZHA_TLS} >/dev/null 2>&1 &
+        nohup ./npm -s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY} ${NEZHA_TLS} >/dev/null 2>&1 &
         sleep 2
-        pgrep -x "npm" > /dev/null && green "npm is running" || { red "npm is not running, restarting..."; pkill -x "npm" && nohup /home/username/npm -s "${NEZHA_SERVER}:${NEZHA_PORT}" -p "${NEZHA_KEY}" ${NEZHA_TLS} >/dev/null 2>&1 & sleep 2; purple "npm restarted"; }
+        pgrep -x "npm" > /dev/null && green "npm is running" || { red "npm is not running, restarting..."; pkill -x "npm" && nohup ./npm -s "${NEZHA_SERVER}:${NEZHA_PORT}" -p "${NEZHA_KEY}" ${NEZHA_TLS} >/dev/null 2>&1 & sleep 2; purple "npm restarted"; }
     else
         purple "NEZHA variable is empty,skiping runing"
     fi
   fi
 
-  if [ -e /home/username/sing-box-process ]; then
-    nohup /home/username/sing-box-process run -c config.json >/dev/null 2>&1 &
+  if [ -e web ]; then
+    nohup ./web run -c config.json >/dev/null 2>&1 &
     sleep 2
-    pgrep -x "sing-box-process" > /dev/null && green "sing-box-process is running" || { red "sing-box-process is not running, restarting..."; pkill -x "sing-box-process" && nohup /home/username/sing-box-process run -c config.json >/dev/null 2>&1 & sleep 2; purple "sing-box-process restarted"; }
+    pgrep -x "web" > /dev/null && green "web is running" || { red "web is not running, restarting..."; pkill -x "web" && nohup ./web run -c config.json >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
   fi
 
 }
 
 get_links(){
 # get ip
-IP=$(curl -s ipv4.ip.sing-box || { ipv6=$(curl -s --max-time 1 ipv6.ip.sing-box); echo "[$ipv6]"; })
+IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
 sleep 1
 # get ipinfo
 ISP=$(curl -s https://speed.cloudflare.com/meta | awk -F\" '{print $26"-"$18}' | sed -e 's/ /_/g') 
@@ -409,7 +397,7 @@ cat list.txt
 purple "list.txt saved successfully"
 purple "Running done!"
 sleep 3 
-rm -rf npm boot.log sing-box.log core
+rm -rf npm boot.log sb.log core
 
 }
 
