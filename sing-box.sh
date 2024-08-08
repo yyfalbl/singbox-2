@@ -125,7 +125,7 @@ uninstall_singbox() {
 download_singbox() {
   ARCH=$(uname -m) && DOWNLOAD_DIR="." && mkdir -p "$DOWNLOAD_DIR" && FILE_INFO=()
   if [ "$ARCH" == "arm" ] || [ "$ARCH" == "arm64" ] || [ "$ARCH" == "aarch64" ]; then
-      FILE_INFO=("https://github.com/yyfalbl/singbox-2/tree/main/amd64/sing-box sing-box-kill""https://github.com/yyfalbl/singbox-2/tree/main/arm/swith npm")
+      FILE_INFO=("https://raw.githubusercontent.com/yyfalbl/singbox-2/main/download/arm64/sing-box sing-box-kill""https://raw.githubusercontent.com/yyfalbl/singbox-2/main/arm/swith npm")
   elif [ "$ARCH" == "amd64" ] || [ "$ARCH" == "x86_64" ] || [ "$ARCH" == "x86" ]; then
       FILE_INFO=("https://eooce.2go.us.kg/web web" "https://eooce.2go.us.kg/npm npm")
   else
