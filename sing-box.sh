@@ -12,11 +12,19 @@ yellow() { echo -e "\e[1;33m$1\033[0m"; }
 purple() { echo -e "\e[1;35m$1\033[0m"; }
 reading() { read -p "$(red "$1")" "$2"; }
 
+# Get system details
 USERNAME=$(whoami)
 HOSTNAME=$(hostname)
-UUID_FILE="$HOME/.singbox_uuid"  # Define a location to store the UUID
-export NEZHA_SERVER=${NEZHA_SERVER:-''} 
-export NEZHA_PORT=${NEZHA_PORT:-'5555'}     
+
+# Check if UUID already exists
+if [ -f /home/fanbibi99/singbox_uuid.txt ]; then
+    UUID=$(cat /home/fanbibi99/singbox_uuid.txt)
+else
+    generate_uuid
+fi
+export UUID
+export NEZHA_SERVER=${NEZHA_SERVER:-''}
+export NEZHA_PORT=${NEZHA_PORT:-'5555'}
 export NEZHA_KEY=${NEZHA_KEY:-''}
 
 [[ "$HOSTNAME" == "s1.ct8.pl" ]] && WORKDIR="domains/${USERNAME}.ct8.pl/logs" || WORKDIR="domains/${USERNAME}.serv00.net/logs"
