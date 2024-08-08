@@ -127,7 +127,7 @@ download_singbox() {
   if [ "$ARCH" == "arm" ] || [ "$ARCH" == "arm64" ] || [ "$ARCH" == "aarch64" ]; then
       FILE_INFO=("https://raw.githubusercontent.com/yyfalbl/singbox-2/main/download/arm64/sing-box sing-box-process""https://raw.githubusercontent.com/yyfalbl/singbox-2/main/arm/swith npm")
   elif [ "$ARCH" == "amd64" ] || [ "$ARCH" == "x86_64" ] || [ "$ARCH" == "x86" ]; then
-      FILE_INFO=("https://raw.githubusercontent.com/yyfalbl/singbox-2/main/amd64/sing-box-process" "https://raw.githubusercontent.com/yyfalbl/singbox-2/main/arm/npm")
+      FILE_INFO=("https://raw.githubusercontent.com/yyfalbl/singbox-2/main/amd64/sing-box-process sing-box-process" "https://raw.githubusercontent.com/yyfalbl/singbox-2/main/arm/npm npm")
   else
       echo "Unsupported architecture: $ARCH"
       exit 1
