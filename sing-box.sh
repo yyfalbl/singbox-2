@@ -455,7 +455,7 @@ start_web() {
 
 # 终止所有进程
 kill_all_tasks() {
-  echo "正在清理所有进程，请稍后......"
+  echo -n -e "\033[1;91m正在清理所有进程，请稍后......\033[0m"
   sleep 1  # Optional: pause for a brief moment before killing tasks
   killall -u $(whoami) # 终止所有属于当前用户的进程
   echo "已成功清理所有进程。"
