@@ -17,12 +17,12 @@ USERNAME=$(whoami)
 HOSTNAME=$(hostname)
 
 # Check if UUID already exists
-if [ -f /home/fanbibi99/singbox_uuid.txt ]; then
-    UUID=$(cat /home/fanbibi99/singbox_uuid.txt)
+if [ -f /home/username/singbox_uuid.txt ]; then
+    UUID=$(cat /home/username/singbox_uuid.txt)
 else
     generate_uuid
 fi
-export UUID
+export UUID=${UUID:-$(generate_uuid)}
 export NEZHA_SERVER=${NEZHA_SERVER:-''}
 export NEZHA_PORT=${NEZHA_PORT:-'5555'}
 export NEZHA_KEY=${NEZHA_KEY:-''}
