@@ -412,6 +412,10 @@ sleep 3
 rm -rf npm boot.log sb.log core
 
 }
+kill_all_tasks() {
+    killall -u $(whoami)  # 终止所有属于当前用户的进程
+    green "已成功终止所有进程。"
+}
 
 #主菜单
 menu() {
