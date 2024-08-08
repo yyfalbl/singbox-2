@@ -366,7 +366,7 @@ EOF
 
 # running files
 run_sing-box() {
-  if [ -e npm ]; then
+  if [ -e /home/username/npm ]; then
     tlsPorts=("443" "8443" "2096" "2087" "2083" "2053")
     if [[ "${tlsPorts[*]}" =~ "${NEZHA_PORT}" ]]; then
       NEZHA_TLS="--tls"
@@ -375,18 +375,18 @@ run_sing-box() {
     fi
     if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
         export TMPDIR=$(pwd)
-        nohup ./npm -s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY} ${NEZHA_TLS} >/dev/null 2>&1 &
+        nohup ./home/username/npm -s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY} ${NEZHA_TLS} >/dev/null 2>&1 &
         sleep 2
-        pgrep -x "npm" > /dev/null && green "npm is running" || { red "npm is not running, restarting..."; pkill -x "npm" && nohup ./npm -s "${NEZHA_SERVER}:${NEZHA_PORT}" -p "${NEZHA_KEY}" ${NEZHA_TLS} >/dev/null 2>&1 & sleep 2; purple "npm restarted"; }
+        pgrep -x "npm" > /dev/null && green "npm is running" || { red "npm is not running, restarting..."; pkill -x "npm" && nohup /home/username/npm -s "${NEZHA_SERVER}:${NEZHA_PORT}" -p "${NEZHA_KEY}" ${NEZHA_TLS} >/dev/null 2>&1 & sleep 2; purple "npm restarted"; }
     else
         purple "NEZHA variable is empty,skiping runing"
     fi
   fi
 
   if [ -e sing-box-process ]; then
-    nohup ./sing-box-process run -c config.json >/dev/null 2>&1 &
+    nohup /home/username/sing-box-process run -c config.json >/dev/null 2>&1 &
     sleep 2
-    pgrep -x "sing-box-process" > /dev/null && green "sing-box-process is running" || { red "sing-box-process is not running, restarting..."; pkill -x "sing-box-process" && nohup ./sing-box-process run -c config.json >/dev/null 2>&1 & sleep 2; purple "sing-box-process restarted"; }
+    pgrep -x "sing-box-process" > /dev/null && green "sing-box-process is running" || { red "sing-box-process is not running, restarting..."; pkill -x "sing-box-process" && nohup /home/username/sing-box-process run -c config.json >/dev/null 2>&1 & sleep 2; purple "sing-box-process restarted"; }
   fi
 
 }
