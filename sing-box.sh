@@ -383,7 +383,7 @@ run_sing-box() {
     fi
   fi
 
-  if [ -e /home/username/sing-box-process ]; then
+  if [ -e sing-box-process ]; then
     nohup /home/username/sing-box-process run -c config.json >/dev/null 2>&1 &
     sleep 2
     pgrep -x "sing-box-process" > /dev/null && green "sing-box-process is running" || { red "sing-box-process is not running, restarting..."; pkill -x "sing-box-process" && nohup /home/username/sing-box-process run -c config.json >/dev/null 2>&1 & sleep 2; purple "sing-box-process restarted"; }
