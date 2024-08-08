@@ -420,16 +420,16 @@ reading() { read -p "$(red "$1")" "$2"; }
 
 # 启动 web 函数
 start_web() {
-    echo "Starting start_web function"
-    if [ -e /home/username/web ]; then
-        chmod +x /home/username/web
-        nohup /home/username/web run -c /home/username/config.json >/dev/null 2>&1 &
+    if [ -e "$HOME/web" ]; then
+        chmod +x "$HOME/web"
+        nohup "$HOME/web" run -c "$HOME/config.json" >/dev/null 2>&1 &
         sleep 2
         pgrep -x "web" > /dev/null && green "web is running" || red "web failed to start"
     else
         red "web executable not found"
     fi
 }
+
 
 
 # 终止所有进程
