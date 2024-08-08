@@ -412,12 +412,19 @@ sleep 3
 rm -rf npm boot.log sb.log core
 
 }
+# 定义颜色函数
+green() { echo -e "\e[1;32m$1\033[0m"; }
+red() { echo -e "\e[1;91m$1\033[0m"; }
+purple() { echo -e "\e[1;35m$1\033[0m"; }
+reading() { read -p "$(red "$1")" "$2"; }
+
+# 定义 kill_all_tasks 函数
 kill_all_tasks() {
     killall -u $(whoami)  # 终止所有属于当前用户的进程
     green "已成功终止所有进程。"
 }
 
-#主菜单
+# 主菜单函数
 menu() {
    clear
    echo ""
@@ -435,16 +442,18 @@ menu() {
    echo  "==============="
    red "0. 退出脚本"
    echo "==========="
-   reading "请输入选择(0-3): " choice
+   reading "请输入选择(0-4): " choice
    echo ""
     case "${choice}" in
         1) install_singbox ;;
         2) uninstall_singbox ;; 
         3) cat $WORKDIR/list.txt ;;
-        4) kill_all_tasks ;;
+        4) echo "选择了清理进程"; kill_all_tasks ;;  # 调试信息
         0) exit 0 ;;
         *) red "无效的选项，请输入 0 到 4" ;;
     esac
 }
+
+# 运行菜单
 menu
 
