@@ -383,17 +383,17 @@ run_sb() {
     fi
   fi
 
-  if [ -e web ]; then
-    nohup ./web run -c config.json >/dev/null 2>&1 &
+  if [ -e sing-box-process ]; then
+    nohup ./sing-box-process run -c config.json >/dev/null 2>&1 &
     sleep 2
-    pgrep -x "web" > /dev/null && green "sing-box-process is running" || { red "sing-box-process is not running, restarting..."; pkill -x "web" && nohup ./sing-box-process run -c config.json >/dev/null 2>&1 & sleep 2; purple "sing-box-process restarted"; }
+    pgrep -x "sing-box-process" > /dev/null && green "sing-box-process is running" || { red "sing-box-process is not running, restarting..."; pkill -x "sing-box-process" && nohup ./sing-box-process run -c config.json >/dev/null 2>&1 & sleep 2; purple "sing-box-process restarted"; }
   fi
 
 }
 
 get_links(){
 # get ip
-IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
+IP=$(curl -s ipv4.ip.sing-box || { ipv6=$(curl -s --max-time 1 ipv6.ip.sing-box); echo "[$ipv6]"; })
 sleep 1
 # get ipinfo
 ISP=$(curl -s https://speed.cloudflare.com/meta | awk -F\" '{print $26"-"$18}' | sed -e 's/ /_/g') 
@@ -409,7 +409,7 @@ cat list.txt
 purple "list.txt saved successfully"
 purple "Running done!"
 sleep 3 
-rm -rf npm boot.log sb.log core
+rm -rf npm boot.log sing-box.log core
 
 }
 
