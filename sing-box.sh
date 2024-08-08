@@ -434,9 +434,10 @@ start_web() {
 
 # 终止所有进程
 kill_all_tasks() {
-    killall -u $(whoami)  # 终止所有属于当前用户的进程
-    green "已成功终止所有进程。"
+  killall -u $(whoami) # 终止所有属于当前用户的进程
+  echo "已成功终止所有进程。" # 使用 echo 输出消息
 }
+
 
 # 主菜单
 menu() {
