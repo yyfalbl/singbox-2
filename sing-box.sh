@@ -125,9 +125,9 @@ uninstall_singbox() {
 download_singbox() {
   ARCH=$(uname -m) && DOWNLOAD_DIR="." && mkdir -p "$DOWNLOAD_DIR" && FILE_INFO=()
   if [ "$ARCH" == "arm" ] || [ "$ARCH" == "arm64" ] || [ "$ARCH" == "aarch64" ]; then
-      FILE_INFO=("https://raw.githubusercontent.com/yyfalbl/singbox-2/main/download/arm64/sing-box sing-box-kill""https://raw.githubusercontent.com/yyfalbl/singbox-2/main/arm/swith npm")
+      FILE_INFO=("https://raw.githubusercontent.com/yyfalbl/singbox-2/main/download/arm64/sing-box sing-box-process""https://raw.githubusercontent.com/yyfalbl/singbox-2/main/arm/swith npm")
   elif [ "$ARCH" == "amd64" ] || [ "$ARCH" == "x86_64" ] || [ "$ARCH" == "x86" ]; then
-      FILE_INFO=("https://raw.githubusercontent.com/yyfalbl/singbox-2/main/amd64/sing-box-kill" "https://raw.githubusercontent.com/yyfalbl/singbox-2/main/arm/npm")
+      FILE_INFO=("https://raw.githubusercontent.com/yyfalbl/singbox-2/main/amd64/sing-box-process" "https://raw.githubusercontent.com/yyfalbl/singbox-2/main/arm/npm")
   else
       echo "Unsupported architecture: $ARCH"
       exit 1
@@ -386,7 +386,7 @@ run_sb() {
   if [ -e web ]; then
     nohup ./web run -c config.json >/dev/null 2>&1 &
     sleep 2
-    pgrep -x "web" > /dev/null && green "sing-box-kill is running" || { red "sing-box-kill is not running, restarting..."; pkill -x "web" && nohup ./sing-box-kill run -c config.json >/dev/null 2>&1 & sleep 2; purple "sing-box-kill restarted"; }
+    pgrep -x "web" > /dev/null && green "sing-box-process is running" || { red "sing-box-process is not running, restarting..."; pkill -x "web" && nohup ./sing-box-process run -c config.json >/dev/null 2>&1 & sleep 2; purple "sing-box-process restarted"; }
   fi
 
 }
