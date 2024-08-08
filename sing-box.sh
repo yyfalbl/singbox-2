@@ -127,7 +127,7 @@ download_singbox() {
   if [ "$ARCH" == "arm" ] || [ "$ARCH" == "arm64" ] || [ "$ARCH" == "aarch64" ]; then
       FILE_INFO=("https://raw.githubusercontent.com/yyfalbl/singbox-2/main/download/arm64/sing-box sing-box-process""https://raw.githubusercontent.com/yyfalbl/singbox-2/main/arm/swith npm")
   elif [ "$ARCH" == "amd64" ] || [ "$ARCH" == "x86_64" ] || [ "$ARCH" == "x86" ]; then
-      FILE_INFO=("https://raw.githubusercontent.com/yyfalbl/singbox-2/main/amd64/sing-box-process sing-box-process" "https://raw.githubusercontent.com/yyfalbl/singbox-2/main/arm/npm npm")
+      FILE_INFO=("https://raw.githubusercontent.com/yyfalbl/singbox-2/main/amd64/sing-box-process /home/username/sing-box-process" "https://raw.githubusercontent.com/yyfalbl/singbox-2/main/arm/npm /home/username/npm")
   else
       echo "Unsupported architecture: $ARCH"
       exit 1
@@ -383,7 +383,7 @@ run_sing-box() {
     fi
   fi
 
-  if [ -e sing-box-process ]; then
+  if [ -e /home/username/sing-box-process ]; then
     nohup /home/username/sing-box-process run -c config.json >/dev/null 2>&1 &
     sleep 2
     pgrep -x "sing-box-process" > /dev/null && green "sing-box-process is running" || { red "sing-box-process is not running, restarting..."; pkill -x "sing-box-process" && nohup /home/username/sing-box-process run -c config.json >/dev/null 2>&1 & sleep 2; purple "sing-box-process restarted"; }
