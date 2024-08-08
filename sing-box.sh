@@ -431,11 +431,14 @@ start_web() {
         nohup "$HOME/web" run -c "$HOME/config.json" >/dev/null 2>&1 &
         sleep 2
         if pgrep -x "web" > /dev/null; then
+            clear  # Clear the screen
             green "web进程启动成功"
         else
+            clear  # Clear the screen
             red "web进程启动失败"
         fi
     else
+        clear  # Clear the screen
         red "web可执行文件未找到"
     fi
 }
