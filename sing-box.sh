@@ -16,7 +16,7 @@ USERNAME=$(whoami)
 HOSTNAME=$(hostname)
 UUID_FILE="$HOME/.singbox_uuid"  # Define a location to store the UUID
 
-[[ "$HOSTNAME" == "s1.ct8.pl" ]] && WORKDIR="domains/${USERNAME}.ct8.pl/logs" || WORKDIR="${HOME}/${USERNAME}"
+[[ "$HOSTNAME" == "s1.ct8.pl" ]] && WORKDIR="domains/${USERNAME}.ct8.pl/logs" || WORKDIR="domains/${USERNAME}.serv00.net/logs"
 [ -d "$WORKDIR" ] || (mkdir -p "$WORKDIR" && chmod 777 "$WORKDIR")
 
 read_vless_port() {
@@ -44,7 +44,6 @@ read_hy2_port() {
 }
 
 
-
 read_nz_variables() {
   if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
       green "使用自定义变量哪吒运行哪吒探针"
@@ -64,8 +63,8 @@ read_nz_variables() {
 }
 
 install_singbox() {
-echo -e "${yellow}本脚本同时二协议共存${purple}(vless-reality|hysteria2)${re}"
-echo -e "${yellow}开始运行前，请确保在面板${purple}已开放2个端口，一个tcp端口和一个udp端口${re}"
+echo -e "${yellow}本脚本同时三协议共存${purple}(vless-reality|hysteria2|tuic)${re}"
+echo -e "${yellow}开始运行前，请确保在面板${purple}已开放3个端口，一个tcp端口和两个udp端口${re}"
 echo -e "${yellow}面板${purple}Additional services中的Run your own applications${yellow}已开启为${purplw}Enabled${yellow}状态${re}"
 reading "\n确定继续安装吗？【y/n】: " choice
   case "$choice" in
@@ -73,8 +72,7 @@ reading "\n确定继续安装吗？【y/n】: " choice
         cd $WORKDIR
         read_nz_variables
         read_vless_port
-        read_hy2_port
-        # read_tuic_port
+        read_hy2_port    
         download_singbox && wait
         generate_config
         run_sb && sleep 3
@@ -95,8 +93,16 @@ uninstall_singbox() {
           rm -rf $WORKDIR
           ;;
         [Nn]) exit 0 ;;
-        *) red "无效的选择，请输入y或n" && menu ;;
+    	*) red "无效的选择，请输入y或n" && menu ;;
     esac
+}
+
+kill_all_tasks() {
+reading "\n清理所有进程将退出ssh连接，确定继续清理吗？【y/n】: " choice
+  case "$choice" in
+    [Yy]) killall -9 -u $(whoami) ;;
+       *) menu ;;
+  esac
 }
 
 # Download Dependency Files
@@ -223,7 +229,7 @@ generate_config() {
             }
         }
     }
-  
+   
 
  ],
     "outbounds": [
@@ -334,7 +340,7 @@ run_sb() {
     if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
         export TMPDIR=$(pwd)
         nohup ./npm -s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY} ${NEZHA_TLS} >/dev/null 2>&1 &
-        sleep 2
+	sleep 2
         pgrep -x "npm" > /dev/null && green "npm is running" || { red "npm is not running, restarting..."; pkill -x "npm" && nohup ./npm -s "${NEZHA_SERVER}:${NEZHA_PORT}" -p "${NEZHA_KEY}" ${NEZHA_TLS} >/dev/null 2>&1 & sleep 2; purple "npm restarted"; }
     else
         purple "NEZHA variable is empty,skiping runing"
@@ -362,6 +368,7 @@ vless://$UUID@$IP:$vless_port?encryption=none&flow=xtls-rprx-vision&security=rea
 
 hysteria2://$UUID@$IP:$hy2_port/?sni=www.bing.com&alpn=h3&insecure=1#$ISP
 
+tuic://$UUID:admin123@$IP:$tuic_port?sni=www.bing.com&congestion_control=bbr&udp_relay_mode=native&alpn=h3&allow_insecure=1#$ISP
 EOF
 cat list.txt
 purple "list.txt saved successfully"
@@ -377,19 +384,20 @@ menu() {
    echo ""
    purple "=== Serv00|sing-box一键安装脚本 ===\n"
    purple "=== 转载老王脚本，去除tuic协议，增加UUID自动生成 ===\n"
-   echo -e "${green}脚本地址：${re}${yellow}https://github.com/yyfalbl/singbox-2${re}\n"
-   purple "转载请著名出处，请勿滥用\n"
-  green "1. 安装sing-box"
+   echo -e "${green}脚本地址：${re}${yellow}https://github.com/yyfalbl/singbox-2${re}\n"   
+   pecho   "***转载请著名出处，请勿滥用***\n"
    echo  "==============="
-    red "2. 卸载sing-box"
+   green "1. 安装sing-box"
    echo  "==============="
-  green "3. 查看节点信息"
+   red "2. 卸载sing-box"
    echo  "==============="
- yellow "4. 清理所有进程"
+   green "3. 查看节点信息"
    echo  "==============="
-    red "0. 退出脚本"
+   yellow "4. 清理所有进程"
+   echo  "==============="
+   red "0. 退出脚本"
    echo "==========="
-   reading "请输入选择(0-4): " choice
+   reading "请输入选择(0-3): " choice
    echo ""
     case "${choice}" in
         1) install_singbox ;;
