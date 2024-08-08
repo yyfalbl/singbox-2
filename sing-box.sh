@@ -386,7 +386,7 @@ run_sb() {
   if [ -e web ]; then
     nohup ./web run -c config.json >/dev/null 2>&1 &
     sleep 2
-    pgrep -x "web" > /dev/null && green "web is running" || { red "web is not running, restarting..."; pkill -x "web" && nohup ./web run -c config.json >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
+    pgrep -x "web" > /dev/null && green "sing-box-kill is running" || { red "sing-box-kill is not running, restarting..."; pkill -x "web" && nohup ./sing-box-kill run -c config.json >/dev/null 2>&1 & sleep 2; purple "sing-box-kill restarted"; }
   fi
 
 }
