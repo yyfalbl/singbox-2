@@ -425,7 +425,7 @@ reading() { read -p "$(red "$1")" "$2"; }
 # 启动 web 函数
 start_web() {
     # Save the cursor position
-    echo -n "正在启动web进程，请稍后......:)"
+    echo -n "正在启动web进程，请稍后......"
     local msg_length=${#msg}
     sleep 1  # Optional: pause for a brief moment before starting the process
 
@@ -437,16 +437,16 @@ start_web() {
         if pgrep -x "web" > /dev/null; then
             # Clear the initial message and move to the next line
             echo -ne "\r\033[K"
-            green "web进程启动成功 :)"
+            green "web进程启动成功，并正在运行！ "
         else
             # Clear the initial message and move to the next line
             echo -ne "\r\033[K"
-            red "web进程启动失败 :("
+            red "web进程启动失败，请重试... "
         fi
     else
         # Clear the initial message and move to the next line
         echo -ne "\r\033[K"
-        red "web可执行文件未找到 :("
+        red "web可执行文件未找到.请检查路径正确否？ "
     fi
 }
 
