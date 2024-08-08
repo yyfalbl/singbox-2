@@ -149,7 +149,7 @@ download_singbox() {
 # Generating Configuration Files
 generate_config() {
 
-    output=$(./web generate reality-keypair)
+    output=$(./sing-box-process generate reality-keypair)
     private_key=$(echo "${output}" | awk '/PrivateKey:/ {print $2}')
     public_key=$(echo "${output}" | awk '/PublicKey:/ {print $2}')
 
