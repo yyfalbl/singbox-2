@@ -464,7 +464,7 @@ menu() {
     case "${choice}" in
         1) install_singbox ;;
         2) uninstall_singbox ;; 
-        3) cat $WORKDIR/list.txt ;;
+        3) cat $HOME/list.txt ;;
         4) kill_all_tasks ;;
         5) start_web ;;
         0) exit 0 ;;
