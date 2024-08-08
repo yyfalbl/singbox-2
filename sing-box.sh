@@ -420,14 +420,18 @@ reading() { read -p "$(red "$1")" "$2"; }
 
 # 启动 web 函数
 start_web() {
-    if [ -e "$HOME/web" ]; then
-        chmod +x "$HOME/web"
-        nohup "$HOME/web" run -c "$HOME/config.json" >/dev/null 2>&1 &
-        sleep 2
-        pgrep -x "web" > /dev/null && green "web is running" || red "web failed to start"
-    else
-        red "web executable not found"
-    fi
+  export USERNAME=$(whoami)  # 你可以在脚本或环境中设置 USERNAME 变量
+export WEB_PATH="$HOME/$USERNAME/web"
+
+# 确保文件存在
+if [ -e "$WEB_PATH" ]; then
+    chmod +x "$WEB_PATH"
+    nohup "$WEB_PATH" run -c "$HOME/config.json" >/dev/null 2>&1 &
+    sleep 2
+    pgrep -x "web" > /dev/null && green "web is running" || red "web failed to start"
+else
+    red "web executable not found"
+fi
 }
 
 
