@@ -86,25 +86,25 @@ read_nz_variables() {
 }
 
 install_singbox() {
-echo -e "${yellow}本脚本同时二协议共存${purple}(vless-reality|hysteria2)${re}"
-echo -e "${yellow}开始运行前，请确保在面板${purple}已开放2个端口，一个tcp端口和一个udp端口${re}"
-echo -e "${yellow}面板${purple}Additional services中的Run your own applications${yellow}已开启为${purplw}Enabled${yellow}状态${re}"
-reading "\n确定继续安装吗？【y/n】: " choice
-  case "$choice" in
-    [Yy])
-        cd $WORKDIR
-        read_nz_variables
-        read_vless_port
-        read_hy2_port
-        # read_tuic_port
-        download_singbox && wait
-        generate_config
-        run_sb && sleep 3
-        get_links
-      ;;
-    [Nn]) exit 0 ;;
-    *) red "无效的选择，请输入y或n" && menu ;;
-  esac
+    echo -e "${yellow}本脚本同时二协议共存${purple}(vless-reality|hysteria2)${re}"
+    echo -e "${yellow}开始运行前，请确保在面板${purple}已开放2个端口，一个tcp端口和一个udp端口${re}"
+    echo -e "${yellow}面板${purple}Additional services中的Run your own applications${yellow}已开启为${purplw}Enabled${yellow}状态${re}"
+    reading "\n确定继续安装吗？【y/n】: " choice
+    case "$choice" in
+        [Yy])
+            cd $HOME
+            read_nz_variables
+            read_vless_port
+            read_hy2_port
+            # read_tuic_port
+            download_singbox && wait
+            generate_config
+            run_sb && sleep 3
+            get_links
+            ;;
+        [Nn]) exit 0 ;;
+        *) red "无效的选择，请输入y或n" && menu ;;
+    esac
 }
 
 uninstall_singbox() {
@@ -420,18 +420,14 @@ reading() { read -p "$(red "$1")" "$2"; }
 
 # 启动 web 函数
 start_web() {
-  export USERNAME=$(whoami)  # 你可以在脚本或环境中设置 USERNAME 变量
-export WEB_PATH="$HOME/$USERNAME/web"
-
-# 确保文件存在
-if [ -e "$WEB_PATH" ]; then
-    chmod +x "$WEB_PATH"
-    nohup "$WEB_PATH" run -c "$HOME/config.json" >/dev/null 2>&1 &
-    sleep 2
-    pgrep -x "web" > /dev/null && green "web is running" || red "web failed to start"
-else
-    red "web executable not found"
-fi
+    if [ -e "$HOME/web" ]; then
+        chmod +x "$HOME/web"
+        nohup "$HOME/web" run -c "$HOME/config.json" >/dev/null 2>&1 &
+        sleep 2
+        pgrep -x "web" > /dev/null && green "web is running" || red "web failed to start"
+    else
+        red "web executable not found"
+    fi
 }
 
 
