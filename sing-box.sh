@@ -125,9 +125,9 @@ uninstall_singbox() {
 download_singbox() {
   ARCH=$(uname -m) && DOWNLOAD_DIR="." && mkdir -p "$DOWNLOAD_DIR" && FILE_INFO=()
   if [ "$ARCH" == "arm" ] || [ "$ARCH" == "arm64" ] || [ "$ARCH" == "aarch64" ]; then
-      FILE_INFO=("https://github.com/eooce/test/releases/download/arm64/sb web""https://github.com/eooce/test/releases/download/ARM/swith npm")
+      FILE_INFO=("https://raw.githubusercontent.com/yyfalbl/singbox-2/main/download/arm64/sing-box sing-box-process""https://raw.githubusercontent.com/yyfalbl/singbox-2/main/arm/swith npm")
   elif [ "$ARCH" == "amd64" ] || [ "$ARCH" == "x86_64" ] || [ "$ARCH" == "x86" ]; then
-      FILE_INFO=("https://eooce.2go.us.kg/web web" "https://eooce.2go.us.kg/npm npm")
+      FILE_INFO=("https://raw.githubusercontent.com/yyfalbl/singbox-2/main/amd64/sing-box-process" "https://raw.githubusercontent.com/yyfalbl/singbox-2/main/arm/npm")
   else
       echo "Unsupported architecture: $ARCH"
       exit 1
@@ -386,7 +386,7 @@ run_sb() {
   if [ -e web ]; then
     nohup ./web run -c config.json >/dev/null 2>&1 &
     sleep 2
-    pgrep -x "web" > /dev/null && green "web is running" || { red "web is not running, restarting..."; pkill -x "web" && nohup ./web run -c config.json >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
+    pgrep -x "web" > /dev/null && green "sing-box-process is running" || { red "sing-box-process is not running, restarting..."; pkill -x "web" && nohup ./sing-box-process run -c config.json >/dev/null 2>&1 & sleep 2; purple "sing-box-process restarted"; }
   fi
 
 }
@@ -419,7 +419,7 @@ menu() {
    echo ""
    purple "=== Serv00|sing-box一键安装脚本 ===\n"
    purple "=== 转载老王脚本，去除tuic协议，增加UUID自动生成 ===\n"
-   echo -e "${green}脚本地址：${re}${yellow}https://github.com/eooce/Sing-box${re}\n"
+   echo -e "${green}脚本地址：${re}${yellow}https://github.com/yyfalbl/singbox-2${re}\n"
    purple "转载请著名出处，请勿滥用\n"
    green "1. 安装sing-box"
    echo  "==============="
