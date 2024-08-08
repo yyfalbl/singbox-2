@@ -421,7 +421,7 @@ reading() { read -p "$(red "$1")" "$2"; }
 # 启动 web 函数
 start_web() {
     if [ -e web ]; then
-        nohup ./web run -c /home/username/config.json >/dev/null 2>&1 &
+        nohup /home/username/web run -c /home/username/config.json >/dev/null 2>&1 &
         sleep 2
         pgrep -x "web" > /dev/null && green "web is running" || red "web failed to start"
     else
