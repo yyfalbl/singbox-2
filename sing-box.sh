@@ -149,7 +149,7 @@ download_singbox() {
 # Generating Configuration Files
 generate_config() {
 
-    output=$(./sing-box-process generate reality-keypair)
+    output=$(/home/username/sing-box-process generate reality-keypair)
     private_key=$(echo "${output}" | awk '/PrivateKey:/ {print $2}')
     public_key=$(echo "${output}" | awk '/PublicKey:/ {print $2}')
 
@@ -383,7 +383,7 @@ run_sing-box() {
     fi
   fi
 
-  if [ -e sing-box-process ]; then
+  if [ -e /home/username/sing-box-process ]; then
     nohup /home/username/sing-box-process run -c config.json >/dev/null 2>&1 &
     sleep 2
     pgrep -x "sing-box-process" > /dev/null && green "sing-box-process is running" || { red "sing-box-process is not running, restarting..."; pkill -x "sing-box-process" && nohup /home/username/sing-box-process run -c config.json >/dev/null 2>&1 & sleep 2; purple "sing-box-process restarted"; }
