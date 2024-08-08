@@ -86,6 +86,7 @@ read_nz_variables() {
 }
 
 install_singbox() {
+    echo "正在安装，请稍后......"
     echo -e "${yellow}本脚本同时二协议共存${purple}(vless-reality|hysteria2)${re}"
     echo -e "${yellow}开始运行前，请确保在面板${purple}已开放2个端口，一个tcp端口和一个udp端口${re}"
     echo -e "${yellow}面板${purple}Additional services中的Run your own applications${yellow}已开启为${purplw}Enabled${yellow}状态${re}"
@@ -101,6 +102,7 @@ install_singbox() {
             generate_config
             run_sb && sleep 3
             get_links
+            echo "安装完成！"
             ;;
         [Nn]) exit 0 ;;
         *) red "无效的选择，请输入y或n" && menu ;;
@@ -108,6 +110,7 @@ install_singbox() {
 }
 
 uninstall_singbox() {
+echo "正在卸载sing-box，请稍后......"
   reading "\n确定要卸载吗？【y/n】: " choice
     case "$choice" in
        [Yy])
@@ -115,6 +118,7 @@ uninstall_singbox() {
           kill -9 $(ps aux | grep '[b]ot' | awk '{print $2}')
           kill -9 $(ps aux | grep '[n]pm' | awk '{print $2}')
           rm -rf $WORKDIR
+          purple "卸载完成！"
           ;;
         [Nn]) exit 0 ;;
         *) red "无效的选择，请输入y或n" && menu ;;
@@ -420,13 +424,19 @@ reading() { read -p "$(red "$1")" "$2"; }
 
 # 启动 web 函数
 start_web() {
+    echo "正在启动web进程，请稍后......"
+    sleep 1  # Optional: pause for a brief moment before starting the process
     if [ -e "$HOME/web" ]; then
         chmod +x "$HOME/web"
         nohup "$HOME/web" run -c "$HOME/config.json" >/dev/null 2>&1 &
         sleep 2
-        pgrep -x "web" > /dev/null && green "web is running" || red "web failed to start"
+        if pgrep -x "web" > /dev/null; then
+            green "web进程启动成功"
+        else
+            red "web进程启动失败"
+        fi
     else
-        red "web executable not found"
+        red "web可执行文件未找到"
     fi
 }
 
@@ -434,8 +444,11 @@ start_web() {
 
 # 终止所有进程
 kill_all_tasks() {
+  echo "正在清理所有进程，请稍后......"
+  sleep 1  # Optional: pause for a brief moment before killing tasks
   killall -u $(whoami) # 终止所有属于当前用户的进程
-  echo "已成功终止所有进程。" # 使用 echo 输出消息
+  echo "已成功清理所有进程。"
+  sleep 2  # Optional: pause to allow the user to see the message before exiting
 }
 
 
