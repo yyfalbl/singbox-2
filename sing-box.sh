@@ -43,17 +43,7 @@ read_hy2_port() {
     done
 }
 
-# read_tuic_port() {
-#     while true; do
-#         reading "请输入Tuic端口 (面板开放的UDP端口): " tuic_port
-#         if [[ "$tuic_port" =~ ^[0-9]+$ ]] && [ "$tuic_port" -ge 1 ] && [ "$tuic_port" -le 65535 ]; then
-#             green "你的tuic端口为: $tuic_port"
-#             break
-#         else
-#             yellow "输入错误，请重新输入面板开放的UDP端口"
-#         fi
-#     done
-# }
+
 
 read_nz_variables() {
   if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
@@ -233,27 +223,7 @@ generate_config() {
             }
         }
     }
-    # {
-    #   "tag": "tuic-in",
-    #   "type": "tuic",
-    #   "listen": "::",
-    #   "listen_port": $tuic_port,
-    #   "users": [
-    #     {
-    #       "uuid": "$UUID",
-    #       "password": "admin123"
-    #     }
-    #   ],
-    #   "congestion_control": "bbr",
-    #   "tls": {
-    #     "enabled": true,
-    #     "alpn": [
-    #       "h3"
-    #     ],
-    #     "certificate_path": "cert.pem",
-    #     "key_path": "private.key"
-    #   }
-    # }
+  
 
  ],
     "outbounds": [
@@ -417,7 +387,7 @@ menu() {
    echo  "==============="
  yellow "4. 清理所有进程"
    echo  "==============="
-   red "0. 退出脚本"
+    red "0. 退出脚本"
    echo "==========="
    reading "请输入选择(0-4): " choice
    echo ""
