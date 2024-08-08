@@ -424,24 +424,32 @@ reading() { read -p "$(red "$1")" "$2"; }
 
 # 启动 web 函数
 start_web() {
-    echo "正在启动web进程，请稍后......"
+    # Print the initial message
+    echo -n "正在启动web进程，请稍后......"
+    local message_length=${#message}
     sleep 1  # Optional: pause for a brief moment before starting the process
+
     if [ -e "$HOME/web" ]; then
         chmod +x "$HOME/web"
         nohup "$HOME/web" run -c "$HOME/config.json" >/dev/null 2>&1 &
         sleep 2
+
         if pgrep -x "web" > /dev/null; then
-            clear  # Clear the screen
+            # Clear the initial message and print success message
+            echo -ne "\r\033[K"
             green "web进程启动成功"
         else
-            clear  # Clear the screen
+            # Clear the initial message and print failure message
+            echo -ne "\r\033[K"
             red "web进程启动失败"
         fi
     else
-        clear  # Clear the screen
+        # Clear the initial message and print file not found message
+        echo -ne "\r\033[K"
         red "web可执行文件未找到"
     fi
 }
+
 
 
 
