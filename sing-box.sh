@@ -486,7 +486,7 @@ menu() {
    echo -e "${green}脚本地址：${re}${yellow}https://github.com/yyfalbl/singbox-2${re}\n"
    purple "*****转载请著名出处，请勿滥用*****\n"
 # 显示 web 进程状态（仅在 `sing-box` 已安装时显示）
-   if is_sing-box_installed; then
+   if is_singbox_installed; then
        echo -e "当前 web 进程状态: $(check_web_status)"
    fi
    
