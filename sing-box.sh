@@ -455,9 +455,9 @@ bold_italic_green() { echo -e "${bold_italic}${green}$1${re}"; }
 # 检查 web 是否在运行
 check_web_status() {
     if pgrep -x "web" > /dev/null; then
-        echo -e "$(bold_italic_green "web Running！")"
+        echo -e "$(bold_italic_green "sing-box Running！")"
     else
-        echo -e "$(bold_italic_red "web NotRunning！！！")"
+        echo -e "$(bold_italic_red "sing-box NotRunning！！！")"
     fi
 }
 
@@ -486,7 +486,7 @@ menu() {
    purple "*****转载请著名出处，请勿滥用*****\n"
 # 显示 web 进程状态（仅在 `sing-box` 已安装时显示）
    if is_singbox_installed; then
-       echo -e "当前 web 进程状态: $(check_web_status)"
+       echo -e "$(check_web_status)！"
    fi
    
    green "1. 安装sing-box"
