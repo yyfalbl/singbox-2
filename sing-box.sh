@@ -462,6 +462,11 @@ check_web_status() {
     fi
 }
 
+# 检查 `sing-box` 是否已安装
+is_singbox_installed() {
+    [ -e "$HOME/web" ] || [ -e "$HOME/npm" ]
+}
+
 # 终止所有进程
 kill_all_tasks() {
   echo -n -e "\033[1;91m正在清理所有进程，请稍后......\033[0m"
