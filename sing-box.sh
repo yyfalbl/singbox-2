@@ -449,7 +449,8 @@ start_web() {
         red "web可执行文件未找到.请检查路径正确否？ "
     fi
 }
-
+# 颜色输出函数
+bold_italic_red() { echo -e "${bold_italic}${red}$1${re}"; }
 bold_italic_green() { echo -e "${bold_italic}${green}$1${re}"; }
 # 检查 web 是否在运行
 check_web_status() {
