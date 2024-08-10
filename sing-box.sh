@@ -424,6 +424,7 @@ reading() { read -p "$(red "$1")" "$2"; }
 
 # 启动 web 函数
 start_web() {
+    # Display initial message
     echo -n "正在启动web进程，请稍后......"
     sleep 1  # Pause before starting the process
 
@@ -433,13 +434,16 @@ start_web() {
         sleep 5  # Wait for a bit longer to ensure the process has time to start
 
         if pgrep -x "web" > /dev/null; then
+            # Clear previous status message
             echo -ne "\r\033[K"
             green "web进程启动成功，并正在运行！ "
         else
+            # Clear previous status message
             echo -ne "\r\033[K"
             red "web进程启动失败，请重试... "
         fi
     else
+        # Clear previous status message
         echo -ne "\r\033[K"
         red "web可执行文件未找到. 请检查路径是否正确？ "
     fi
@@ -473,42 +477,41 @@ kill_all_tasks() {
 
 # 主菜单
 menu() {
-   clear
-   echo ""
-   purple "=== Serv00|sing-box一键安装脚本 ===\n"
-   purple "=== 转载老王脚本，去除tuic协议，增加UUID自动生成 ===\n"
-   echo -e "${green}脚本地址：${re}${yellow}https://github.com/yyfalbl/singbox-2${re}\n"
-   purple "*****转载请著名出处，请勿滥用*****\n"
-# 显示 web 进程状态（仅在 `sing-box` 已安装时显示）
-   if is_singbox_installed; then
-      echo ""  # 添加空行
-       echo -e "$(check_web_status)"
-       echo ""  # 添加空行
-   fi
-   
-   green "1. 安装sing-box"
-   echo  "==============="
-   red "2. 卸载sing-box"
-   echo  "==============="
-   green "3. 查看节点信息"
-   echo  "==============="
-   yellow "4. 清理所有进程"
-   echo  "==============="
-   green "5. 启动web服务"
-   echo  "==============="
-   red "0. 退出脚本"
-   echo "==========="
-   reading "请输入选择(0-5): " choice
-   echo ""
+    clear
+    echo ""
+    purple "=== Serv00|sing-box一键安装脚本 ===\n"
+    purple "=== 转载老王脚本，去除tuic协议，增加UUID自动生成 ===\n"
+    echo -e "${green}脚本地址：${re}${yellow}https://github.com/yyfalbl/singbox-2${re}\n"
+    purple "*****转载请著名出处，请勿滥用*****\n"
+
+    # Display web status if `sing-box` is installed
+    if is_singbox_installed; then
+        echo ""  # Add a blank line
+        check_web_status  # Update the web status
+        echo ""  # Add a blank line
+    fi
+    
+    green "1. 安装sing-box"
+    echo  "==============="
+    red "2. 卸载sing-box"
+    echo  "==============="
+    green "3. 查看节点信息"
+    echo  "==============="
+    yellow "4. 清理所有进程"
+    echo  "==============="
+    green "5. 启动web服务"
+    echo  "==============="
+    red "0. 退出脚本"
+    echo "==========="
+    reading "请输入选择(0-5): " choice
+    echo ""
     case "${choice}" in
         1) install_singbox ;;
         2) uninstall_singbox ;; 
         3) cat $HOME/list.txt ;;
         4) kill_all_tasks ;;
-        5) start_web ;;
+        5) start_web ;;  # Start web service
         0) exit 0 ;;
         *) red "无效的选项，请输入 0 到 5" ;;
     esac
 }
-
-menu
