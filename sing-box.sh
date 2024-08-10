@@ -480,6 +480,11 @@ menu() {
    purple "=== 转载老王脚本，去除tuic协议，增加UUID自动生成 ===\n"
    echo -e "${green}脚本地址：${re}${yellow}https://github.com/yyfalbl/singbox-2${re}\n"
    purple "*****转载请著名出处，请勿滥用*****\n"
+# 显示 web 进程状态（仅在 `sing-box` 已安装时显示）
+   if is_singbox_installed; then
+       echo -e "当前 web 进程状态: $(check_web_status)"
+   fi
+   
    green "1. 安装sing-box"
    echo  "==============="
    red "2. 卸载sing-box"
