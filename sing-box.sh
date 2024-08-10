@@ -454,11 +454,9 @@ start_web() {
 # 检查 web 是否在运行
 check_web_status() {
     if pgrep -x "web" > /dev/null; then
-        echo -ne "\r\033[K"
-        green "web 进程正在运行！"
+        echo -e "$(bold_italic_green "web Running！")"
     else
-        echo -ne "\r\033[K"
-        red "web 进程没有运行。"
+        echo -e "$(bold_italic_red "web NotRunning！！！")"
     fi
 }
 
