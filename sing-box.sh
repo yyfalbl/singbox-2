@@ -450,7 +450,7 @@ start_web() {
     fi
 }
 
-
+bold_italic_green() { echo -e "${bold_italic}${green}$1${re}"; }
 # 检查 web 是否在运行
 check_web_status() {
     if pgrep -x "web" > /dev/null; then
