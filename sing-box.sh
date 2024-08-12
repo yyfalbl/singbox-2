@@ -416,39 +416,37 @@ run_sb() {
 
 }
 
-get_links(){
-# 提示用户输入IP地址
-read -p "请输入IP地址（或按回车自动检测）: " user_ip
+get_links() {
+    # Prompt user for IP address
+    read -p "请输入IP地址（或按回车自动检测）: " user_ip
 
-# 如果用户输入了IP地址，使用用户提供的IP地址
-if [ -n "$user_ip" ]; then
-    IP=$user_ip
-else
-    # 自动检测IP地址
-    IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
-fi
+    # Use provided IP address or detect automatically
+    if [ -n "$user_ip" ]; then
+        IP=$user_ip
+    else
+        IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
+    fi
 
-# 输出最终使用的IP地址
-echo "设备的IP地址是: $IP"
-# get ip
-#IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
-sleep 1
-# get ipinfo
-ISP=$(curl -s https://speed.cloudflare.com/meta | awk -F\" '{print $26"-"$18}' | sed -e 's/ /_/g') 
-sleep 1
-yellow "注意：v2ray或其他软件的跳过证书验证需设置为true,否则hy2或tuic节点可能不通\n"
-cat > list.txt <<EOF
+    # Output the IP address
+    echo "设备的IP地址是: $IP"
+
+    # Create the list.txt file
+    cat > list.txt <<EOF
 vless://$UUID@$IP:$vless_port?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.ups.com&fp=chrome&pbk=$public_key&type=tcp&headerType=none#$ISP
 
 hysteria2://$UUID@$IP:$hy2_port/?sni=www.bing.com&alpn=h3&insecure=1#$ISP
 
 EOF
-cat list.txt
-purple "list.txt saved successfully"
-purple "Running done!"
-sleep 3 
-rm -rf npm boot.log sb.log core
-
+    # Check if file was created and then attempt to change permissions
+    if [ -f "list.txt" ]; then
+        chmod 644 list.txt
+        echo "list.txt saved successfully"
+    else
+        echo "list.txt was not created successfully."
+    fi
+    purple "Running done!"
+    sleep 3 
+    rm -rf npm boot.log sb.log core
 }
 # 定义颜色函数
 green() { echo -e "\e[1;32m$1\033[0m"; }
