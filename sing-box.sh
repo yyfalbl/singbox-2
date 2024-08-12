@@ -52,6 +52,17 @@ EOF
     rm -rf npm boot.log sb.log core
 }
 
+# 启动web服务并生成节点信息
+start_web() {
+    # 这里添加启动web服务的代码
+    echo "启动 web 服务..."
+    # 假设有启动 web 服务的命令
+    systemctl restart sing-box  # 需要根据实际情况替换
+
+    # 生成节点信息并保存到文件
+    generate_node_info
+}
+#
 USERNAME=$(whoami)
 HOSTNAME=$(hostname)
 UUID_FILE="$HOME/.singbox_uuid"  # Define a location to store the UUID
