@@ -494,15 +494,13 @@ menu() {
    echo -e "${green}脚本地址：${re}${yellow}https://github.com/yyfalbl/singbox-2${re}\n"
    purple "*****转载请著名出处，请勿滥用*****\n"
    echo ""
-      check_singbox_status 
-    echo ""
 # 显示 web 进程状态（仅在 sing-box 已安装时显示）
    if is_singbox_installed; then
       echo ""  # 添加空行
        echo -e "$(check_web_status)"
        echo ""  # 添加空行
    fi
-   
+   echo ""
    green "1. 安装sing-box"
    echo  "==============="
    red "2. 卸载sing-box"
