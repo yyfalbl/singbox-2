@@ -19,6 +19,18 @@ bold_italic_red() {
     echo -e "\033[1;3;31m$1\033[0m"  # Red text
 }
 
+# Function to check if sing-box is installed
+check_singbox_installed() {
+    if [ -e "$HOME/web" ] && [ -e "$HOME/npm" ]; then
+        echo -e "$(bold_italic_green "sing-box is installed.")"
+    else
+        echo -e "$(bold_italic_red "sing-box is not installed.")"
+    fi
+}
+
+# Example usage
+check_singbox_installed
+
 # Function to check if sing-box is running
 check_web_status() {
     if pgrep -x "web" > /dev/null; then
