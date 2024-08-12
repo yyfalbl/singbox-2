@@ -489,18 +489,8 @@ start_web() {
         red "web可执行文件未找到.请检查路径正确否？ "
     fi
 }
-# 颜色输出函数
-bold_italic_red() { echo -e "${bold_italic}${red}$1${re}"; }
-bold_italic_green() { echo -e "${bold_italic}${green}$1${re}"; }
 
-# 检查 web 进程状态
-check_web_status() {
-    if pgrep -x "web" > /dev/null; then
-        echo -e "$(bold_italic_green "sing-box Running！")"
-    else
-        echo -e "$(bold_italic_red "sing-box NotRunning ")"
-    fi
-}
+
 # 检查 sing-box 是否已安装
 is_singbox_installed() {
     [ -e "$HOME/web" ] || [ -e "$HOME/npm" ]
