@@ -146,11 +146,11 @@ uninstall_singbox() {
             pkill -f 'npm'
             pkill -f 'bot'
 
-            # Remove all related files
-            rm -rf "$WORKDIR"
-
-            # Optionally, remove UUID file if it exists
-            [ -f "$UUID_FILE" ] && rm -f "$UUID_FILE"
+            # Check and remove all related files
+            echo "WORKDIR路径: $WORKDIR"
+            echo "UUID_FILE路径: $UUID_FILE"
+            [ -d "$WORKDIR" ] && rm -rf "$WORKDIR" && echo "已删除目录：$WORKDIR" || echo "目录不存在：$WORKDIR"
+            [ -f "$UUID_FILE" ] && rm -f "$UUID_FILE" && echo "已删除文件：$UUID_FILE" || echo "文件不存在：$UUID_FILE"
 
             purple "卸载完成！"
             ;;
@@ -158,6 +158,7 @@ uninstall_singbox() {
         *) red "无效的选择，请输入y或n" && menu ;;
     esac
 }
+
 
 # Download Dependency Files
 download_singbox() {
