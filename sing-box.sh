@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Define colors
 reset_color="\033[0m"
 red="\033[1;91m"
@@ -83,17 +82,17 @@ read_hy2_port() {
     done
 }
 
- read_tuic_port() {
-     while true; do
-        reading "请输入Tuic端口 (面板开放的UDP端口): " tuic_port
-         if [[ "$tuic_port" =~ ^[0-9]+$ ]] && [ "$tuic_port" -ge 1 ] && [ "$tuic_port" -le 65535 ]; then
-            green "你的tuic端口为: $tuic_port"
-            break
-         else
-             yellow "输入错误，请重新输入面板开放的UDP端口"
-         fi
-     done
- }
+# read_tuic_port() {
+#     while true; do
+#         reading "请输入Tuic端口 (面板开放的UDP端口): " tuic_port
+#         if [[ "$tuic_port" =~ ^[0-9]+$ ]] && [ "$tuic_port" -ge 1 ] && [ "$tuic_port" -le 65535 ]; then
+#             green "你的tuic端口为: $tuic_port"
+#             break
+#         else
+#             yellow "输入错误，请重新输入面板开放的UDP端口"
+#         fi
+#     done
+# }
 
 read_nz_variables() {
   if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
@@ -122,10 +121,10 @@ install_singbox() {
     case "$choice" in
         [Yy])
             cd $HOME
-            #read_nz_variables
+            read_nz_variables
             read_vless_port
             read_hy2_port
-            read_tuic_port
+            # read_tuic_port
             download_singbox && wait
             generate_config
             run_sb && sleep 3
@@ -277,27 +276,27 @@ generate_config() {
             }
         }
     }
-     {
-       "tag": "tuic-in",
-       "type": "tuic",
-       "listen": "::",
-       "listen_port": $tuic_port,
-       "users": [
-        {
-           "uuid": "$UUID",
-           "password": "admin123"
-         }
-       ],
-       "congestion_control": "bbr",
-       "tls": {
-         "enabled": true,
-        "alpn": [
-           "h3"
-         ],
-         "certificate_path": "cert.pem",
-         "key_path": "private.key"
-       }
-     }
+    # {
+    #   "tag": "tuic-in",
+    #   "type": "tuic",
+    #   "listen": "::",
+    #   "listen_port": $tuic_port,
+    #   "users": [
+    #     {
+    #       "uuid": "$UUID",
+    #       "password": "admin123"
+    #     }
+    #   ],
+    #   "congestion_control": "bbr",
+    #   "tls": {
+    #     "enabled": true,
+    #     "alpn": [
+    #       "h3"
+    #     ],
+    #     "certificate_path": "cert.pem",
+    #     "key_path": "private.key"
+    #   }
+    # }
 
  ],
     "outbounds": [
@@ -441,7 +440,7 @@ echo "设备的IP地址是: $IP"
 #IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
 sleep 1
 # get ipinfo
-ISP="sing-box"
+ISP=$(curl -s https://speed.cloudflare.com/meta | awk -F\" '{print $26"-"$18}' | sed -e 's/ /_/g') 
 sleep 1
 yellow "注意：v2ray或其他软件的跳过证书验证需设置为true,否则hy2或tuic节点可能不通\n"
 cat > list.txt <<EOF
@@ -490,7 +489,18 @@ start_web() {
         red "web可执行文件未找到.请检查路径正确否？ "
     fi
 }
+# 颜色输出函数
+bold_italic_red() { echo -e "${bold_italic}${red}$1${re}"; }
+bold_italic_green() { echo -e "${bold_italic}${green}$1${re}"; }
 
+# 检查 web 进程状态
+check_web_status() {
+    if pgrep -x "web" > /dev/null; then
+        echo -e "$(bold_italic_green "sing-box Running！")"
+    else
+        echo -e "$(bold_italic_red "sing-box NotRunning ")"
+    fi
+}
 # 检查 sing-box 是否已安装
 is_singbox_installed() {
     [ -e "$HOME/web" ] || [ -e "$HOME/npm" ]
