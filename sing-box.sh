@@ -482,9 +482,10 @@ check_web_status() {
     if pgrep -x "web" > /dev/null; then
         echo -e "$(bold_italic_green "sing-box Running！")"
     else
-        echo -e "${bold_red}sing-box NotRunning${reset_color}"
+        echo -e "$(bold_italic_red "sing-box NotRunning")"
     fi
 }
+
 # 检查 sing-box 是否已安装
 is_singbox_installed() {
     [ -e "$HOME/web" ] || [ -e "$HOME/npm" ]
