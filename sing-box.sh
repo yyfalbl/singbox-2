@@ -13,15 +13,18 @@ green() { echo -e "${green}$1${reset_color}"; }
 yellow() { echo -e "${yellow}$1${reset_color}"; }
 purple() { echo -e "${purple}$1${reset_color}"; }
 reading() { read -p "$(red "$1")" "$2"; }
-bold_italic_red() { echo -e "${red}\033[3m$1${reset_color}"; }
+#bold_italic_red() { echo -e "${red}\033[3m$1${reset_color}"; }
 bold_italic_green() { echo -e "${green}\033[3m$1${reset_color}"; }
+bold_italic_red() {
+    echo -e "\033[1;3;31m$1\033[0m"  # Red text
+}
 
 # Function to check if sing-box is running
 check_web_status() {
     if pgrep -x "web" > /dev/null; then
         echo -e "$(bold_italic_green "sing-box Running！")"
     else
-        echo -e "$(bold_italic_red "sing-box NotRunning")"
+        echo -e "$(bold_italic_red "sing-box Notrunning")"
     fi
 }
 
