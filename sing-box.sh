@@ -17,7 +17,7 @@ bold_italic_red() { echo -e "${red}\033[3m$1${reset_color}"; }
 bold_italic_green() { echo -e "${green}\033[3m$1${reset_color}"; }
 
 # Function to check if sing-box is running
-check_singbox_status() {
+check_web_status() {
     if pgrep -x "web" > /dev/null; then
         echo -e "$(bold_italic_green "sing-box Running！")"
     else
