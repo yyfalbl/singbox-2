@@ -12,6 +12,15 @@ yellow() { echo -e "\e[1;33m$1\033[0m"; }
 purple() { echo -e "\e[1;35m$1\033[0m"; }
 reading() { read -p "$(red "$1")" "$2"; }
 
+# Function to check if sing-box is running
+check_singbox_status() {
+    if pgrep -x "web" > /dev/null; then
+        echo -e "sing-box 状态: $(green "Running")"
+    else
+        echo -e "sing-box 状态: $(red "NotRunning")"
+    fi
+} 
+
 USERNAME=$(whoami)
 HOSTNAME=$(hostname)
 UUID_FILE="$HOME/.singbox_uuid"  # Define a location to store the UUID
@@ -484,6 +493,9 @@ menu() {
    purple "=== 转载老王脚本，去除tuic协议，增加UUID自动生成 ===\n"
    echo -e "${green}脚本地址：${re}${yellow}https://github.com/yyfalbl/singbox-2${re}\n"
    purple "*****转载请著名出处，请勿滥用*****\n"
+    echo ""
+    echo -e "======= check_singbox_status =======
+      echo ""
 # 显示 web 进程状态（仅在 sing-box 已安装时显示）
    if is_singbox_installed; then
       echo ""  # 添加空行
