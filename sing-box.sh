@@ -11,6 +11,8 @@ green() { echo -e "\e[1;32m$1\033[0m"; }
 yellow() { echo -e "\e[1;33m$1\033[0m"; }
 purple() { echo -e "\e[1;35m$1\033[0m"; }
 reading() { read -p "$(red "$1")" "$2"; }
+bold_italic_red() { echo -e "${red}\033[3m$1${reset_color}"; }
+bold_italic_green() { echo -e "${green}\033[3m$1${reset_color}"; }
 
 # Function to check if sing-box is running
 check_singbox_status() {
