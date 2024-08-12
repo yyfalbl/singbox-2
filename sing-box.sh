@@ -12,6 +12,46 @@ yellow() { echo -e "\e[1;33m$1\033[0m"; }
 purple() { echo -e "\e[1;35m$1\033[0m"; }
 reading() { read -p "$(red "$1")" "$2"; }
 
+# 提前执行的功能，例如检测IP地址
+check_ip_and_get_links() {
+    echo "正在检测IP地址..."
+    # 提示用户输入IP地址
+    read -p "请输入IP地址（或按回车自动检测）: " user_ip
+
+    # 如果用户输入了IP地址，使用用户提供的IP地址
+    if [ -n "$user_ip" ]; then
+        IP=$user_ip
+    else
+        # 自动检测IP地址
+        IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
+    fi
+
+    # 输出最终使用的IP地址
+    echo "设备的IP地址是: $IP"
+
+    # 获取 ISP 信息
+    ISP=$(curl -s https://speed.cloudflare.com/meta | awk -F\" '{print $26"-"$18}' | sed -e 's/ /_/g') 
+    sleep 1
+
+    yellow "注意：v2ray或其他软件的跳过证书验证需设置为true,否则hy2或tuic节点可能不通\n"
+}
+
+# 生成节点信息并保存到文件
+generate_node_info() {
+    cat > list.txt <<EOF
+vless://$UUID@$IP:$vless_port?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.ups.com&fp=chrome&pbk=$public_key&type=tcp&headerType=none#$ISP
+
+hysteria2://$UUID@$IP:$hy2_port/?sni=www.bing.com&alpn=h3&insecure=1#$ISP
+EOF
+
+    # 输出生成的链接并保存到文件
+    cat list.txt
+    purple "list.txt saved successfully"
+    purple "Running done!"
+    sleep 3 
+    rm -rf npm boot.log sb.log core
+}
+
 USERNAME=$(whoami)
 HOSTNAME=$(hostname)
 UUID_FILE="$HOME/.singbox_uuid"  # Define a location to store the UUID
@@ -30,9 +70,6 @@ export NEZHA_KEY=${NEZHA_KEY:-''}
 
 [[ "$HOSTNAME" == "s1.ct8.pl" ]] && WORKDIR="domains/${USERNAME}.ct8.pl/logs" || WORKDIR="${HOME}/${USERNAME}"
 [ -d "$WORKDIR" ] || (mkdir -p "$WORKDIR" && chmod 777 "$WORKDIR")
-
-# 提前执行的功能
-    check_ip_and_get_links
 
 read_vless_port() {
     while true; do
@@ -398,26 +435,7 @@ run_sb() {
 
 }
 
-get_links(){
-  # 提示用户输入IP地址
-  read -p "请输入IP地址（或按回车自动检测）: " user_ip
 
-  # 如果用户输入了IP地址，使用用户提供的IP地址
-  if [ -n "$user_ip" ]; then
-      IP=$user_ip
-  else
-      # 自动检测IP地址
-      IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
-  fi
-
-  # 输出最终使用的IP地址
-  echo "设备的IP地址是: $IP"
-
-  # 获取 ISP 信息
-  ISP=$(curl -s https://speed.cloudflare.com/meta | awk -F\" '{print $26"-"$18}' | sed -e 's/ /_/g') 
-  sleep 1
-
-  yellow "注意：v2ray或其他软件的跳过证书验证需设置为true,否则hy2或tuic节点可能不通\n"
   
   # 生成 vless 和 hysteria2 链接并保存到文件
   cat > list.txt <<EOF
@@ -493,6 +511,16 @@ kill_all_tasks() {
   sleep 2  # Optional: pause to allow the user to see the message before exiting
 }
 
+# 启动web服务并生成节点信息
+start_web() {
+    # 这里添加启动web服务的代码
+    echo "启动 web 服务..."
+    # 假设有启动 web 服务的命令
+    systemctl restart sing-box  # 需要根据实际情况替换
+
+    # 生成节点信息并保存到文件
+    generate_node_info
+}
 
 # 主菜单
 menu() {
