@@ -12,15 +12,6 @@ yellow() { echo -e "\e[1;33m$1\033[0m"; }
 purple() { echo -e "\e[1;35m$1\033[0m"; }
 reading() { read -p "$(red "$1")" "$2"; }
 
-# Function to check if sing-box is running
-check_singbox_status() {
-    if pgrep -x "web" > /dev/null; then
-        echo -e "sing-box 状态: $(green "Running")"
-    else
-        echo -e "sing-box 状态: $(red "NotRunning")"
-    fi
-} 
-
 USERNAME=$(whoami)
 HOSTNAME=$(hostname)
 UUID_FILE="$HOME/.singbox_uuid"  # Define a location to store the UUID
@@ -39,6 +30,9 @@ export NEZHA_KEY=${NEZHA_KEY:-''}
 
 [[ "$HOSTNAME" == "s1.ct8.pl" ]] && WORKDIR="domains/${USERNAME}.ct8.pl/logs" || WORKDIR="${HOME}/${USERNAME}"
 [ -d "$WORKDIR" ] || (mkdir -p "$WORKDIR" && chmod 777 "$WORKDIR")
+
+# 提前执行的功能
+    check_ip_and_get_links
 
 read_vless_port() {
     while true; do
