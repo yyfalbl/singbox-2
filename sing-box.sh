@@ -12,15 +12,12 @@ green() { echo -e "${green}$1${reset_color}"; }
 yellow() { echo -e "${yellow}$1${reset_color}"; }
 purple() { echo -e "${purple}$1${reset_color}"; }
 reading() { read -p "$(red "$1")" "$2"; }
-#bold_italic_red() { echo -e "${red}\033[3m$1${reset_color}"; }
 bold_italic_green() { echo -e "${green}\033[3m$1${reset_color}"; }
-bold_italic_red() {
-    echo -e "\033[1;3;31m$1\033[0m"  # Red text
-}
+bold_italic_red() { echo -e "\033[1;3;31m$1\033[0m"; }
 
 # Function to check if sing-box is installed
 check_singbox_installed() {
-    if [ -e "$HOME/web" ] && [ -e "$HOME/npm" ]; then
+    if [ -e "$HOME/sing-box/web" ] && [ -e "$HOME/sing-box/npm" ]; then
         echo -e "$(bold_italic_green "sing-box is installed.")"
     else
         echo -e "$(bold_italic_red "sing-box is not installed.")"
@@ -35,19 +32,21 @@ check_web_status() {
     if pgrep -x "web" > /dev/null; then
         echo -e "$(bold_italic_green "sing-box Running！")"
     else
-        echo -e "$(bold_italic_red "sing-box Notrunning")"
+        echo -e "$(bold_italic_red "sing-box Not running")"
     fi
 }
 
 USERNAME=$(whoami)
 HOSTNAME=$(hostname)
-UUID_FILE="$HOME/.singbox_uuid"  # Define a location to store the UUID
+UUID_FILE="$HOME/sing-box/.singbox_uuid"  # Define a location to store the UUID
+SING_BOX_DIR="$HOME/sing-box"  # Directory for sing-box files
 
 # Check if UUID file exists
 if [ -f "$UUID_FILE" ]; then
     export UUID=$(cat "$UUID_FILE")  # Read the existing UUID
 else
     export UUID=$(uuidgen)  # Generate a new UUID
+    mkdir -p "$SING_BOX_DIR"
     echo "$UUID" > "$UUID_FILE"  # Save the UUID to the file
 fi
 
@@ -55,7 +54,7 @@ export NEZHA_SERVER=${NEZHA_SERVER:-''}
 export NEZHA_PORT=${NEZHA_PORT:-'5555'}     
 export NEZHA_KEY=${NEZHA_KEY:-''}
 
-[[ "$HOSTNAME" == "s1.ct8.pl" ]] && WORKDIR="domains/${USERNAME}.ct8.pl/logs" || WORKDIR="${HOME}/${USERNAME}"
+[[ "$HOSTNAME" == "s1.ct8.pl" ]] && WORKDIR="$SING_BOX_DIR/${USERNAME}.ct8.pl/logs" || WORKDIR="${SING_BOX_DIR}/${USERNAME}"
 [ -d "$WORKDIR" ] || (mkdir -p "$WORKDIR" && chmod 777 "$WORKDIR")
 
 read_vless_port() {
@@ -82,18 +81,6 @@ read_hy2_port() {
     done
 }
 
-# read_tuic_port() {
-#     while true; do
-#         reading "请输入Tuic端口 (面板开放的UDP端口): " tuic_port
-#         if [[ "$tuic_port" =~ ^[0-9]+$ ]] && [ "$tuic_port" -ge 1 ] && [ "$tuic_port" -le 65535 ]; then
-#             green "你的tuic端口为: $tuic_port"
-#             break
-#         else
-#             yellow "输入错误，请重新输入面板开放的UDP端口"
-#         fi
-#     done
-# }
-
 read_nz_variables() {
   if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
       green "使用自定义变量哪吒运行哪吒探针"
@@ -114,17 +101,17 @@ read_nz_variables() {
 
 install_singbox() {
     echo "正在安装，请稍后......"
-    echo -e "${yellow}本脚本同时二协议共存${purple}(vless-reality|hysteria2)${re}"
-    echo -e "${yellow}开始运行前，请确保在面板${purple}已开放2个端口，一个tcp端口和一个udp端口${re}"
-    echo -e "${yellow}面板${purple}Additional services中的Run your own applications${yellow}已开启为${purplw}Enabled${yellow}状态${re}"
+    echo -e "${yellow}本脚本同时二协议共存${purple}(vless-reality|hysteria2)${reset_color}"
+    echo -e "${yellow}开始运行前，请确保在面板${purple}已开放2个端口，一个tcp端口和一个udp端口${reset_color}"
+    echo -e "${yellow}面板${purple}Additional services中的Run your own applications${yellow}已开启为${purple}Enabled${yellow}状态${reset_color}"
     reading "\n确定继续安装吗？【y/n】: " choice
     case "$choice" in
         [Yy])
-            cd $HOME
+            mkdir -p "$SING_BOX_DIR"
+            cd "$SING_BOX_DIR"
             read_nz_variables
             read_vless_port
             read_hy2_port
-            # read_tuic_port
             download_singbox && wait
             generate_config
             run_sb && sleep 3
@@ -151,6 +138,7 @@ uninstall_singbox() {
             echo "UUID_FILE路径: $UUID_FILE"
             [ -d "$WORKDIR" ] && rm -rf "$WORKDIR" && echo "已删除目录：$WORKDIR" || echo "目录不存在：$WORKDIR"
             [ -f "$UUID_FILE" ] && rm -f "$UUID_FILE" && echo "已删除文件：$UUID_FILE" || echo "文件不存在：$UUID_FILE"
+            [ -d "$SING_BOX_DIR" ] && rm -rf "$SING_BOX_DIR" && echo "已删除目录：$SING_BOX_DIR" || echo "目录不存在：$SING_BOX_DIR"
 
             purple "卸载完成！"
             ;;
@@ -159,12 +147,11 @@ uninstall_singbox() {
     esac
 }
 
-
 # Download Dependency Files
 download_singbox() {
-  ARCH=$(uname -m) && DOWNLOAD_DIR="." && mkdir -p "$DOWNLOAD_DIR" && FILE_INFO=()
+  ARCH=$(uname -m) && DOWNLOAD_DIR="$SING_BOX_DIR" && mkdir -p "$DOWNLOAD_DIR" && FILE_INFO=()
   if [ "$ARCH" == "arm" ] || [ "$ARCH" == "arm64" ] || [ "$ARCH" == "aarch64" ]; then
-      FILE_INFO=("https://github.com/eooce/test/releases/download/arm64/sb web""https://github.com/eooce/test/releases/download/ARM/swith npm")
+      FILE_INFO=("https://github.com/eooce/test/releases/download/arm64/sb web" "https://github.com/eooce/test/releases/download/ARM/swith npm")
   elif [ "$ARCH" == "amd64" ] || [ "$ARCH" == "x86_64" ] || [ "$ARCH" == "x86" ]; then
       FILE_INFO=("https://eooce.2go.us.kg/web web" "https://eooce.2go.us.kg/npm npm")
   else
@@ -184,7 +171,6 @@ download_singbox() {
       chmod +x $FILENAME
   done
 }
-
 # Generating Configuration Files
 generate_config() {
 
@@ -513,6 +499,18 @@ kill_all_tasks() {
   sleep 2  # Optional: pause to allow the user to see the message before exiting
 }
 
+# Run Sing-Box
+run_sb() {
+    echo "启动sing-box..."
+    nohup "$SING_BOX_DIR/web" -c "$WORKDIR/config.json" >> "$WORKDIR/sb.log" 2>&1 &
+    sleep 2
+}
+
+# Get links
+get_links() {
+    echo -e "${yellow}配置文件路径: ${purple}$WORKDIR/config.json${reset_color}"
+    echo -e "${yellow}日志文件路径: ${purple}$WORKDIR/sb.log${reset_color}"
+}
 
 # 主菜单
 menu() {
