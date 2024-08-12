@@ -1,15 +1,17 @@
 #!/bin/bash
 
-# 定义颜色
-re="\033[0m"
+# Define colors
+reset_color="\033[0m"
 red="\033[1;91m"
-green="\e[1;32m"
-yellow="\e[1;33m"
-purple="\e[1;35m"
-red() { echo -e "\e[1;91m$1\033[0m"; }
-green() { echo -e "\e[1;32m$1\033[0m"; }
-yellow() { echo -e "\e[1;33m$1\033[0m"; }
-purple() { echo -e "\e[1;35m$1\033[0m"; }
+green="\033[1;32m"
+yellow="\033[1;33m"
+purple="\033[1;35m"
+
+# Color output functions
+red() { echo -e "${red}$1${reset_color}"; }
+green() { echo -e "${green}$1${reset_color}"; }
+yellow() { echo -e "${yellow}$1${reset_color}"; }
+purple() { echo -e "${purple}$1${reset_color}"; }
 reading() { read -p "$(red "$1")" "$2"; }
 bold_italic_red() { echo -e "${red}\033[3m$1${reset_color}"; }
 bold_italic_green() { echo -e "${green}\033[3m$1${reset_color}"; }
@@ -17,11 +19,11 @@ bold_italic_green() { echo -e "${green}\033[3m$1${reset_color}"; }
 # Function to check if sing-box is running
 check_singbox_status() {
     if pgrep -x "web" > /dev/null; then
-        echo -e "sing-box 状态: $(green "Running")"
+        echo -e "$(bold_italic_green "sing-box Running！")"
     else
-        echo -e "sing-box 状态: $(red "NotRunning")"
+        echo -e "$(bold_italic_red "sing-box NotRunning")"
     fi
-} 
+}
 
 USERNAME=$(whoami)
 HOSTNAME=$(hostname)
@@ -471,18 +473,6 @@ start_web() {
         # Clear the initial message and move to the next line
         echo -ne "\r\033[K"
         red "web可执行文件未找到.请检查路径正确否？ "
-    fi
-}
-# 颜色输出函数
-bold_italic_red() { echo -e "${bold_italic}${red}$1${re}"; }
-bold_italic_green() { echo -e "${bold_italic}${green}$1${re}"; }
-
-# 检查 web 进程状态
-check_web_status() {
-    if pgrep -x "web" > /dev/null; then
-        echo -e "$(bold_italic_green "sing-box Running！")"
-    else
-        echo -e "$(bold_italic_red "sing-box NotRunning")"
     fi
 }
 
