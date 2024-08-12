@@ -95,23 +95,23 @@ read_hy2_port() {
 #     done
 # }
 
-read_nz_variables() {
-  if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
-      green "使用自定义变量哪吒运行哪吒探针"
-      return
-  else
-      reading "是否需要安装哪吒探针？【y/n】: " nz_choice
-      [[ -z $nz_choice ]] && return
-      [[ "$nz_choice" != "y" && "$nz_choice" != "Y" ]] && return
-      reading "请输入哪吒探针域名或ip：" NEZHA_SERVER
-      green "你的哪吒域名为: $NEZHA_SERVER"
-      reading "请输入哪吒探针端口（回车跳过默认使用5555）：" NEZHA_PORT
-      [[ -z $NEZHA_PORT ]] && NEZHA_PORT="5555"
-      green "你的哪吒端口为: $NEZHA_PORT"
-      reading "请输入哪吒探针密钥：" NEZHA_KEY
-      green "你的哪吒密钥为: $NEZHA_KEY"
-  fi
-}
+#read_nz_variables() {
+#  if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
+   #   green "使用自定义变量哪吒运行哪吒探针"
+  #    return
+ # else
+  #    reading "是否需要安装哪吒探针？【y/n】: " nz_choice
+  #    [[ -z $nz_choice ]] && return
+    #  [[ "$nz_choice" != "y" && "$nz_choice" != "Y" ]] && return
+   #   reading "请输入哪吒探针域名或ip：" NEZHA_SERVER
+   #   green "你的哪吒域名为: $NEZHA_SERVER"
+  #    reading "请输入哪吒探针端口（回车跳过默认使用5555）：" NEZHA_PORT
+   #   [[ -z $NEZHA_PORT ]] && NEZHA_PORT="5555"
+   #   green "你的哪吒端口为: $NEZHA_PORT"
+   #   reading "请输入哪吒探针密钥：" NEZHA_KEY
+   #   green "你的哪吒密钥为: $NEZHA_KEY"
+ # fi
+#}
 
 install_singbox() {
     echo "正在安装，请稍后......"
