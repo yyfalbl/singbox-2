@@ -137,16 +137,23 @@ install_singbox() {
 }
 
 uninstall_singbox() {
-echo "正在卸载sing-box，请稍后......"
-  reading "\n确定要卸载吗？【y/n】: " choice
+    echo "正在卸载sing-box，请稍后......"
+    reading "\n确定要卸载吗？【y/n】: " choice
     case "$choice" in
-       [Yy])
-          kill -9 $(ps aux | grep '[w]eb' | awk '{print $2}')
-          kill -9 $(ps aux | grep '[b]ot' | awk '{print $2}')
-          kill -9 $(ps aux | grep '[n]pm' | awk '{print $2}')
-          rm -rf $WORKDIR
-          purple "卸载完成！"
-          ;;
+        [Yy])
+            # Terminate processes associated with sing-box
+            pkill -f 'web'
+            pkill -f 'npm'
+            pkill -f 'bot'
+
+            # Remove all related files
+            rm -rf "$WORKDIR"
+
+            # Optionally, remove UUID file if it exists
+            [ -f "$UUID_FILE" ] && rm -f "$UUID_FILE"
+
+            purple "卸载完成！"
+            ;;
         [Nn]) exit 0 ;;
         *) red "无效的选择，请输入y或n" && menu ;;
     esac
