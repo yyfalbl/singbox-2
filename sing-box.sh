@@ -282,78 +282,76 @@ generate_config() {
     "disable_cache": false,
     "disable_expire": false
   },
-    "inbounds": [
+  "inbounds": [
     {
-       "tag": "hysteria-in",
-       "type": "hysteria2",
-       "listen": "::",
-       "listen_port": $hy2_port,
-       "users": [
-         {
-             "password": "$UUID"
-         }
-     ],
-     "masquerade": "https://bing.com",
-     "tls": {
-         "enabled": true,
-         "alpn": [
-             "h3"
-         ],
-         "certificate_path": "cert.pem",
-         "key_path": "private.key"
+      "tag": "hysteria-in",
+      "type": "hysteria2",
+      "listen": "::",
+      "listen_port": $hy2_port,
+      "users": [
+        {
+          "password": "$UUID"
         }
+      ],
+      "masquerade": "https://bing.com",
+      "tls": {
+        "enabled": true,
+        "alpn": [
+          "h3"
+        ],
+        "certificate_path": "cert.pem",
+        "key_path": "private.key"
+      }
     },
     {
-        "tag": "vless-reality-vesion",
-        "type": "vless",
-        "listen": "::",
-        "listen_port": $vless_port,
-        "users": [
-            {
-              "uuid": "$UUID",
-              "flow": "xtls-rprx-vision"
-            }
-        ],
-        "tls": {
-            "enabled": true,
-            "server_name": "www.ups.com",
-            "reality": {
-                "enabled": true,
-                "handshake": {
-                    "server": "www.ups.com",
-                    "server_port": 443
-                },
-                "private_key": "$private_key",
-                "short_id": [
-                  ""
-                ]
-            }
+      "tag": "vless-reality-vesion",
+      "type": "vless",
+      "listen": "::",
+      "listen_port": $vless_port,
+      "users": [
+        {
+          "uuid": "$UUID",
+          "flow": "xtls-rprx-vision"
         }
+      ],
+      "tls": {
+        "enabled": true,
+        "server_name": "www.ups.com",
+        "reality": {
+          "enabled": true,
+          "handshake": {
+            "server": "www.ups.com",
+            "server_port": 443
+          },
+          "private_key": "$private_key",
+          "short_id": [
+            ""
+          ]
+        }
+      }
+    }{
+      "tag": "tuic-in",
+      "type": "tuic",
+      "listen": "::",
+      "listen_port": $tuic_port,
+      "users": [
+        {
+          "uuid": "$UUID",
+          "password": "admin123"
+        }
+      ],
+      "congestion_control": "bbr",
+      "tls": {
+        "enabled": true,
+        "alpn": [
+          "h3"
+        ],
+        "certificate_path": "cert.pem",
+        "key_path": "private.key"
+      }
     }
-     {
-       "tag": "tuic-in",
-       "type": "tuic",
-       "listen": "::",
-       "listen_port": $tuic_port,
-       "users": [
-         {
-           "uuid": "$UUID",
-           "password": "admin123"
-         }
-       ],
-       "congestion_control": "bbr",
-       "tls": {
-         "enabled": true,
-         "alpn": [
-           "h3"
-         ],
-         "certificate_path": "cert.pem",
-         "key_path": "private.key"
-       }
-     }
-
- ],
-    "outbounds": [
+  ],
+  "outbounds": [
     {
       "type": "direct",
       "tag": "direct"
@@ -427,7 +425,7 @@ generate_config() {
         "format": "binary",
         "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/openai.srs",
         "download_detour": "direct"
-      },      
+      },
       {
         "tag": "geosite-category-ads-all",
         "type": "remote",
@@ -437,16 +435,15 @@ generate_config() {
       }
     ],
     "final": "direct"
-   },
-   "experimental": {
-      "cache_file": {
+  },
+  "experimental": {
+    "cache_file": {
       "path": "cache.db",
       "cache_id": "mycacheid",
       "store_fakeip": true
     }
   }
-}
-EOF
+}EOF
 }
 # running files
 run_sb() {
