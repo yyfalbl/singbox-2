@@ -330,27 +330,27 @@ generate_config() {
             }
         }
     }
-    # {
-    #   "tag": "tuic-in",
-    #   "type": "tuic",
-    #   "listen": "::",
-    #   "listen_port": $tuic_port,
-    #   "users": [
-    #     {
-    #       "uuid": "$UUID",
-    #       "password": "admin123"
-    #     }
-    #   ],
-    #   "congestion_control": "bbr",
-    #   "tls": {
-    #     "enabled": true,
-    #     "alpn": [
-    #       "h3"
-    #     ],
-    #     "certificate_path": "cert.pem",
-    #     "key_path": "private.key"
-    #   }
-    # }
+     {
+       "tag": "tuic-in",
+       "type": "tuic",
+       "listen": "::",
+       "listen_port": $tuic_port,
+       "users": [
+         {
+           "uuid": "$UUID",
+           "password": "admin123"
+         }
+       ],
+       "congestion_control": "bbr",
+       "tls": {
+         "enabled": true,
+         "alpn": [
+           "h3"
+         ],
+         "certificate_path": "cert.pem",
+         "key_path": "private.key"
+       }
+     }
 
  ],
     "outbounds": [
