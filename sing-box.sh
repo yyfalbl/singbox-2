@@ -150,7 +150,7 @@ install_singbox() {
             # read_nz_variables
             read_vless_port
             read_hy2_port
-            read_tuic_port
+            #read_tuic_port
             download_singbox && wait
             generate_config
             run_sb && sleep 3
