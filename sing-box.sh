@@ -27,8 +27,7 @@ check_singbox_installed() {
     fi
 }
 
-# Example usage
-check_singbox_installed
+
 
 # Function to check if sing-box is running
 check_web_status() {
@@ -515,6 +514,8 @@ menu() {
    echo -e "${green}脚本地址：${re}${yellow}https://github.com/yyfalbl/singbox-2${re}\n"
    purple "*****转载请著名出处，请勿滥用*****\n"
    echo ""
+   # Example usage
+check_singbox_installed
 # 显示 web 进程状态（仅在 sing-box 已安装时显示）
    if is_singbox_installed; then
       echo ""  # 添加空行
