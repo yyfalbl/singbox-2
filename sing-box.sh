@@ -1,16 +1,43 @@
 #!/bin/bash
-
-# 定义颜色
-re="\033[0m"
+# Define colors
+reset_color="\033[0m"
 red="\033[1;91m"
-green="\e[1;32m"
-yellow="\e[1;33m"
-purple="\e[1;35m"
-red() { echo -e "\e[1;91m$1\033[0m"; }
-green() { echo -e "\e[1;32m$1\033[0m"; }
-yellow() { echo -e "\e[1;33m$1\033[0m"; }
-purple() { echo -e "\e[1;35m$1\033[0m"; }
+green="\033[1;32m"
+yellow="\033[1;33m"
+purple="\033[1;35m"
+
+# Color output functions
+red() { echo -e "${red}$1${reset_color}"; }
+green() { echo -e "${green}$1${reset_color}"; }
+yellow() { echo -e "${yellow}$1${reset_color}"; }
+purple() { echo -e "${purple}$1${reset_color}"; }
 reading() { read -p "$(red "$1")" "$2"; }
+#bold_italic_red() { echo -e "${red}\033[3m$1${reset_color}"; }
+bold_italic_green() { echo -e "${green}\033[3m$1${reset_color}"; }
+bold_italic_red() {
+    echo -e "\033[1;3;31m$1\033[0m"  # Red text
+}
+
+# Function to check if sing-box is installed
+check_singbox_installed() {
+    if [ -e "$HOME/web" ] && [ -e "$HOME/npm" ]; then
+        echo -e "$(bold_italic_green "sing-box is installed.")"
+    else
+        echo -e "$(bold_italic_red "sing-box is not installed.")"
+    fi
+}
+
+# Example usage
+check_singbox_installed
+
+# Function to check if sing-box is running
+check_web_status() {
+    if pgrep -x "web" > /dev/null; then
+        echo -e "$(bold_italic_green "sing-box Running！")"
+    else
+        echo -e "$(bold_italic_red "sing-box Notrunning")"
+    fi
+}
 
 USERNAME=$(whoami)
 HOSTNAME=$(hostname)
@@ -86,28 +113,31 @@ read_nz_variables() {
 }
 
 install_singbox() {
-echo -e "${yellow}本脚本同时二协议共存${purple}(vless-reality|hysteria2)${re}"
-echo -e "${yellow}开始运行前，请确保在面板${purple}已开放2个端口，一个tcp端口和一个udp端口${re}"
-echo -e "${yellow}面板${purple}Additional services中的Run your own applications${yellow}已开启为${purplw}Enabled${yellow}状态${re}"
-reading "\n确定继续安装吗？【y/n】: " choice
-  case "$choice" in
-    [Yy])
-        cd $WORKDIR
-        read_nz_variables
-        read_vless_port
-        read_hy2_port
-        # read_tuic_port
-        download_singbox && wait
-        generate_config
-        run_sb && sleep 3
-        get_links
-      ;;
-    [Nn]) exit 0 ;;
-    *) red "无效的选择，请输入y或n" && menu ;;
-  esac
+    echo "正在安装，请稍后......"
+    echo -e "${yellow}本脚本同时二协议共存${purple}(vless-reality|hysteria2)${re}"
+    echo -e "${yellow}开始运行前，请确保在面板${purple}已开放2个端口，一个tcp端口和一个udp端口${re}"
+    echo -e "${yellow}面板${purple}Additional services中的Run your own applications${yellow}已开启为${purplw}Enabled${yellow}状态${re}"
+    reading "\n确定继续安装吗？【y/n】: " choice
+    case "$choice" in
+        [Yy])
+            cd $HOME
+            read_nz_variables
+            read_vless_port
+            read_hy2_port
+            # read_tuic_port
+            download_singbox && wait
+            generate_config
+            run_sb && sleep 3
+            get_links
+            echo "安装完成！"
+            ;;
+        [Nn]) exit 0 ;;
+        *) red "无效的选择，请输入y或n" && menu ;;
+    esac
 }
 
 uninstall_singbox() {
+echo "正在卸载sing-box，请稍后......"
   reading "\n确定要卸载吗？【y/n】: " choice
     case "$choice" in
        [Yy])
@@ -115,6 +145,7 @@ uninstall_singbox() {
           kill -9 $(ps aux | grep '[b]ot' | awk '{print $2}')
           kill -9 $(ps aux | grep '[n]pm' | awk '{print $2}')
           rm -rf $WORKDIR
+          purple "卸载完成！"
           ;;
         [Nn]) exit 0 ;;
         *) red "无效的选择，请输入y或n" && menu ;;
@@ -392,8 +423,21 @@ run_sb() {
 }
 
 get_links(){
+# 提示用户输入IP地址
+read -p "请输入IP地址（或按回车自动检测）: " user_ip
+
+# 如果用户输入了IP地址，使用用户提供的IP地址
+if [ -n "$user_ip" ]; then
+    IP=$user_ip
+else
+    # 自动检测IP地址
+    IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
+fi
+
+# 输出最终使用的IP地址
+echo "设备的IP地址是: $IP"
 # get ip
-IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
+#IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
 sleep 1
 # get ipinfo
 ISP=$(curl -s https://speed.cloudflare.com/meta | awk -F\" '{print $26"-"$18}' | sed -e 's/ /_/g') 
@@ -412,31 +456,95 @@ sleep 3
 rm -rf npm boot.log sb.log core
 
 }
+# 定义颜色函数
+green() { echo -e "\e[1;32m$1\033[0m"; }
+red() { echo -e "\e[1;91m$1\033[0m"; }
+purple() { echo -e "\e[1;35m$1\033[0m"; }
+reading() { read -p "$(red "$1")" "$2"; }
 
-#主菜单
+# 启动 web 函数
+start_web() {
+    # Save the cursor position
+    echo -n "正在启动web进程，请稍后......"
+    local msg_length=${#msg}
+    sleep 1  # Optional: pause for a brief moment before starting the process
+
+    if [ -e "$HOME/web" ]; then
+        chmod +x "$HOME/web"
+        nohup "$HOME/web" run -c "$HOME/config.json" >/dev/null 2>&1 &
+        sleep 2
+
+        if pgrep -x "web" > /dev/null; then
+            # Clear the initial message and move to the next line
+            echo -ne "\r\033[K"
+            green "web进程启动成功，并正在运行！ "
+        else
+            # Clear the initial message and move to the next line
+            echo -ne "\r\033[K"
+            red "web进程启动失败，请重试... "
+        fi
+    else
+        # Clear the initial message and move to the next line
+        echo -ne "\r\033[K"
+        red "web可执行文件未找到.请检查路径正确否？ "
+    fi
+}
+
+
+# 检查 sing-box 是否已安装
+is_singbox_installed() {
+    [ -e "$HOME/web" ] || [ -e "$HOME/npm" ]
+}
+
+# 终止所有进程
+kill_all_tasks() {
+  echo -n -e "\033[1;91m正在清理所有进程，请稍后......\033[0m"
+  sleep 1  # Optional: pause for a brief moment before killing tasks
+  killall -u $(whoami) # 终止所有属于当前用户的进程
+  echo "已成功清理所有进程。"
+  sleep 2  # Optional: pause to allow the user to see the message before exiting
+}
+
+
+# 主菜单
 menu() {
    clear
    echo ""
    purple "=== Serv00|sing-box一键安装脚本 ===\n"
    purple "=== 转载老王脚本，去除tuic协议，增加UUID自动生成 ===\n"
-   echo -e "${green}脚本地址：${re}${yellow}https://github.com/eooce/Sing-box${re}\n"
-   purple "转载请著名出处，请勿滥用\n"
+   echo -e "${green}脚本地址：${re}${yellow}https://github.com/yyfalbl/singbox-2${re}\n"
+   purple "*****转载请著名出处，请勿滥用*****\n"
+   echo ""
+# 显示 web 进程状态（仅在 sing-box 已安装时显示）
+   if is_singbox_installed; then
+      echo ""  # 添加空行
+       echo -e "$(check_web_status)"
+       echo ""  # 添加空行
+   fi
+   echo ""
    green "1. 安装sing-box"
    echo  "==============="
    red "2. 卸载sing-box"
    echo  "==============="
    green "3. 查看节点信息"
    echo  "==============="
+   yellow "4. 清理所有进程"
+   echo  "==============="
+   green "5. 启动web服务"
+   echo  "==============="
    red "0. 退出脚本"
    echo "==========="
-   reading "请输入选择(0-3): " choice
+   reading "请输入选择(0-5): " choice
    echo ""
     case "${choice}" in
         1) install_singbox ;;
         2) uninstall_singbox ;; 
-        3) cat $WORKDIR/list.txt ;; 
+        3) cat $HOME/list.txt ;;
+        4) kill_all_tasks ;;
+        5) start_web ;;
         0) exit 0 ;;
-        *) red "无效的选项，请输入 0 到 3" ;;
+        *) red "无效的选项，请输入 0 到 5" ;;
     esac
 }
+
 menu
