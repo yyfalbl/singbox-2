@@ -160,12 +160,12 @@ RESET="\033[0m"
   
 #安装sing-box
 install_singbox() {
-    echo -e "${bold_italic_yellow}本脚本可以选择性安装四种协议 ${bold_italic_purple}(vless-reality | vmess | hysteria2 | tuic | 固定argo隧道 )${RESET}"
+     echo -e "${bold_italic_yellow}本脚本可以选择性安装四种协议 ${bold_italic_purple}(vless-reality | vmess | hysteria2 | tuic | 固定argo隧道 )${RESET}"
     echo -e "${bold_italic_yellow}开始运行前，请确保面板中 ${bold_italic_purple}已开放3个端口，一个TCP端口，两个UDP端口${RESET}"
     echo -e "${bold_italic_yellow}面板中 ${bold_italic_purple}Additional services中的Run your own applications${bold_italic_yellow}选项已开启为 ${bold_italic_purple}Enabled${bold_italic_yellow} 状态${RESET}"
 
     # 使用黄色粗体显示提示信息
-    echo -e "${bold_italic_yellow}确定继续安装吗?<ENTER默认安装>【y/n】${RESET}: "
+   echo -e "${bold_italic_yellow}确定继续安装吗?<ENTER默认安装>【y/n】${reset}: "
     read -p "" choice
     choice=${choice:-y}  # Default to y
 
@@ -174,119 +174,95 @@ install_singbox() {
         exit 0
     fi
 
-    while true; do
-        # Display service options with numbers
-        echo -e "${GREEN}\033[1m\033[3m请选择需要安装的服务（请输入对应的序号）：${RESET}"
-        echo -e "${bold_italic_yellow}1: vless-reality${RESET}"
-        echo -e "${bold_italic_yellow}2: vmess${RESET}"
-        echo -e "${bold_italic_yellow}3: hysteria2${RESET}"
-        echo -e "${bold_italic_yellow}4: tuic${RESET}"
-        echo -e "${bold_italic_yellow}5: 安装两个协议${RESET}"
-        echo -e "${bold_italic_yellow}6: 全部安装（注意只能选择性安装3个协议）${RESET}"
-        read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " main_choice
+    # Continue with the installation process
+    WORKDIR="$HOME/sbox"
+    mkdir -p "$WORKDIR"
+    cd "$WORKDIR"
 
-        # Initialize installation variables
-        INSTALL_VLESS="false"
-        INSTALL_VMESS="false"
-        INSTALL_HYSTERIA2="false"
-        INSTALL_TUIC="false"
+    # Set certificate and key paths
+    CERT_PATH="${HOME}/sbox/cert.pem"
+    PRIVATE_KEY_PATH="${HOME}/sbox/private.key"
 
-        case "$main_choice" in
+    # Display service options with numbers
+    echo -e "${GREEN}\033[1m\033[3m请选择需要安装的服务（请输入对应的序号）：${RESET}"
+  echo -e "${bold_italic_yellow}1: vless-reality${RESET}"
+  echo -e "${bold_italic_yellow}2: vmess${RESET}"
+
+echo -e "${bold_italic_yellow}4: hysteria2${RESET}"
+echo -e "${bold_italic_yellow}5: tuic${RESET}"
+echo -e "${bold_italic_yellow}6: 全部安装(注意只能选择性安装3个协议)${RESET}"
+read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " choices
+
+
+    # Initialize installation variables
+    INSTALL_VLESS="false"
+    INSTALL_VMESS="false"
+    INSTALL_HYSTERIA2="false"
+    INSTALL_TUIC="false"
+
+    # Process user input
+    for choice in $choices; do
+        case "$choice" in
             1) INSTALL_VLESS="true" ;;
             2) INSTALL_VMESS="true" ;;
             3) INSTALL_HYSTERIA2="true" ;;
             4) INSTALL_TUIC="true" ;;
-            5)
-                echo -e "${bold_italic_yellow}由于端口限制，你只能选择最多三个协议。请选择两个协议的序号（用空格分隔）：${RESET}"
-                read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " two_choices
-                for choice in $two_choices; do
-                    case "$choice" in
-                        1) INSTALL_VLESS="true" ;;
-                        2) INSTALL_VMESS="true" ;;
-                        3) INSTALL_HYSTERIA2="true" ;;
-                        4) INSTALL_TUIC="true" ;;
-                        *) echo -e "$(bold_italic_red "无效的选择: $choice")" ;;
-                    esac
-                done
-                ;;
-            6)
-                echo -e "${bold_italic_yellow}由于端口限制，你只能选择最多三个协议。请重新选择三个协议的序号（用空格分隔）：${RESET}"
-                read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " three_choices
-                for choice in $three_choices; do
-                    case "$choice" in
-                        1) INSTALL_VLESS="true" ;;
-                        2) INSTALL_VMESS="true" ;;
-                        3) INSTALL_HYSTERIA2="true" ;;
-                        4) INSTALL_TUIC="true" ;;
-                        *) echo -e "$(bold_italic_red "无效的选择: $choice")" ;;
-                    esac
-                done
-                ;;
-            *) echo -e "$(bold_italic_red "无效的选择: $main_choice")" ;;
+            5) INSTALL_VLESS="true"; INSTALL_HYSTERIA2="true"; INSTALL_TUIC="true" ;;
+            *) echo -e "$(bold_italic_red "无效的选择: $choice")" ;;
         esac
-
-        # Ensure at least one service is selected
-        if [ "$INSTALL_VLESS" = "false" ] && [ "$INSTALL_VMESS" = "false" ] && [ "$INSTALL_HYSTERIA2" = "false" ] && [ "$INSTALL_TUIC" = "false" ]; then
-            echo -e "$(bold_italic_red "未选择任何服务")"
-            continue
-        fi
-
-        # Read port numbers for selected services
-        if [ "$INSTALL_VLESS" = "true" ]; then
-            read -p "$(echo -e "${RED}\033[1m\033[3m请输入vless-reality端口 (面板开放的tcp端口): ${RESET}")" vless_port
-        fi
-
-        if [ "$INSTALL_VMESS" = "true" ]; then
-            read -p "$(echo -e "${RED}\033[1m\033[3m请输入vmess端口 (面板开放的tcp端口): ${RESET}")" vmess_port
-        fi
-
-        if [ "$INSTALL_HYSTERIA2" = "true" ]; then
-            read -p "$(echo -e "${RED}\033[1m\033[3m请输入hysteria2端口 (面板开放的udp端口): ${RESET}")" hy2_port
-        fi
-
-        if [ "$INSTALL_TUIC" = "true" ]; then
-            read -p "$(echo -e "${RED}\033[1m\033[3m请输入tuic端口 (面板开放的udp端口): ${RESET}")" tuic_port
-        fi
-
-        argo_configure
-
-        # Download sing-box
-        download_singbox && wait
-
-        # Generate configuration file
-        generate_config
-
-        # Configure services based on user selection
-        if [ "$INSTALL_VLESS" = "true" ]; then
-            echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 VLESS...${RESET}")"
-            # Your VLESS configuration code here
-        fi
-
-        if [ "$INSTALL_VMESS" = "true" ]; then
-            echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 VMESS...${RESET}")"
-            # Your VMESS configuration code here
-        fi
-
-        if [ "$INSTALL_HYSTERIA2" = "true" ]; then
-            echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 Hysteria2...${RESET}")"
-            # Your Hysteria2 configuration code here
-        fi
-
-        if [ "$INSTALL_TUIC" = "true" ]; then
-            echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 TUIC...${RESET}")"
-            # Your TUIC configuration code here
-        fi
-
-        # Run sing-box
-        run_sb && sleep 3
-
-        # Get links
-        get_links
-
-        echo -e "$(bold_italic_purple "安装完成！")"
-        break
     done
-}
+
+    # Read port numbers for selected services
+   if [ "$INSTALL_VLESS" = "true" ]; then
+     read -p "$(echo -e "${RED}\033[1m\033[3m请输入vless-reality端口 (面板开放的tcp端口): ${RESET}")" vless_port
+fi
+
+   if [ "$INSTALL_VMESS" = "true" ]; then
+     read -p "$(echo -e "${RED}\033[1m\033[3m请输入vmess端口 (面板开放的tcp端口): ${RESET}")" vmess_port
+fi
+argo_configure
+if [ "$INSTALL_HYSTERIA2" = "true" ]; then
+read -p "$(echo -e "${RED}\033[1m\033[3m请输入hysteria2端口 (面板开放的udp端口): ${RESET}")" hy2_port
+fi
+
+if [ "$INSTALL_TUIC" = "true" ]; then
+      read -p "$(echo -e "${RED}\033[1m\033[3m请输入tuic端口 (面板开放的udp端口): ${RESET}")" tuic_port
+fi
+    # Download sing-box
+    download_singbox && wait
+
+    # Generate configuration file
+    generate_config
+
+    # Configure services based on user selection
+    if [ "$INSTALL_VLESS" = "true" ]; then
+       echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 VLESS...${RESET}")"
+        # Your VLESS configuration code here
+    fi
+    
+     if [ "$INSTALL_VMESS" = "true" ]; then
+       echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 VMESS...${RESET}")"
+        # Your VMESS configuration code here
+    fi
+
+    if [ "$INSTALL_HYSTERIA2" = "true" ]; then
+     echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 Hysteria2...${RESET}")"
+        # Your Hysteria2 configuration code here
+    fi
+
+    if [ "$INSTALL_TUIC" = "true" ]; then
+       echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 TUIC...${RESET}")"
+        # Your TUIC configuration code here
+    fi
+
+    # Run sing-box
+    run_sb && sleep 3
+
+    # Get links
+    get_links
+    
+    echo -e "$(bold_italic_purple "安装完成！")"
+}   
 
 
 #固定argo隧道
@@ -469,21 +445,15 @@ fi
     ],
     "rules": [
       {
-        "rule_set": [
-          "geosite-openai"
-        ],
+        "rule_set": ["geosite-openai"],
         "server": "wireguard"
       },
       {
-        "rule_set": [
-          "geosite-netflix"
-        ],
+        "rule_set": ["geosite-netflix"],
         "server": "wireguard"
       },
       {
-        "rule_set": [
-          "geosite-category-ads-all"
-        ],
+        "rule_set": ["geosite-category-ads-all"],
         "server": "block"
       }
     ],
@@ -515,9 +485,7 @@ fi
                 "server_port": 443
               },
               "private_key": "'"$private_key"'",
-              "short_id": [
-                ""
-              ]
+              "short_id": [""]
             }
           }
         }'
@@ -554,9 +522,7 @@ fi
           "masquerade": "https://bing.com",
           "tls": {
             "enabled": true,
-            "alpn": [
-              "h3"
-            ],
+            "alpn": ["h3"],
             "certificate_path": "'"$CERT_PATH"'",
             "key_path": "'"$PRIVATE_KEY_PATH"'"
           }
@@ -577,9 +543,7 @@ fi
           "congestion_control": "bbr",
           "tls": {
             "enabled": true,
-            "alpn": [
-              "h3"
-            ],
+            "alpn": ["h3"],
             "certificate_path": "'"$CERT_PATH"'",
             "key_path": "'"$PRIVATE_KEY_PATH"'"
           }
@@ -610,11 +574,7 @@ fi
       ],
       "private_key": "mPZo+V9qlrMGCZ7+E6z2NI6NOV34PD++TpAR09PtCWI=",
       "peer_public_key": "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
-      "reserved": [
-        26,
-        21,
-        228
-      ]
+      "reserved": [26, 21, 228]
     }
   ],
   "route": {
@@ -628,21 +588,15 @@ fi
         "outbound": "direct"
       },
       {
-        "rule_set": [
-          "geosite-openai"
-        ],
+        "rule_set": ["geosite-openai"],
         "outbound": "wireguard-out"
       },
       {
-        "rule_set": [
-          "geosite-netflix"
-        ],
+        "rule_set": ["geosite-netflix"],
         "outbound": "wireguard-out"
       },
       {
-        "rule_set": [
-          "geosite-category-ads-all"
-        ],
+        "rule_set": ["geosite-category-ads-all"],
         "outbound": "block"
       }
     ],
