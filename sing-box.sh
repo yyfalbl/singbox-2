@@ -150,45 +150,47 @@ read_nz_variables() {
   fi
 }
 #固定argo隧道  
- argo_configure() {
-  if [[ -z $ARGO_AUTH || -z $ARGO_DOMAIN ]]; then
-      reading "是否需要使用固定argo隧道？【y/n】: " argo_choice
-      [[ -z $argo_choice ]] && return
-      [[ "$argo_choice" != "y" && "$argo_choice" != "Y" && "$argo_choice" != "n" && "$argo_choice" != "N" ]] && { red "无效的选择，请输入y或n"; return; }
-      if [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
-          # 读取 ARGO_DOMAIN 变量
-          while [[ -z $ARGO_DOMAIN ]]; do
-            reading "请输入argo固定隧道域名: " ARGO_DOMAIN
-            if [[ -z $ARGO_DOMAIN ]]; then
-                red "ARGO固定隧道域名不能为空，请重新输入。"
-            else
-                green "你的argo固定隧道域名为: $ARGO_DOMAIN"
+argo_configure() {
+    if [[ "$INSTALL_VMESS" == "true" ]]; then
+        if [[ -z $ARGO_AUTH || -z $ARGO_DOMAIN ]]; then
+            reading "是否需要使用固定 Argo 隧道？【y/n】: " argo_choice
+            if [[ -z $argo_choice ]]; then
+                return
             fi
-          done
-        
-          # 读取 ARGO_AUTH 变量
-          while [[ -z $ARGO_AUTH ]]; do
-            reading "请输入argo固定隧道密钥（Json或Token）: " ARGO_AUTH
-            if [[ -z $ARGO_AUTH ]]; then
-                red "ARGO固定隧道密钥不能为空，请重新输入。"
-            else
-                green "你的argo固定隧道密钥为: $ARGO_AUTH"
+            if [[ "$argo_choice" != "y" && "$argo_choice" != "Y" && "$argo_choice" != "n" && "$argo_choice" != "N" ]]; then
+                red "无效的选择，请输入 y 或 n"
+                return
             fi
-          done           
-    # reading "请输入argo固定隧道域名: " ARGO_DOMAIN
-   #        green "你的argo固定隧道域名为: $ARGO_DOMAIN"
-   #        reading "请输入argo固定隧道密钥（Json或Token）: " ARGO_AUTH
-   #        green "你的argo固定隧道密钥为: $ARGO_AUTH"
-    echo -e "${red}注意：${purple}使用token，需要在cloudflare后台设置隧道端口和面板开放的tcp端口一致${re}"
-      else
-          green "ARGO隧道变量未设置，将使用临时隧道"
-          return
-      fi
-  fi
 
-  if [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-    echo $ARGO_AUTH > tunnel.json
-    cat > tunnel.yml << EOF
+            if [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
+                while [[ -z $ARGO_DOMAIN ]]; do
+                    reading "请输入 Argo 固定隧道域名: " ARGO_DOMAIN
+                    if [[ -z $ARGO_DOMAIN ]]; then
+                        red "Argo 固定隧道域名不能为空，请重新输入。"
+                    else
+                        green "你的 Argo 固定隧道域名为: $ARGO_DOMAIN"
+                    fi
+                done
+                
+                while [[ -z $ARGO_AUTH ]]; do
+                    reading "请输入 Argo 固定隧道密钥（Json 或 Token）: " ARGO_AUTH
+                    if [[ -z $ARGO_AUTH ]]; then
+                        red "Argo 固定隧道密钥不能为空，请重新输入。"
+                    else
+                        green "你的 Argo 固定隧道密钥为: $ARGO_AUTH"
+                    fi
+                done
+                
+                echo -e "${red}注意：${purple}使用 token，需要在 Cloudflare 后台设置隧道端口和面板开放的 TCP 端口一致${RESET}"
+            else
+                green "ARGO 隧道变量未设置，将使用临时隧道"
+                return
+            fi
+        fi
+
+        if [[ $ARGO_AUTH =~ TunnelSecret ]]; then
+            echo "$ARGO_AUTH" > tunnel.json
+            cat > tunnel.yml <<EOF
 tunnel: $(cut -d\" -f12 <<< "$ARGO_AUTH")
 credentials-file: tunnel.json
 protocol: http2
@@ -200,9 +202,12 @@ ingress:
       noTLSVerify: true
   - service: http_status:404
 EOF
-  else
-    green "ARGO_AUTH mismatch TunnelSecret,use token connect to tunnel"
-  fi
+        else
+            green "ARGO_AUTH 不匹配 TunnelSecret，使用 token 连接到隧道"
+        fi
+    else
+        green "没有选择 vmess 协议，禁止使用 Argo 固定隧道"
+    fi
 }
   
  
@@ -305,8 +310,16 @@ install_singbox() {
         echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 TUIC...${RESET}")"
     fi
 
+ # 运行 sing-box
     run_sb && sleep 3
+
+    # 获取链接
     get_links
+    
+    # 仅在 Argo 配置存在时显示 ArgoDomain 信息
+    if [[ -n $ARGO_DOMAIN ]]; then
+        echo -e "ArgoDomain:${ARGO_DOMAIN}"
+    fi
 
     echo -e "$(bold_italic_purple "安装完成！")"
 }
@@ -862,44 +875,61 @@ printf "${YELLOW}输入选择 (1 或 2): ${RESET}"
 
   sleep 2  # Optional: pause to allow the user to see the message before exiting
 }
+# Define color and formatting functions
+green() {
+    echo -e "\033[0;32m$1\033[0m"
+}
 
+red() {
+    echo -e "\033[0;31m$1\033[0m"
+}
 
+yellow() {
+    echo -e "\033[0;33m$1\033[0m"
+}
+
+purple() {
+    echo -e "\033[0;35m$1\033[0m"
+}
+
+bold_italic() {
+    echo -e "\033[1;3m$1\033[0m"
+}
 # 主菜单
 menu() {
-   clear
-   echo ""
-   purple "=== Serv00|sing-box一键安装脚本 ===\n"
-   purple "=== 脚本更新，VLESS VMESS HY2 TUIC  协议，增加UUID自动生成 ===\n"
+    clear
+    echo ""
+    purple "=== Serv00|sing-box一键安装脚本 ===\n"
+    purple "=== 脚本更新，VLESS VMESS HY2 TUIC  协议，增加UUID自动生成 ===\n"
     purple "===  固定argo隧道 注意最多只能安装三个协议！ ===\n"
-  echo -e "${green}脚本地址：${re}\033[1;3;33mhttps://github.com/yyfalbl/singbox-2\033[0m${re}\n"
-   purple "*****转载请著名出处，请勿滥用*****\n"
-   echo ""
-   # Example usage
-check_singbox_installed
-   echo ""
-# 显示 web 进程状态（仅在 sing-box 已安装时显示）
-  
-      echo ""  # 添加空行
-       check_web_status
-       echo ""  # 添加空行
+    echo -e "${green}脚本地址：${re}\033[1;3;33mhttps://github.com/yyfalbl/singbox-2\033[0m${re}\n"
+    purple "*****转载请著名出处，请勿滥用*****\n"
+    echo ""
+    # Example usage
+    check_singbox_installed
+    echo ""
+    # 显示 web 进程状态（仅在 sing-box 已安装时显示）
+    echo ""  # 添加空行
+    check_web_status
+    echo ""  # 添加空行
 
-   echo ""
-   green "1. 安装sing-box"
-   echo  "==============="
-   red "2. 卸载sing-box"
-   echo  "==============="
-   green "3. 查看节点信息"
-   echo  "==============="
-   yellow "4. 清理系统进程"
-   echo  "==============="
-   green "5. 启动web服务"
-   echo  "==============="
-   green "6. 停止web服务"
-   echo  "==============="
-   red "0. 退出脚本"
-   echo "==========="
-   reading "请输入选择(0-6): " choice
-   echo ""
+    echo ""
+    echo -e "$(bold_italic "$(green "1. 安装sing-box")")"
+    echo "==============="
+    echo -e "$(bold_italic "$(red "2. 卸载sing-box")")"
+    echo "==============="
+    echo -e "$(bold_italic "$(green "3. 查看节点信息")")"
+    echo "==============="
+    echo -e "$(bold_italic "$(yellow "4. 清理系统进程")")"
+    echo "==============="
+    echo -e "$(bold_italic "$(green "5. 启动web服务")")"
+    echo "==============="
+    echo -e "$(bold_italic "$(green "6. 停止web服务")")"
+    echo "==============="
+    echo -e "$(bold_italic "$(red "0. 退出脚本")")"
+    echo "==========="
+    reading "请输入选择(0-6): " choice
+    echo ""
     case "${choice}" in
         1) install_singbox ;;
         2) uninstall_singbox ;;
@@ -908,8 +938,9 @@ check_singbox_installed
         5) start_web ;;
         6) stop_web ;;
         0) exit 0 ;;
-        *) red "无效的选项，请输入 0 到 5" ;;
+        *) red "无效的选项，请输入 0 到 6" ;;
     esac
 }
 
+# Call the menu function
 menu
