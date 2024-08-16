@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 # Color definitions
@@ -247,7 +248,7 @@ install_singbox() {
     echo -e "${bold_italic_yellow}3: hysteria2${RESET}"
     echo -e "${bold_italic_yellow}4: tuic${RESET}"
     echo -e "${bold_italic_yellow}5: 安装两个协议${RESET}"
-    echo -e "${bold_italic_yellow}6: 安装三个协议${RESET}"
+    echo -e "${bold_italic_yellow}6: 安装三个协议(面板端口限制)${RESET}"
     read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " choices
 
     INSTALL_VLESS="false"
@@ -875,61 +876,44 @@ printf "${YELLOW}输入选择 (1 或 2): ${RESET}"
 
   sleep 2  # Optional: pause to allow the user to see the message before exiting
 }
-# Define color and formatting functions
-green() {
-    echo -e "\033[0;32m$1\033[0m"
-}
 
-red() {
-    echo -e "\033[0;31m$1\033[0m"
-}
 
-yellow() {
-    echo -e "\033[0;33m$1\033[0m"
-}
-
-purple() {
-    echo -e "\033[0;35m$1\033[0m"
-}
-
-bold_italic() {
-    echo -e "\033[1;3m$1\033[0m"
-}
 # 主菜单
 menu() {
-    clear
-    echo ""
-    purple "=== Serv00|sing-box一键安装脚本 ===\n"
-    purple "=== 脚本更新，VLESS VMESS HY2 TUIC  协议，增加UUID自动生成 ===\n"
+   clear
+   echo ""
+   purple "=== Serv00|sing-box一键安装脚本 ===\n"
+   purple "=== 脚本更新，VLESS VMESS HY2 TUIC  协议，增加UUID自动生成 ===\n"
     purple "===  固定argo隧道 注意最多只能安装三个协议！ ===\n"
-    echo -e "${green}脚本地址：${re}\033[1;3;33mhttps://github.com/yyfalbl/singbox-2\033[0m${re}\n"
-    purple "*****转载请著名出处，请勿滥用*****\n"
-    echo ""
-    # Example usage
-    check_singbox_installed
-    echo ""
-    # 显示 web 进程状态（仅在 sing-box 已安装时显示）
-    echo ""  # 添加空行
-    check_web_status
-    echo ""  # 添加空行
+  echo -e "${green}脚本地址：${re}\033[1;3;33mhttps://github.com/yyfalbl/singbox-2\033[0m${re}\n"
+   purple "*****转载请著名出处，请勿滥用*****\n"
+   echo ""
+   # Example usage
+check_singbox_installed
+   echo ""
+# 显示 web 进程状态（仅在 sing-box 已安装时显示）
+  
+      echo ""  # 添加空行
+       check_web_status
+       echo ""  # 添加空行
 
-    echo ""
-    echo -e "$(bold_italic "$(green "1. 安装sing-box")")"
-    echo "==============="
-    echo -e "$(bold_italic "$(red "2. 卸载sing-box")")"
-    echo "==============="
-    echo -e "$(bold_italic "$(green "3. 查看节点信息")")"
-    echo "==============="
-    echo -e "$(bold_italic "$(yellow "4. 清理系统进程")")"
-    echo "==============="
-    echo -e "$(bold_italic "$(green "5. 启动web服务")")"
-    echo "==============="
-    echo -e "$(bold_italic "$(green "6. 停止web服务")")"
-    echo "==============="
-    echo -e "$(bold_italic "$(red "0. 退出脚本")")"
-    echo "==========="
-    reading "请输入选择(0-6): " choice
-    echo ""
+   echo ""
+   green "1. 安装sing-box"
+   echo  "==============="
+   red "2. 卸载sing-box"
+   echo  "==============="
+   green "3. 查看节点信息"
+   echo  "==============="
+   yellow "4. 清理系统进程"
+   echo  "==============="
+   green "5. 启动web服务"
+   echo  "==============="
+   green "6. 停止web服务"
+   echo  "==============="
+   red "0. 退出脚本"
+   echo "==========="
+   reading "请输入选择(0-6): " choice
+   echo ""
     case "${choice}" in
         1) install_singbox ;;
         2) uninstall_singbox ;;
@@ -938,9 +922,9 @@ menu() {
         5) start_web ;;
         6) stop_web ;;
         0) exit 0 ;;
-        *) red "无效的选项，请输入 0 到 6" ;;
+        *) red "无效的选项，请输入 0 到 5" ;;
     esac
 }
 
-# Call the menu function
 menu
+
