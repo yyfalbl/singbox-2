@@ -149,133 +149,10 @@ read_nz_variables() {
       green "你的哪吒密钥为: $NEZHA_KEY"
   fi
 }
- 
-# 定义颜色
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-  GREEN='\033[1;32m'
-  bold_italic_yellow="\033[1;3;33m"
-bold_italic_purple="\033[1;3;35m"
-RESET="\033[0m"
-  
-#安装sing-box
-install_singbox() {
-     echo -e "${bold_italic_yellow}本脚本可以选择性安装四种协议 ${bold_italic_purple}(vless-reality | vmess | hysteria2 | tuic | 固定argo隧道 )${RESET}"
-    echo -e "${bold_italic_yellow}开始运行前，请确保面板中 ${bold_italic_purple}已开放3个端口，一个TCP端口，两个UDP端口${RESET}"
-    echo -e "${bold_italic_yellow}面板中 ${bold_italic_purple}Additional services中的Run your own applications${bold_italic_yellow}选项已开启为 ${bold_italic_purple}Enabled${bold_italic_yellow} 状态${RESET}"
-
-    # 使用黄色粗体显示提示信息
-   echo -e "${bold_italic_yellow}确定继续安装吗?<ENTER默认安装>【y/n】${reset}: "
-    read -p "" choice
-    choice=${choice:-y}  # Default to y
-
-    if [[ "$choice" != [Yy] ]]; then
-        echo -e "$(bold_italic_red "安装已取消")"
-        exit 0
-    fi
-
-    # Continue with the installation process
-    WORKDIR="$HOME/sbox"
-    mkdir -p "$WORKDIR"
-    cd "$WORKDIR"
-
-    # Set certificate and key paths
-    CERT_PATH="${HOME}/sbox/cert.pem"
-    PRIVATE_KEY_PATH="${HOME}/sbox/private.key"
-
-    # Display service options with numbers
-    echo -e "${GREEN}\033[1m\033[3m请选择需要安装的服务（请输入对应的序号）：${RESET}"
-  echo -e "${bold_italic_yellow}1: vless-reality${RESET}"
-  echo -e "${bold_italic_yellow}2: vmess${RESET}"
-
-echo -e "${bold_italic_yellow}4: hysteria2${RESET}"
-echo -e "${bold_italic_yellow}5: tuic${RESET}"
-echo -e "${bold_italic_yellow}6: 全部安装(注意只能选择性安装3个协议)${RESET}"
-read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " choices
-
-
-    # Initialize installation variables
-    INSTALL_VLESS="false"
-    INSTALL_VMESS="false"
-    INSTALL_HYSTERIA2="false"
-    INSTALL_TUIC="false"
-
-    # Process user input
-    for choice in $choices; do
-        case "$choice" in
-            1) INSTALL_VLESS="true" ;;
-            2) INSTALL_VMESS="true" ;;
-            3) INSTALL_HYSTERIA2="true" ;;
-            4) INSTALL_TUIC="true" ;;
-            5) INSTALL_VLESS="true"; INSTALL_HYSTERIA2="true"; INSTALL_TUIC="true" ;;
-            *) echo -e "$(bold_italic_red "无效的选择: $choice")" ;;
-        esac
-    done
-
-    # Read port numbers for selected services
-   if [ "$INSTALL_VLESS" = "true" ]; then
-     read -p "$(echo -e "${RED}\033[1m\033[3m请输入vless-reality端口 (面板开放的tcp端口): ${RESET}")" vless_port
-fi
-
-   if [ "$INSTALL_VMESS" = "true" ]; then
-     read -p "$(echo -e "${RED}\033[1m\033[3m请输入vmess端口 (面板开放的tcp端口): ${RESET}")" vmess_port
-fi
-argo_configure
-if [ "$INSTALL_HYSTERIA2" = "true" ]; then
-read -p "$(echo -e "${RED}\033[1m\033[3m请输入hysteria2端口 (面板开放的udp端口): ${RESET}")" hy2_port
-fi
-
-if [ "$INSTALL_TUIC" = "true" ]; then
-      read -p "$(echo -e "${RED}\033[1m\033[3m请输入tuic端口 (面板开放的udp端口): ${RESET}")" tuic_port
-fi
-    # Download sing-box
-    download_singbox && wait
-
-    # Generate configuration file
-    generate_config
-
-    # Configure services based on user selection
-    if [ "$INSTALL_VLESS" = "true" ]; then
-       echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 VLESS...${RESET}")"
-        # Your VLESS configuration code here
-    fi
-    
-     if [ "$INSTALL_VMESS" = "true" ]; then
-       echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 VMESS...${RESET}")"
-        # Your VMESS configuration code here
-    fi
-
-    if [ "$INSTALL_HYSTERIA2" = "true" ]; then
-     echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 Hysteria2...${RESET}")"
-        # Your Hysteria2 configuration code here
-    fi
-
-    if [ "$INSTALL_TUIC" = "true" ]; then
-       echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 TUIC...${RESET}")"
-        # Your TUIC configuration code here
-    fi
-
-    # Run sing-box
-    run_sb && sleep 3
-
-    # Get links
-    get_links
-    
-    echo -e "$(bold_italic_purple "安装完成！")"
-}   
-
-
-#固定argo隧道
-argo_configure() {
-    
-    # Define color codes
-BRIGHT_BLUE='\033[38;5;33m' # Bright blue color
-BOLD='\033[1m'             # Bold text
-ITALIC='\033[3m'           # Italic text
-RESET='\033[0m'            # Reset to default
-    
+#固定argo隧道  
+ argo_configure() {
   if [[ -z $ARGO_AUTH || -z $ARGO_DOMAIN ]]; then
-     reading "${BRIGHT_BLUE}${BOLD}${ITALIC}是否需要使用固定argo隧道？【y/n】：${RESET}" argo_choice
+      reading "是否需要使用固定argo隧道？【y/n】: " argo_choice
       [[ -z $argo_choice ]] && return
       [[ "$argo_choice" != "y" && "$argo_choice" != "Y" && "$argo_choice" != "n" && "$argo_choice" != "N" ]] && { red "无效的选择，请输入y或n"; return; }
       if [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
@@ -328,6 +205,112 @@ EOF
   fi
 }
   
+ 
+# 定义颜色
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+  GREEN='\033[1;32m'
+  bold_italic_yellow="\033[1;3;33m"
+bold_italic_purple="\033[1;3;35m"
+RESET="\033[0m"
+  
+#安装sing-box
+install_singbox() {
+    echo -e "${bold_italic_yellow}本脚本可以选择性安装四种协议 ${bold_italic_purple}(vless-reality | vmess | hysteria2 | tuic | 固定argo隧道 )${RESET}"
+    echo -e "${bold_italic_yellow}开始运行前，请确保面板中 ${bold_italic_purple}已开放3个端口，一个TCP端口，两个UDP端口${RESET}"
+    echo -e "${bold_italic_yellow}面板中 ${bold_italic_purple}Additional services中的Run your own applications${bold_italic_yellow}选项已开启为 ${bold_italic_purple}Enabled${bold_italic_yellow} 状态${RESET}"
+
+    echo -e "${bold_italic_yellow}确定继续安装吗?<ENTER默认安装>【y/n】${reset}: "
+    read -p "" choice
+    choice=${choice:-y}  # Default to y
+
+    if [[ "$choice" != [Yy] ]]; then
+        echo -e "$(bold_italic_red "安装已取消")"
+        exit 0
+    fi
+
+    WORKDIR="$HOME/sbox"
+    mkdir -p "$WORKDIR"
+    cd "$WORKDIR"
+
+    CERT_PATH="${HOME}/sbox/cert.pem"
+    PRIVATE_KEY_PATH="${HOME}/sbox/private.key"
+
+    echo -e "${GREEN}\033[1m\033[3m请选择需要安装的服务（请输入对应的序号）：${RESET}"
+    echo -e "${bold_italic_yellow}1: vless-reality${RESET}"
+    echo -e "${bold_italic_yellow}2: vmess${RESET}"
+    echo -e "${bold_italic_yellow}3: hysteria2${RESET}"
+    echo -e "${bold_italic_yellow}4: tuic${RESET}"
+    echo -e "${bold_italic_yellow}5: 安装两个协议${RESET}"
+    echo -e "${bold_italic_yellow}6: 安装三个协议${RESET}"
+    read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " choices
+
+    INSTALL_VLESS="false"
+    INSTALL_VMESS="false"
+    INSTALL_HYSTERIA2="false"
+    INSTALL_TUIC="false"
+
+    if [[ "$choices" == "5" ]]; then
+        echo -e "${bold_italic_yellow}请选择要安装的两个协议（请输入对应的序号，用空格分隔）${RESET}"
+        read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " choices
+    elif [[ "$choices" == "6" ]]; then
+        echo -e "${bold_italic_yellow}请选择要安装的三个协议（请输入对应的序号，用空格分隔）${RESET}"
+        read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " choices
+    fi
+
+    for choice in $choices; do
+        case "$choice" in
+            1) INSTALL_VLESS="true" ;;
+            2) INSTALL_VMESS="true" ;;
+            3) INSTALL_HYSTERIA2="true" ;;
+            4) INSTALL_TUIC="true" ;;
+            *) echo -e "$(bold_italic_red "无效的选择: $choice")" ;;
+        esac
+    done
+
+    if [ "$INSTALL_VLESS" = "true" ]; then
+        read -p "$(echo -e "${RED}\033[1m\033[3m请输入vless-reality端口 (面板开放的tcp端口): ${RESET}")" vless_port
+    fi
+
+    if [ "$INSTALL_VMESS" = "true" ]; then
+        read -p "$(echo -e "${RED}\033[1m\033[3m请输入vmess端口 (面板开放的tcp端口): ${RESET}")" vmess_port
+    fi
+
+    argo_configure
+
+    if [ "$INSTALL_HYSTERIA2" = "true" ]; then
+        read -p "$(echo -e "${RED}\033[1m\033[3m请输入hysteria2端口 (面板开放的udp端口): ${RESET}")" hy2_port
+    fi
+
+    if [ "$INSTALL_TUIC" = "true" ]; then
+        read -p "$(echo -e "${RED}\033[1m\033[3m请输入tuic端口 (面板开放的udp端口): ${RESET}")" tuic_port
+    fi
+
+    download_singbox && wait
+    generate_config
+
+    if [ "$INSTALL_VLESS" = "true" ]; then
+        echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 VLESS...${RESET}")"
+    fi
+
+    if [ "$INSTALL_VMESS" = "true" ]; then
+        echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 VMESS...${RESET}")"
+    fi
+
+    if [ "$INSTALL_HYSTERIA2" = "true" ]; then
+        echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 Hysteria2...${RESET}")"
+    fi
+
+    if [ "$INSTALL_TUIC" = "true" ]; then
+        echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 TUIC...${RESET}")"
+    fi
+
+    run_sb && sleep 3
+    get_links
+
+    echo -e "$(bold_italic_purple "安装完成！")"
+}
+
 uninstall_singbox() {
     echo -e "$(bold_italic_purple "正在卸载sing-box，请稍后...")"
     read -p $'\033[1;3;38;5;220m确定要卸载吗?<ENTER默认Y>【y/n】:\033[0m ' choice
@@ -420,11 +403,11 @@ generate_config() {
     openssl ecparam -genkey -name prime256v1 -out "$WORKDIR/private.key"
     openssl req -new -x509 -days 3650 -key "$WORKDIR/private.key" -out "$WORKDIR/cert.pem" -subj "/CN=$HOSTNAME"
 
-   # 确保用户提供了端口号
-if [ -z "$vless_port" ] && [ -z "$vmess_port" ] && [ -z "$hy2_port" ] && [ -z "$tuic_port" ]; then
-    echo "Error: No port number provided. Configuration file will not be generated."
-    return 1
-fi
+    # 确保用户提供了端口号
+    if [ -z "$vless_port" ] && [ -z "$vmess_port" ] && [ -z "$hy2_port" ] && [ -z "$tuic_port" ]; then
+        echo "Error: No port number provided. Configuration file will not be generated."
+        return 1
+    fi
 
     # Create configuration file based on selected services
     cat > "$WORKDIR/config.json" <<EOF
@@ -463,92 +446,121 @@ fi
     "disable_expire": false
   },
   "inbounds": [
-    $(if [ "$INSTALL_VLESS" = "true" ]; then
-        echo '{
-          "tag": "vless-reality-version",
-          "type": "vless",
-          "listen": "::",
-          "listen_port": '"$vless_port"',
-          "users": [
-            {
-              "uuid": "'"$UUID"'",
-              "flow": "xtls-rprx-vision"
-            }
-          ],
-          "tls": {
-            "enabled": true,
-            "server_name": "www.ups.com",
-            "reality": {
-              "enabled": true,
-              "handshake": {
-                "server": "www.ups.com",
-                "server_port": 443
-              },
-              "private_key": "'"$private_key"'",
-              "short_id": [""]
-            }
-          }
-        }'
-      fi)
-    $(if [ "$INSTALL_VMESS" = "true" ]; then
-        echo '{
-          "tag": "vmess-ws-in",
-          "type": "vmess",
-          "listen": "::",
-          "listen_port": '"$vmess_port"',
-          "users": [
-            {
-              "uuid": "'"$UUID"'"
-            }
-          ],
-          "transport": {
-            "type": "ws",
-            "path": "/vmess",
-            "early_data_header_name": "Sec-WebSocket-Protocol"
-          }
-        }'
-      fi)
-    $(if [ "$INSTALL_HYSTERIA2" = "true" ]; then
-        echo '{
-          "tag": "hysteria-in",
-          "type": "hysteria2",
-          "listen": "::",
-          "listen_port": '"$hy2_port"',
-          "users": [
-            {
-              "password": "'"$UUID"'"
-            }
-          ],
-          "masquerade": "https://bing.com",
-          "tls": {
-            "enabled": true,
-            "alpn": ["h3"],
-            "certificate_path": "'"$CERT_PATH"'",
-            "key_path": "'"$PRIVATE_KEY_PATH"'"
-          }
-        }'
-      fi)
-    $(if [ "$INSTALL_TUIC" = "true" ]; then
-        echo '{
-          "tag": "tuic-in",
-          "type": "tuic",
-          "listen": "::",
-          "listen_port": '"$tuic_port"',
-          "users": [
-            {
-              "uuid": "'"$UUID"'",
-              "password": "admin123"
-            }
-          ],
-          "congestion_control": "bbr",
-          "tls": {
-            "enabled": true,
-            "alpn": ["h3"],
-            "certificate_path": "'"$CERT_PATH"'",
-            "key_path": "'"$PRIVATE_KEY_PATH"'"
-          }
-        }'
-      fi)
+EOF
+
+    # Track whether any services are added
+    service_added=false
+
+    # Append VLESS configuration if selected
+    if [ "$INSTALL_VLESS" = "true" ]; then
+        cat >> "$WORKDIR/config.json" <<EOF
+    {
+      "tag": "vless-reality-version",
+      "type": "vless",
+      "listen": "::",
+      "listen_port": $vless_port,
+      "users": [
+        {
+          "uuid": "$UUID",
+          "flow": "xtls-rprx-vision"
+        }
+      ],
+      "tls": {
+        "enabled": true,
+        "server_name": "said.website",
+        "reality": {
+          "enabled": true,
+          "handshake": {
+            "server": "said.website",
+            "server_port": 443
+          },
+          "private_key": "$private_key",
+          "short_id": [""]
+        }
+      }
+    }
+EOF
+        service_added=true
+    fi
+
+    # Append VMESS configuration if selected
+    if [ "$INSTALL_VMESS" = "true" ]; then
+        [ "$service_added" = true ] && echo "," >> "$WORKDIR/config.json"
+        cat >> "$WORKDIR/config.json" <<EOF
+    {
+      "tag": "vmess-ws-in",
+      "type": "vmess",
+      "listen": "::",
+      "listen_port": $vmess_port,
+      "users": [
+        {
+          "uuid": "$UUID"
+        }
+      ],
+      "transport": {
+        "type": "ws",
+        "path": "/vmess",
+        "early_data_header_name": "Sec-WebSocket-Protocol"
+      }
+    }
+EOF
+        service_added=true
+    fi
+
+    # Append Hysteria2 configuration if selected
+    if [ "$INSTALL_HYSTERIA2" = "true" ]; then
+        [ "$service_added" = true ] && echo "," >> "$WORKDIR/config.json"
+        cat >> "$WORKDIR/config.json" <<EOF
+    {
+      "tag": "hysteria-in",
+      "type": "hysteria2",
+      "listen": "::",
+      "listen_port": $hy2_port,
+      "users": [
+        {
+          "password": "$UUID"
+        }
+      ],
+      "masquerade": "https://bing.com",
+      "tls": {
+        "enabled": true,
+        "alpn": ["h3"],
+        "certificate_path": "$CERT_PATH",
+        "key_path": "$PRIVATE_KEY_PATH"
+      }
+    }
+EOF
+        service_added=true
+    fi
+
+    # Append TUIC configuration if selected
+    if [ "$INSTALL_TUIC" = "true" ]; then
+        [ "$service_added" = true ] && echo "," >> "$WORKDIR/config.json"
+        cat >> "$WORKDIR/config.json" <<EOF
+    {
+      "tag": "tuic-in",
+      "type": "tuic",
+      "listen": "::",
+      "listen_port": $tuic_port,
+      "users": [
+        {
+          "uuid": "$UUID",
+          "password": "admin123"
+        }
+      ],
+      "congestion_control": "bbr",
+      "tls": {
+        "enabled": true,
+        "alpn": ["h3"],
+        "certificate_path": "$CERT_PATH",
+        "key_path": "$PRIVATE_KEY_PATH"
+      }
+    }
+EOF
+    fi
+
+    # Continue writing the rest of the configuration
+    cat >> "$WORKDIR/config.json" <<EOF
   ],
   "outbounds": [
     {
@@ -635,6 +647,7 @@ fi
 }
 EOF
 }
+
 
 # running files
 run_sb() {
