@@ -31,7 +31,7 @@ check_web_status() {
 }
 
 # 定义存储 UUID 的文件路径
-UUID_FILE="${HOME}/sbox/.singbox_uuid"
+UUID_FILE="${HOME}/.singbox_uuid"
 
 # Check if UUID file exists
 if [ -f "$UUID_FILE" ]; then
@@ -137,15 +137,11 @@ read_nz_variables() {
 
 #固定argo隧道  
 argo_configure() {
-  red() {
-    echo -e "\\033[1;3;31m$*\\033[0m"
-}
-  
     if [[ "$INSTALL_VMESS" == "true" ]]; then
         reading "是否需要使用固定 Argo 隧道？【y/n】(默认使用临时隧道): " argo_choice
         # 处理用户输入
         if [[ -z $argo_choice ]]; then
-            red "没有输入任何内容，默认使用临时隧道"
+            green "没有输入任何内容，默认使用临时隧道"
             return
         elif [[ "$argo_choice" != "y" && "$argo_choice" != "Y" && "$argo_choice" != "n" && "$argo_choice" != "N" ]]; then
             red "无效的选择，请输入 y 或 n"
@@ -177,8 +173,20 @@ argo_configure() {
             return
         fi
 
+        # 打印调试信息
+        echo "ARGO_AUTH: $ARGO_AUTH"
+        echo "ARGO_DOMAIN: $ARGO_DOMAIN"
+        echo "WORKDIR: $WORKDIR"
+        
+        # 生成 tunnel.yml
         if [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-            echo "$ARGO_AUTH" > "$WORKDIR/tunnel.json"
+            echo "$ARGO_AUTH" > "$WORKDIR/tunnel.json" 2>/tmp/tunnel.json.error
+            if [[ $? -ne 0 ]]; then
+                red "生成 tunnel.json 文件失败，请检查权限和路径"
+                cat /tmp/tunnel.json.error
+                return
+            fi
+
             cat > "$WORKDIR/tunnel.yml" <<EOF
 tunnel: $(cut -d\" -f12 <<< "$ARGO_AUTH")
 credentials-file: $WORKDIR/tunnel.json
@@ -191,17 +199,37 @@ ingress:
       noTLSVerify: true
   - service: http_status:404
 EOF
+            if [[ $? -ne 0 ]]; then
+                red "生成 tunnel.yml 文件失败，请检查权限和路径"
+                return
+            fi
+
             green "生成的 tunnel.yml 配置文件已保存到 $WORKDIR"
         else
-            green "ARGO_AUTH 不匹配 TunnelSecret，使用 token 连接到隧道"
-            # 你可以在这里添加处理 Token 的逻辑
+            cat > "$WORKDIR/tunnel.yml" <<EOF
+tunnel: $ARGO_AUTH
+credentials-file: /dev/null
+protocol: http2
+
+ingress:
+  - hostname: $ARGO_DOMAIN
+    service: http://localhost:$vmess_port
+    originRequest:
+      noTLSVerify: true
+  - service: http_status:404
+EOF
+            if [[ $? -ne 0 ]]; then
+                red "生成 tunnel.yml 文件失败，请检查权限和路径"
+                return
+            fi
+
+            green "生成的 tunnel.yml 配置文件已保存到 $WORKDIR"
         fi
     else
-        green "没有选择 vmess 协议，暂停使用Argo隧道功能"
+        green "没有选择 vmess 协议，暂停使用 Argo 固定隧道"
     fi
 }
 
-  
  
 # 定义颜色
 YELLOW='\033[1;3;33m'
@@ -715,7 +743,7 @@ run_sb() {
     if [ -e "$WORKDIR/web" ]; then
         nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 &
         sleep 2
-        pgrep -x "web" > /dev/null && green "web is running" || { red "web is not running, restarting..."; pkill -x "web" && nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
+        pgrep -x "web" > /dev/null && green "WEB is running" || { red "web is not running, restarting..."; pkill -x "web" && nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
     fi
     
       if [ -e $WORKDIR/bot ]; then
@@ -724,13 +752,14 @@ run_sb() {
     elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
       args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
     else
-      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile boot.log --loglevel info --url http://localhost:$vmess_port"
+      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port"
     fi
     nohup $WORKDIR/bot $args >/dev/null 2>&1 &
     sleep 2
-    pgrep -x "bot" > /dev/null && green "bot is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
+    pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
   fi
 }
+  
 get_links() {
   
     get_argodomain() {
@@ -803,8 +832,12 @@ reading() { read -p "$(red "$1")" "$2"; }
 # 启动 web 函数
     
 start_web() {
+    green() {
+    echo -e "\\033[1;3;32m$*\\033[0m"
+}
+    
     # Save the cursor position
-    echo -n "正在启动web进程，请稍后......"
+  echo -n -e "\033[1;3;31m正在启动sing-box服务,请稍后......\033[0m\n"
     sleep 1  # Optional: pause for a brief moment before starting the process
 
     if [ -e "$WORKDIR/web" ]; then
@@ -817,7 +850,7 @@ start_web() {
         if pgrep -x "web" > /dev/null; then
             # Clear the initial message and move to the next line
             echo -ne "\r\033[K"
-            green "web进程启动成功，并正在运行！"
+            green "WEB进程启动成功,并正在运行！"
         else
             # Clear the initial message and move to the next line
             echo -ne "\r\033[K"
@@ -829,26 +862,51 @@ start_web() {
         echo -ne "\r\033[K"
         red "web可执行文件未找到，请检查路径是否正确。"
     fi
+    
+     # Start the bot process
+   if [ -e $WORKDIR/bot ]; then
+    if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
+      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
+    elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
+      args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
+    else
+      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port"
+    fi
+    nohup $WORKDIR/bot $args >/dev/null 2>&1 &
+    sleep 2
+    pgrep -x "bot" > /dev/null && green "BOT进程启动成功,并正在运行！" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
+  fi
+
 }
     
 #停止sing-box服务
-    stop_web() {
-echo -n -e "\033[1;91m正在清理 sing-box 进程，请稍后......\033[0m"
-  sleep 1  # Optional: pause for a brief moment before killing tasks
+stop_web() {
+    echo -n -e "\033[1;91m正在清理 web 和 bot 进程，请稍后......\033[0m\n"
+    sleep 1  # Optional: pause for a brief moment before killing tasks
 
-  # 查找 web 进程的 PID
-  WEB_PID=$(pgrep -f 'web')
+    # 查找 web 进程的 PID
+    WEB_PID=$(pgrep -f 'web')
 
-  if [ -n "$WEB_PID" ]; then
-    # 杀死 sing-box 进程
-    kill -9 $WEB_PID
-    echo "已成功停止 sing-box 服务。"
-  else
-    echo "未找到 sing-box 进程，可能已经停止。"
-  fi
+    if [ -n "$WEB_PID" ]; then
+        # 杀死 web 进程
+        kill -9 $WEB_PID
+        echo "已成功停止 web 进程。"
+    else
+        echo "未找到 web 进程，可能已经停止。"
+    fi
 
-  sleep 2  # Optional: pause to allow the user to see the message before exiting
+    # 查找 bot 进程的 PID
+    BOT_PID=$(pgrep -f 'bot')
 
+    if [ -n "$BOT_PID" ]; then
+        # 杀死 bot 进程
+        kill -9 $BOT_PID
+        echo "已成功停止 bot 进程。"
+    else
+        echo "未找到 bot 进程，可能已经停止。"
+    fi
+
+    sleep 2  # Optional: pause to allow the user to see the message before exiting
 }
     
 # 检查 sing-box 是否已安装
