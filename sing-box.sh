@@ -137,48 +137,51 @@ read_nz_variables() {
 
 #固定argo隧道  
 argo_configure() {
+  red() {
+    echo -e "\\033[1;3;31m$*\\033[0m"
+}
+  
     if [[ "$INSTALL_VMESS" == "true" ]]; then
-        if [[ -z $ARGO_AUTH || -z $ARGO_DOMAIN ]]; then
-            reading "是否需要使用固定 Argo 隧道？【y/n】: " argo_choice
-            if [[ -z $argo_choice ]]; then
-                return
-            fi
-            if [[ "$argo_choice" != "y" && "$argo_choice" != "Y" && "$argo_choice" != "n" && "$argo_choice" != "N" ]]; then
-                red "无效的选择，请输入 y 或 n"
-                return
-            fi
+        reading "是否需要使用固定 Argo 隧道？【y/n】(默认使用临时隧道): " argo_choice
+        # 处理用户输入
+        if [[ -z $argo_choice ]]; then
+            red "没有输入任何内容，默认使用临时隧道"
+            return
+        elif [[ "$argo_choice" != "y" && "$argo_choice" != "Y" && "$argo_choice" != "n" && "$argo_choice" != "N" ]]; then
+            red "无效的选择，请输入 y 或 n"
+            return
+        fi
 
-            if [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
-                while [[ -z $ARGO_DOMAIN ]]; do
-                    reading "请输入 Argo 固定隧道域名: " ARGO_DOMAIN
-                    if [[ -z $ARGO_DOMAIN ]]; then
-                        red "Argo 固定隧道域名不能为空，请重新输入。"
-                    else
-                        green "你的 Argo 固定隧道域名为: $ARGO_DOMAIN"
-                    fi
-                done
-                
-                while [[ -z $ARGO_AUTH ]]; do
-                    reading "请输入 Argo 固定隧道密钥（Json 或 Token）: " ARGO_AUTH
-                    if [[ -z $ARGO_AUTH ]]; then
-                        red "Argo 固定隧道密钥不能为空，请重新输入。"
-                    else
-                        green "你的 Argo 固定隧道密钥为: $ARGO_AUTH"
-                    fi
-                done
-                
-                echo -e "${red}注意：${purple}使用 token，需要在 Cloudflare 后台设置隧道端口和面板开放的 TCP 端口一致${RESET}"
-            else
-                green "ARGO 隧道变量未设置，将使用临时隧道"
-                return
-            fi
+        if [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
+            while [[ -z $ARGO_DOMAIN ]]; do
+                reading "请输入 Argo 固定隧道域名: " ARGO_DOMAIN
+                if [[ -z $ARGO_DOMAIN ]]; then
+                    red "Argo 固定隧道域名不能为空，请重新输入。"
+                else
+                    green "你的 Argo 固定隧道域名为: $ARGO_DOMAIN"
+                fi
+            done
+            
+            while [[ -z $ARGO_AUTH ]]; do
+                reading "请输入 Argo 固定隧道密钥（Json 或 Token）: " ARGO_AUTH
+                if [[ -z $ARGO_AUTH ]]; then
+                    red "Argo 固定隧道密钥不能为空，请重新输入。"
+                else
+                    green "你的 Argo 固定隧道密钥为: $ARGO_AUTH"
+                fi
+            done
+            
+            echo -e "${red}注意：${purple}使用 token，需要在 Cloudflare 后台设置隧道端口和面板开放的 TCP 端口一致${RESET}"
+        else
+            green "选择使用临时隧道"
+            return
         fi
 
         if [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-            echo "$ARGO_AUTH" > tunnel.json
-            cat > tunnel.yml <<EOF
+            echo "$ARGO_AUTH" > "$WORKDIR/tunnel.json"
+            cat > "$WORKDIR/tunnel.yml" <<EOF
 tunnel: $(cut -d\" -f12 <<< "$ARGO_AUTH")
-credentials-file: tunnel.json
+credentials-file: $WORKDIR/tunnel.json
 protocol: http2
 
 ingress:
@@ -188,13 +191,16 @@ ingress:
       noTLSVerify: true
   - service: http_status:404
 EOF
+            green "生成的 tunnel.yml 配置文件已保存到 $WORKDIR"
         else
             green "ARGO_AUTH 不匹配 TunnelSecret，使用 token 连接到隧道"
+            # 你可以在这里添加处理 Token 的逻辑
         fi
     else
-        green "没有选择 vmess 协议，禁止使用 Argo 固定隧道"
+        green "没有选择 vmess 协议，暂停使用Argo隧道功能"
     fi
 }
+
   
  
 # 定义颜色
@@ -208,7 +214,7 @@ RESET="\033[0m"
   
 #安装sing-box
 install_singbox() {
-  
+
     echo -e "${bold_italic_yellow}本脚本可以选择性安装四种协议 ${bold_italic_purple}(vless-reality | vmess | hysteria2 | tuic | 固定argo隧道 )${RESET}"
     echo -e "${bold_italic_yellow}开始运行前，请确保面板中 ${bold_italic_purple}已开放3个端口，一个TCP端口，两个UDP端口${RESET}"
     echo -e "${bold_italic_yellow}面板中 ${bold_italic_purple}Additional services中的Run your own applications${bold_italic_yellow}选项已开启为 ${bold_italic_purple1}Enabled${bold_italic_yellow} 状态${RESET}"
@@ -261,22 +267,55 @@ install_singbox() {
         esac
     done
 
+    validate_port() {
+        local port=$1
+        if [[ ! $port =~ ^[0-9]+$ ]] || [ "$port" -lt 1000 ] || [ "$port" -gt 65535 ]; then
+            return 1
+        else
+            return 0
+        fi
+    }
+
+    prompt_port() {
+        local prompt_message=$1
+        local port_variable=$2
+
+        while true; do
+            read -p "$(echo -e "${RED}\033[1m\033[1;3;32m$prompt_message: ${RESET}")" port
+            if validate_port "$port"; then
+                eval "$port_variable=$port"
+                break
+            else
+                echo -e "${RED}\033[1m\033[1;3;31m无效的端口号，请输入1000到65535之间的数字。${RESET}"
+            fi
+        done
+    }
+
     if [ "$INSTALL_VLESS" = "true" ]; then
-        read -p "$(echo -e "${RED}\033[1m\033[3m请输入vless-reality端口 (面板开放的tcp端口): ${RESET}")" vless_port
+        prompt_port "请输入vless-reality端口 (面板开放的tcp端口)" vless_port
     fi
 
     if [ "$INSTALL_VMESS" = "true" ]; then
-        read -p "$(echo -e "${RED}\033[1m\033[3m请输入vmess端口 (面板开放的tcp端口): ${RESET}")" vmess_port
+        prompt_port "请输入vmess端口 (面板开放的tcp端口)" vmess_port
+
+        echo -e "${bold_italic_yellow}是否使用Argo功能?<ENTER默认不开启>【y/n】${RESET}: "
+        read -p "" argo_choice
+        argo_choice=${argo_choice:-n}  # 默认不开启
+
+        if [[ "$argo_choice" == [Yy] ]]; then
+            argo_configure
+        else
+            echo -e "$(bold_italic_green "跳过Argo功能配置...")"
+            ARGO_DOMAIN=""  # 清除 Argo 域名
+        fi
     fi
 
-    argo_configure
-
     if [ "$INSTALL_HYSTERIA2" = "true" ]; then
-        read -p "$(echo -e "${RED}\033[1m\033[3m请输入hysteria2端口 (面板开放的udp端口): ${RESET}")" hy2_port
+        prompt_port "请输入hysteria2端口 (面板开放的udp端口)" hy2_port
     fi
 
     if [ "$INSTALL_TUIC" = "true" ]; then
-        read -p "$(echo -e "${RED}\033[1m\033[3m请输入tuic端口 (面板开放的udp端口): ${RESET}")" tuic_port
+        prompt_port "请输入tuic端口 (面板开放的udp端口)" tuic_port
     fi
 
     download_singbox && wait
@@ -298,7 +337,7 @@ install_singbox() {
         echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 TUIC...${RESET}")"
     fi
 
- # 运行 sing-box
+    # 运行 sing-box
     run_sb && sleep 3
 
     # 获取链接
@@ -312,6 +351,7 @@ install_singbox() {
     echo -e "$(bold_italic_purple "安装完成！")"
 }
 
+    
 uninstall_singbox() {
     echo -e "$(bold_italic_purple "正在卸载sing-box，请稍后...")"
     read -p $'\033[1;3;38;5;220m确定要卸载吗?<ENTER默认Y>【y/n】:\033[0m ' choice
@@ -732,7 +772,7 @@ $(if [ "$INSTALL_VMESS" = "true" ]; then
     echo -e "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}\", \"add\": \"$IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}"
 fi)
 
-$(if [ "$INSTALL_VMESS" = "true" ]; then
+$(if [ "$INSTALL_VMESS" = "true" ] && [ -n "$argodomain" ]; then
     echo -e "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}\", \"add\": \"www.visa.com\", \"port\": \"443\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}"
 fi)
 
@@ -947,4 +987,4 @@ reading "请输入选择(0-6): " choice
     esac
 }
 
-men
+menu
