@@ -1,32 +1,18 @@
 
 #!/bin/bash
-
 # Color definitions
-bold_red='\033[1;31m'
-bold_green='\033[1;32m'
-bold_yellow='\033[1;33m'
-bold_blue='\033[1;34m'
-bold_purple='\033[1;35m'
-bold_cyan='\033[1;36m'
-bold_white='\033[1;37m'
+bold_red='\033[1;3;31m'
+bold_green='\033[1;3;32m'
+bold_yellow='\033[1;3;33m'
+bold_purple='\033[1;3;35m'
 reset='\033[0m'
-CYAN='\033[0;36m'
-RESET='\033[0m'
 
 # Formatting functions
 bold_italic_red() { echo -e "${bold_red}\033[3m$1${reset}"; }
 bold_italic_green() { echo -e "${bold_green}\033[3m$1${reset}"; }
 bold_italic_yellow() { echo -e "${bold_yellow}\033[3m$1${reset}"; }
-bold_italic_blue() { echo -e "${bold_blue}\033[3m$1${reset}"; }
 bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
-bold_italic_cyan() { echo -e "${bold_cyan}\033[3m$1${reset}"; }
-bold_italic_white() { echo -e "${bold_white}\033[3m$1${reset}"; }
-yellow() {
-    echo -e "\033[1;33m$1\033[0m"
-}
 
-
-    
 # Function to check if sing-box is installed
 check_singbox_installed() {
     if [ -e "$HOME/sbox/web" ]; then
@@ -35,9 +21,6 @@ check_singbox_installed() {
         echo -e "$(bold_italic_red "sing-box未安装!")"
     fi
 }
-# Example usage
-echo -e "$(bold_italic_purple "This is a purple text with bold and italic formatting")"
-
 
 # Function to check if sing-box is running
 check_web_status() {
@@ -47,10 +30,6 @@ check_web_status() {
         echo -e "$(bold_italic_red "sing-box Not running")"
     fi
 }
-
-# 获取当前用户名和主机名
-#/HOME/sbox=$(whoami)
-HOSTNAME=$(hostname)
 
 # 定义存储 UUID 的文件路径
 UUID_FILE="${HOME}/sbox/.singbox_uuid"
@@ -69,8 +48,8 @@ export NEZHA_KEY=${NEZHA_KEY:-''}
 
 # 设置工作目录
 WORKDIR="$HOME/sbox"
-    
-    # 确保工作目录存在
+
+# 确保工作目录存在
 mkdir -p "$WORKDIR"
 
 # 创建工作目录并设置权限
@@ -79,114 +58,113 @@ if [ ! -d "$WORKDIR" ]; then
     chmod 777 "$WORKDIR"
 fi
 
+# 检查面板开放的端口
+check_panel_ports() {
+    echo -e "${bold_italic_yellow}获取面板开放的端口...${RESET}"
+    open_ports=$(get_open_ports)
+    if [ -z "$open_ports" ]; then
+        echo -e "$(bold_italic_red "没有找到开放的端口。")"
+    else
+        echo -e "$(bold_italic_yellow "面板开放的端口:")"
+        echo -e "$open_ports"
+    fi
+}
+   
 read_vmess_port() {
-    
-    GREEN='\033[38;5;82m'      # Green color
-BOLD='\033[1m'            # Bold text
-ITALIC='\033[3m'          # Italic text
-RESET='\033[0m'           # Reset to default
-    
     while true; do
-        reading"${GREEN}${BOLD}${ITALIC}请输入vmess端口 (面板开放的tcp端口): ${RESET}" vmess_port
+        reading "**_请输入vmess端口 (面板开放的tcp端口): _**" vmess_port
         if [[ "$vmess_port" =~ ^[0-9]+$ ]] && [ "$vmess_port" -ge 1 ] && [ "$vmess_port" -le 65535 ]; then
-            green "你的vmess端口为: $vmess_port"
+            bold_italic_green "**_你的vmess端口为: $vmess_port_**"
             break
         else
-            yellow "输入错误，请重新输入面板开放的TCP端口"
+            bold_italic_yellow "**_输入错误，请重新输入面板开放的TCP端口_**"
         fi
     done
 }
 
 read_vless_port() {
     while true; do
-        reading "请输入vless-reality端口 (面板开放的tcp端口): " vless_port
+        reading "**_请输入vless-reality端口 (面板开放的tcp端口): _**" vless_port
         if [[ "$vless_port" =~ ^[0-9]+$ ]] && [ "$vless_port" -ge 1 ] && [ "$vless_port" -le 65535 ]; then
-            green "你的vless-reality端口为: $vless_port"
+            bold_italic_green "**_你的vless-reality端口为: $vless_port_**"
             break
         else
-            yellow "输入错误，请重新输入面板开放的TCP端口"
+            bold_italic_yellow "**_输入错误，请重新输入面板开放的TCP端口_**"
         fi
     done
 }
 
 read_hy2_port() {
     while true; do
-        reading "请输入hysteria2端口 (面板开放的UDP端口): " hy2_port
+        reading "**_请输入hysteria2端口 (面板开放的UDP端口): _**" hy2_port
         if [[ "$hy2_port" =~ ^[0-9]+$ ]] && [ "$hy2_port" -ge 1 ] && [ "$hy2_port" -le 65535 ]; then
-            green "你的hysteria2端口为: $hy2_port"
+            bold_italic_green "**_你的hysteria2端口为: $hy2_port_**"
             break
         else
-            yellow "输入错误，请重新输入面板开放的UDP端口"
+            bold_italic_yellow "**_输入错误，请重新输入面板开放的UDP端口_**"
         fi
     done
 }
 
- read_tuic_port() {
-     while true; do
-         reading "请输入Tuic端口 (面板开放的UDP端口): " tuic_port
-         if [[ "$tuic_port" =~ ^[0-9]+$ ]] && [ "$tuic_port" -ge 1 ] && [ "$tuic_port" -le 65535 ]; then
-             green "你的tuic端口为: $tuic_port"
-             break
-         else
-             yellow "输入错误，请重新输入面板开放的UDP端口"
-         fi
-     done
- }
+read_tuic_port() {
+    while true; do
+        reading "**_请输入Tuic端口 (面板开放的UDP端口): _**" tuic_port
+        if [[ "$tuic_port" =~ ^[0-9]+$ ]] && [ "$tuic_port" -ge 1 ] && [ "$tuic_port" -le 65535 ]; then
+            bold_italic_green "**_你的tuic端口为: $tuic_port_**"
+            break
+        else
+            bold_italic_yellow "**_输入错误，请重新输入面板开放的UDP端口_**"
+        fi
+    done
+}
 
 read_nz_variables() {
   if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
-      green "使用自定义变量哪吒运行哪吒探针"
+      bold_italic_green "**_使用自定义变量哪吒运行哪吒探针_**"
       return
   else
-      reading "是否需要安装哪吒探针？【y/n】: " nz_choice
+      reading "**_是否需要安装哪吒探针？【y/n】: _**" nz_choice
       [[ -z $nz_choice ]] && return
       [[ "$nz_choice" != "y" && "$nz_choice" != "Y" ]] && return
-      reading "请输入哪吒探针域名或ip：" NEZHA_SERVER
-      green "你的哪吒域名为: $NEZHA_SERVER"
-      reading "请输入哪吒探针端口（回车跳过默认使用5555）：" NEZHA_PORT
+      reading "**_请输入哪吒探针域名或ip：_**" NEZHA_SERVER
+      bold_italic_green "**_你的哪吒域名为: $NEZHA_SERVER_**"
+      reading "**_请输入哪吒探针端口（回车跳过默认使用5555）：_**" NEZHA_PORT
       [[ -z $NEZHA_PORT ]] && NEZHA_PORT="5555"
-      green "你的哪吒端口为: $NEZHA_PORT"
-      reading "请输入哪吒探针密钥：" NEZHA_KEY
-      green "你的哪吒密钥为: $NEZHA_KEY"
+      bold_italic_green "**_你的哪吒端口为: $NEZHA_PORT_**"
+      reading "**_请输入哪吒探针密钥：_**" NEZHA_KEY
+      bold_italic_green "**_你的哪吒密钥为: $NEZHA_KEY_**"
   fi
 }
+
 #固定argo隧道  
 argo_configure() {
     if [[ "$INSTALL_VMESS" == "true" ]]; then
         if [[ -z $ARGO_AUTH || -z $ARGO_DOMAIN ]]; then
-            reading "是否需要使用固定 Argo 隧道？【y/n】: " argo_choice
-            if [[ -z $argo_choice ]]; then
-                return
-            fi
-            if [[ "$argo_choice" != "y" && "$argo_choice" != "Y" && "$argo_choice" != "n" && "$argo_choice" != "N" ]]; then
-                red "无效的选择，请输入 y 或 n"
+            reading "**_是否需要使用固定 Argo 隧道？【y/n】: _**" argo_choice
+            if [[ -z $argo_choice || "$argo_choice" != "y" && "$argo_choice" != "Y" ]]; then
+                bold_italic_green "**_ARGO 隧道变量未设置，将使用临时隧道_**"
                 return
             fi
 
-            if [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
-                while [[ -z $ARGO_DOMAIN ]]; do
-                    reading "请输入 Argo 固定隧道域名: " ARGO_DOMAIN
-                    if [[ -z $ARGO_DOMAIN ]]; then
-                        red "Argo 固定隧道域名不能为空，请重新输入。"
-                    else
-                        green "你的 Argo 固定隧道域名为: $ARGO_DOMAIN"
-                    fi
-                done
-                
-                while [[ -z $ARGO_AUTH ]]; do
-                    reading "请输入 Argo 固定隧道密钥（Json 或 Token）: " ARGO_AUTH
-                    if [[ -z $ARGO_AUTH ]]; then
-                        red "Argo 固定隧道密钥不能为空，请重新输入。"
-                    else
-                        green "你的 Argo 固定隧道密钥为: $ARGO_AUTH"
-                    fi
-                done
-                
-                echo -e "${red}注意：${purple}使用 token，需要在 Cloudflare 后台设置隧道端口和面板开放的 TCP 端口一致${RESET}"
-            else
-                green "ARGO 隧道变量未设置，将使用临时隧道"
-                return
-            fi
+            while [[ -z $ARGO_DOMAIN ]]; do
+                reading "**_请输入 Argo 固定隧道域名: _**" ARGO_DOMAIN
+                if [[ -z $ARGO_DOMAIN ]]; then
+                    bold_italic_red "**_Argo 固定隧道域名不能为空，请重新输入。_**"
+                else
+                    bold_italic_green "**_你的 Argo 固定隧道域名为: $ARGO_DOMAIN_**"
+                fi
+            done
+
+            while [[ -z $ARGO_AUTH ]]; do
+                reading "**_请输入 Argo 固定隧道密钥（Json 或 Token）: _**" ARGO_AUTH
+                if [[ -z $ARGO_AUTH ]]; then
+                    bold_italic_red "**_Argo 固定隧道密钥不能为空，请重新输入。_**"
+                else
+                    bold_italic_green "**_你的 Argo 固定隧道密钥为: $ARGO_AUTH_**"
+                fi
+            done
+
+            echo -e "${bold_italic_red "注意："}${bold_italic_purple "使用 token，需要在 Cloudflare 后台设置隧道端口和面板开放的 TCP 端口一致${reset}"}"
         fi
 
         if [[ $ARGO_AUTH =~ TunnelSecret ]]; then
@@ -204,27 +182,29 @@ ingress:
   - service: http_status:404
 EOF
         else
-            green "ARGO_AUTH 不匹配 TunnelSecret，使用 token 连接到隧道"
+            bold_italic_green "**_ARGO_AUTH 不匹配 TunnelSecret，使用 token 连接到隧道_**"
         fi
     else
-        green "没有选择 vmess 协议，禁止使用 Argo 固定隧道"
+        bold_italic_green "**_没有选择 vmess 协议，暂停使用 Argo 固定隧道_**"
     fi
 }
   
  
 # 定义颜色
-YELLOW='\033[1;33m'
+YELLOW='\033[1;3;33m'
 NC='\033[0m' # No Color
-  GREEN='\033[1;32m'
+  GREEN='\033[1;3;32m'
   bold_italic_yellow="\033[1;3;33m"
 bold_italic_purple="\033[1;3;35m"
+  bold_italic_purple1="\033[1;3;32m"
 RESET="\033[0m"
   
 #安装sing-box
 install_singbox() {
+  
     echo -e "${bold_italic_yellow}本脚本可以选择性安装四种协议 ${bold_italic_purple}(vless-reality | vmess | hysteria2 | tuic | 固定argo隧道 )${RESET}"
     echo -e "${bold_italic_yellow}开始运行前，请确保面板中 ${bold_italic_purple}已开放3个端口，一个TCP端口，两个UDP端口${RESET}"
-    echo -e "${bold_italic_yellow}面板中 ${bold_italic_purple}Additional services中的Run your own applications${bold_italic_yellow}选项已开启为 ${bold_italic_purple}Enabled${bold_italic_yellow} 状态${RESET}"
+    echo -e "${bold_italic_yellow}面板中 ${bold_italic_purple}Additional services中的Run your own applications${bold_italic_yellow}选项已开启为 ${bold_italic_purple1}Enabled${bold_italic_yellow} 状态${RESET}"
 
     echo -e "${bold_italic_yellow}确定继续安装吗?<ENTER默认安装>【y/n】${reset}: "
     read -p "" choice
@@ -248,7 +228,7 @@ install_singbox() {
     echo -e "${bold_italic_yellow}3: hysteria2${RESET}"
     echo -e "${bold_italic_yellow}4: tuic${RESET}"
     echo -e "${bold_italic_yellow}5: 安装两个协议${RESET}"
-    echo -e "${bold_italic_yellow}6: 安装三个协议(面板端口限制)${RESET}"
+    echo -e "${bold_italic_yellow}6: 安装三个协议${RESET}"
     read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " choices
 
     INSTALL_VLESS="false"
@@ -400,7 +380,7 @@ download_singbox() {
 }
     
  # Define color codes
-YELLOW="\033[33m"
+YELLOW="\033[1;3;33m"
 RESET="\033[0m"
  
  # Define default paths using the current user's home directory
@@ -694,7 +674,7 @@ run_sb() {
     elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
       args="tunnel --edge-ip-version auto --config tunnel.yml run"
     else
-      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port"
+      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile boot.log --loglevel info --url http://localhost:$vmess_port"
     fi
     nohup $WORKDIR/bot $args >/dev/null 2>&1 &
     sleep 2
@@ -711,11 +691,11 @@ get_links() {
     fi
   }
 argodomain=$(get_argodomain)
-echo -e "\e[1;32mArgoDomain:\e[1;35m${argodomain}\e[0m\n"
+echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
 sleep 1
   
     # 提示用户输入IP地址
-   read -p "$(echo -e "${CYAN}\033[1m请输入IP地址（或按回车自动检测）: ${RESET}")" user_ip
+   read -p "$(echo -e "${CYAN}\033[1;3;31m请输入IP地址（或按回车自动检测）:\n ${RESET}")" user_ip
 
     # 如果用户输入了IP地址，使用用户提供的IP地址
     if [ -n "$user_ip" ]; then
@@ -726,7 +706,7 @@ sleep 1
     fi
 
     # 输出最终使用的IP地址
-    echo -e "${CYAN}\033[1m设备的IP地址是: $IP${RESET}"
+    echo -e "${CYAN}\033[1;3;32m设备的IP地址是: $IP${RESET}"
     # 获取IP信息
       USERNAME=$(whoami)
    echo ""
@@ -876,45 +856,76 @@ printf "${YELLOW}输入选择 (1 或 2): ${RESET}"
 
   sleep 2  # Optional: pause to allow the user to see the message before exiting
 }
+# 定义颜色函数
+red() {
+    echo -e "\\033[1;3;31m$*\\033[0m"
+}
 
+green() {
+    echo -e "\\033[1;32m$*\\033[0m"
+}
 
+yellow() {
+    echo -e "\\033[1;33m$*\\033[0m"
+}
+
+purple() {
+    echo -e "\\033[1;35m$*\\033[0m"
+}
+ reading() {
+    echo -ne "\\033[1;3;33m$1\\033[0m"  # 显示黄色加粗斜体的提示
+    read -r "$2"  # 读取用户输入
+}
+    magenta() {
+    echo -e "\033[1;3;33m$1\033[0m"
+}
+bold_italic_orange() {
+    echo -e "\033[1;3;38;5;208m$1\033[0m"
+}
+    pink() {
+    echo -e "\033[1;35m$1\033[0m"
+}
+    bold_italic_light_blue() {
+    echo -e "\033[1;3;36m$1\033[0m"
+}
 # 主菜单
 menu() {
    clear
    echo ""
-   purple "=== Serv00|sing-box一键安装脚本 ===\n"
-   purple "=== 脚本更新，VLESS VMESS HY2 TUIC  协议，增加UUID自动生成 ===\n"
-    purple "===  固定argo隧道 注意最多只能安装三个协议！ ===\n"
-  echo -e "${green}脚本地址：${re}\033[1;3;33mhttps://github.com/yyfalbl/singbox-2\033[0m${re}\n"
-   purple "*****转载请著名出处，请勿滥用*****\n"
+   magenta "=== Serv00|sing-box一键安装脚本 ==="
+   echo ""
+  bold_italic_orange "\033[1;3m=== 脚本更新，VLESS VMESS HY2 TUIC 协议，增加UUID自动生成 ===\033[0m\n"
+    magenta "=== 支持安装单，双，三个协议(面板最多只能开放3个端口)，自由选择 ===\n"
+  bold_italic_light_blue "=== 固定argo隧道 注意最多只能安装三个协议！ ===\n"
+  echo -e "${green}\033[1;3;33m脚本地址：\033[0m${re}\033[1;3;33mhttps://github.com/yyfalbl/singbox-2\033[0m${re}\n"
+   purple "\033[1;3m*****魔改老王脚本，转载请著名出处，请勿滥用*****\033[0m\n"
    echo ""
    # Example usage
-check_singbox_installed
+   check_singbox_installed
    echo ""
-# 显示 web 进程状态（仅在 sing-box 已安装时显示）
-  
-      echo ""  # 添加空行
-       check_web_status
-       echo ""  # 添加空行
+   # 显示 web 进程状态（仅在 sing-box 已安装时显示）
+   echo ""  # 添加空行
+   check_web_status
+   echo ""  # 添加空行
 
    echo ""
-   green "1. 安装sing-box"
-   echo  "==============="
-   red "2. 卸载sing-box"
-   echo  "==============="
-   green "3. 查看节点信息"
-   echo  "==============="
-   yellow "4. 清理系统进程"
-   echo  "==============="
-   green "5. 启动web服务"
-   echo  "==============="
-   green "6. 停止web服务"
-   echo  "==============="
-   red "0. 退出脚本"
+   green "\033[1;3m1. 安装sing-box\033[0m"
+   echo "==============="
+   red "\033[1;3m2. 卸载sing-box\033[0m"
+   echo "==============="
+   bold_italic_light_blue "\033[1;3m3. 查看节点信息\033[0m"
+   echo "==============="
+yellow "\\033[1;3m4. 清理系统进程\\033[0m"
+   echo "==============="
+   green "\033[1;3m5. 启动sing-box服务\033[0m"
+   echo "==============="
+      pink "\033[1;3m6. 停止sing-box服务\033[0m"
+   echo "==============="
+   red "\033[1;3m0. 退出脚本\033[0m"
    echo "==========="
-   reading "请输入选择(0-6): " choice
+reading "请输入选择(0-6): " choice
    echo ""
-    case "${choice}" in
+   case "${choice}" in
         1) install_singbox ;;
         2) uninstall_singbox ;;
         3) cat $WORKDIR/list.txt ;;
@@ -922,9 +933,8 @@ check_singbox_installed
         5) start_web ;;
         6) stop_web ;;
         0) exit 0 ;;
-        *) red "无效的选项，请输入 0 到 5" ;;
+        *) red "\033[1;3m无效的选项，请输入 0 到 5\033[0m" ;;
     esac
 }
 
 menu
-
