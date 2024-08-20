@@ -138,7 +138,7 @@ read_nz_variables() {
 #固定argo隧道  
 argo_configure() {
     if [[ "$INSTALL_VMESS" == "true" ]]; then
-        reading "是否需要使用固定 Argo 隧道？【y/n】(默认使用临时隧道): " argo_choice
+        reading "是否需要使用固定 Argo 隧道？【y/n】(默认使用临时隧道):\c" argo_choice
         # 处理用户输入
         if [[ -z $argo_choice ]]; then
             green "没有输入任何内容，默认使用临时隧道"
@@ -247,7 +247,7 @@ install_singbox() {
     echo -e "${bold_italic_yellow}开始运行前，请确保面板中 ${bold_italic_purple}已开放3个端口，一个TCP端口，两个UDP端口${RESET}"
     echo -e "${bold_italic_yellow}面板中 ${bold_italic_purple}Additional services中的Run your own applications${bold_italic_yellow}选项已开启为 ${bold_italic_purple1}Enabled${bold_italic_yellow} 状态${RESET}"
 
-    echo -e "${bold_italic_yellow}确定继续安装吗?<ENTER默认安装>【y/n】${reset}: "
+    echo -e "${bold_italic_yellow}确定继续安装吗?<ENTER默认安装>【y/n】${reset}:\c"  
     read -p "" choice
     choice=${choice:-y}  # Default to y
 
@@ -326,7 +326,7 @@ install_singbox() {
     if [ "$INSTALL_VMESS" = "true" ]; then
         prompt_port "请输入vmess端口 (面板开放的tcp端口)" vmess_port
 
-        echo -e "${bold_italic_yellow}是否使用Argo功能?<ENTER默认不开启>【y/n】${RESET}: "
+        echo -e "${bold_italic_yellow}是否使用Argo功能?<ENTER默认不开启>【y/n】${RESET}:\c"
         read -p "" argo_choice
         argo_choice=${argo_choice:-n}  # 默认不开启
 
@@ -774,7 +774,7 @@ echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
 sleep 1
   
     # 提示用户输入IP地址
-   read -p "$(echo -e "${CYAN}\033[1;3;31m请输入IP地址（或按回车自动检测）:\n ${RESET}")" user_ip
+   read -p "$(echo -e "${CYAN}\033[1;3;31m请输入IP地址（或按回车自动检测）: ${RESET}") " user_ip
 
     # 如果用户输入了IP地址，使用用户提供的IP地址
     if [ -n "$user_ip" ]; then
