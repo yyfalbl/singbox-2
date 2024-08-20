@@ -1049,4 +1049,4 @@ reading "请输入选择(0-6): " choice
     esac
 }
 
-men
+menu
