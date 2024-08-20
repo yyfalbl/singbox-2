@@ -326,9 +326,9 @@ install_singbox() {
     if [ "$INSTALL_VMESS" = "true" ]; then
         prompt_port "请输入vmess端口 (面板开放的tcp端口)" vmess_port
 
-        echo -e "${bold_italic_yellow}是否使用Argo功能?<ENTER默认不开启>【y/n】${RESET}:\c"
+        echo -e "${bold_italic_yellow}是否使用Argo功能?<ENTER默认开启>【y/n】${RESET}:\c"
         read -p "" argo_choice
-        argo_choice=${argo_choice:-n}  # 默认不开启
+        argo_choice=${argo_choice:-y}  # 默认开启
 
         if [[ "$argo_choice" == [Yy] ]]; then
             argo_configure
@@ -794,23 +794,23 @@ sleep 1
     # 生成并保存配置文件
 cat <<EOF > "$WORKDIR/list.txt"
 $(if [ "$INSTALL_VLESS" = "true" ]; then
-    echo -e "${YELLOW}\033[1mvless://$UUID@$IP:$vless_port?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.ups.com&fp=chrome&pbk=$public_key&type=tcp&headerType=none#${USERNAME}${RESET}"
+    printf "${YELLOW}\033[1mvless://$UUID@$IP:$vless_port?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.ups.com&fp=chrome&pbk=$public_key&type=tcp&headerType=none#${USERNAME}${RESET}\n"
 fi)
 
 $(if [ "$INSTALL_VMESS" = "true" ]; then
-    echo -e "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}\", \"add\": \"$IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}"
+    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}\", \"add\": \"$IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
 fi)
 
 $(if [ "$INSTALL_VMESS" = "true" ] && [ -n "$argodomain" ]; then
-    echo -e "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}\", \"add\": \"www.visa.com\", \"port\": \"443\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}"
+    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}\", \"add\": \"www.visa.com\", \"port\": \"443\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
 fi)
 
 $(if [ "$INSTALL_HYSTERIA2" = "true" ]; then
-    echo -e "${YELLOW}\033[1mhysteria2://$UUID@$IP:$hy2_port/?sni=www.bing.com&alpn=h3&insecure=1#${USERNAME}${RESET}"
+    printf "${YELLOW}\033[1mhysteria2://$UUID@$IP:$hy2_port/?sni=www.bing.com&alpn=h3&insecure=1#${USERNAME}${RESET}\n"
 fi)
 
 $(if [ "$INSTALL_TUIC" = "true" ]; then
-    echo -e "${YELLOW}\033[1mtuic://$UUID:admin123@$IP:$tuic_port?sni=www.bing.com&congestion_control=bbr&udp_relay_mode=native&alpn=h3&allow_insecure=1#${USERNAME}${RESET}"
+    printf "${YELLOW}\033[1mtuic://$UUID:admin123@$IP:$tuic_port?sni=www.bing.com&congestion_control=bbr&udp_relay_mode=native&alpn=h3&allow_insecure=1#${USERNAME}${RESET}\n"
 fi)
 EOF
 
@@ -1049,4 +1049,4 @@ reading "请输入选择(0-6): " choice
     esac
 }
 
-menu
+men
