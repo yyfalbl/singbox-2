@@ -1,4 +1,3 @@
-
 #!/bin/bash
 # Color definitions
 bold_red='\033[1;3;31m'
@@ -140,31 +139,39 @@ read_nz_variables() {
 argo_configure() {
     if [[ "$INSTALL_VMESS" == "true" ]]; then
         if [[ -z $ARGO_AUTH || -z $ARGO_DOMAIN ]]; then
-            reading "**_是否需要使用固定 Argo 隧道？【y/n】: _**" argo_choice
-            if [[ -z $argo_choice || "$argo_choice" != "y" && "$argo_choice" != "Y" ]]; then
-                bold_italic_green "**_ARGO 隧道变量未设置，将使用临时隧道_**"
+            reading "是否需要使用固定 Argo 隧道？【y/n】: " argo_choice
+            if [[ -z $argo_choice ]]; then
+                return
+            fi
+            if [[ "$argo_choice" != "y" && "$argo_choice" != "Y" && "$argo_choice" != "n" && "$argo_choice" != "N" ]]; then
+                red "无效的选择，请输入 y 或 n"
                 return
             fi
 
-            while [[ -z $ARGO_DOMAIN ]]; do
-                reading "**_请输入 Argo 固定隧道域名: _**" ARGO_DOMAIN
-                if [[ -z $ARGO_DOMAIN ]]; then
-                    bold_italic_red "**_Argo 固定隧道域名不能为空，请重新输入。_**"
-                else
-                    bold_italic_green "**_你的 Argo 固定隧道域名为: $ARGO_DOMAIN_**"
-                fi
-            done
-
-            while [[ -z $ARGO_AUTH ]]; do
-                reading "**_请输入 Argo 固定隧道密钥（Json 或 Token）: _**" ARGO_AUTH
-                if [[ -z $ARGO_AUTH ]]; then
-                    bold_italic_red "**_Argo 固定隧道密钥不能为空，请重新输入。_**"
-                else
-                    bold_italic_green "**_你的 Argo 固定隧道密钥为: $ARGO_AUTH_**"
-                fi
-            done
-
-            echo -e "${bold_italic_red "注意："}${bold_italic_purple "使用 token，需要在 Cloudflare 后台设置隧道端口和面板开放的 TCP 端口一致${reset}"}"
+            if [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
+                while [[ -z $ARGO_DOMAIN ]]; do
+                    reading "请输入 Argo 固定隧道域名: " ARGO_DOMAIN
+                    if [[ -z $ARGO_DOMAIN ]]; then
+                        red "Argo 固定隧道域名不能为空，请重新输入。"
+                    else
+                        green "你的 Argo 固定隧道域名为: $ARGO_DOMAIN"
+                    fi
+                done
+                
+                while [[ -z $ARGO_AUTH ]]; do
+                    reading "请输入 Argo 固定隧道密钥（Json 或 Token）: " ARGO_AUTH
+                    if [[ -z $ARGO_AUTH ]]; then
+                        red "Argo 固定隧道密钥不能为空，请重新输入。"
+                    else
+                        green "你的 Argo 固定隧道密钥为: $ARGO_AUTH"
+                    fi
+                done
+                
+                echo -e "${red}注意：${purple}使用 token，需要在 Cloudflare 后台设置隧道端口和面板开放的 TCP 端口一致${RESET}"
+            else
+                green "ARGO 隧道变量未设置，将使用临时隧道"
+                return
+            fi
         fi
 
         if [[ $ARGO_AUTH =~ TunnelSecret ]]; then
@@ -182,10 +189,10 @@ ingress:
   - service: http_status:404
 EOF
         else
-            bold_italic_green "**_ARGO_AUTH 不匹配 TunnelSecret，使用 token 连接到隧道_**"
+            green "ARGO_AUTH 不匹配 TunnelSecret，使用 token 连接到隧道"
         fi
     else
-        bold_italic_green "**_没有选择 vmess 协议，暂停使用 Argo 固定隧道_**"
+        green "没有选择 vmess 协议，禁止使用 Argo 固定隧道"
     fi
 }
   
@@ -645,6 +652,9 @@ EOF
 
 # running files
 run_sb() {
+  green() {
+    echo -e "\e[32;3;1m$1\e[0m"
+}
     if [ -e "$WORKDIR/npm" ]; then
         tlsPorts=("443" "8443" "2096" "2087" "2083" "2053")
         if [[ "${tlsPorts[*]}" =~ "${NEZHA_PORT}" ]]; then
@@ -672,7 +682,7 @@ run_sb() {
     if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
       args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
     elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-      args="tunnel --edge-ip-version auto --config tunnel.yml run"
+      args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
     else
       args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile boot.log --loglevel info --url http://localhost:$vmess_port"
     fi
@@ -937,4 +947,4 @@ reading "请输入选择(0-6): " choice
     esac
 }
 
-menu
+men
