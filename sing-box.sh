@@ -864,24 +864,28 @@ start_web() {
     fi
     
      # Start the bot process
-   if [ -e $WORKDIR/bot ]; then
-    if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
-      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
-    elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-      args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
-    else
-      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port"
-    fi
-    nohup $WORKDIR/bot $args >/dev/null 2>&1 &
-    sleep 2
-    pgrep -x "bot" > /dev/null && green "BOT进程启动成功,并正在运行！" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
-  fi
+if [ -e $WORKDIR/bot ]; then
+  # 直接使用提供的启动命令
+  args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
+
+  # 启动 bot
+  nohup $WORKDIR/bot $args >/dev/null 2>&1 &
+  sleep 2
+  
+  # 检查 bot 是否启动成功
+  pgrep -x "bot" > /dev/null && green "BOT进程启动成功,并正在运行！" || {
+    red "bot is not running, restarting...";
+    pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 &
+    sleep 2;
+    purple "bot restarted";
+  }
+fi
 
 }
     
 #停止sing-box服务
 stop_web() {
-    echo -n -e "\033[1;91m正在清理 web 和 bot 进程，请稍后......\033[0m\n"
+    echo -n -e "\033[1;3;33m正在清理 web 和 bot 进程，请稍后......\033[0m\n"
     sleep 1  # Optional: pause for a brief moment before killing tasks
 
     # 查找 web 进程的 PID
@@ -890,7 +894,7 @@ stop_web() {
     if [ -n "$WEB_PID" ]; then
         # 杀死 web 进程
         kill -9 $WEB_PID
-        echo "已成功停止 web 进程。"
+        echo -n -e "\033[1;3;31m已成功停止 WEB 进程!\033[0m\n"
     else
         echo "未找到 web 进程，可能已经停止。"
     fi
@@ -901,7 +905,7 @@ stop_web() {
     if [ -n "$BOT_PID" ]; then
         # 杀死 bot 进程
         kill -9 $BOT_PID
-        echo "已成功停止 bot 进程。"
+           echo -n -e "\033[1;3;31m已成功停止 BOT 进程!\033[0m\n"
     else
         echo "未找到 bot 进程，可能已经停止。"
     fi
