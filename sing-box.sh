@@ -783,7 +783,9 @@ sleep 1
         # 自动检测IP地址
         IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
     fi
-
+yellow() {
+    echo -e "\\033[1;33m$*\\033[0m"
+}
     # 输出最终使用的IP地址
     echo -e "${CYAN}\033[1;3;32m设备的IP地址是: $IP${RESET}"
     # 获取IP信息
@@ -824,9 +826,9 @@ sleep 3
 rm -rf "$WORKDIR/npm" "$WORKDIR/boot.log" "$WORKDIR/sb.log" "$WORKDIR/core"
 }
 # 定义颜色函数
-green() { echo -e "\e[1;32m$1\033[0m"; }
-red() { echo -e "\e[1;91m$1\033[0m"; }
-purple() { echo -e "\e[1;35m$1\033[0m"; }
+green() { echo -e "\e[1;3;32m$1\033[0m"; }
+red() { echo -e "\e[1;3;91m$1\033[0m"; }
+purple() { echo -e "\e[1;3;35m$1\033[0m"; }
 reading() { read -p "$(red "$1")" "$2"; }
 
 # 启动 web 函数
@@ -931,10 +933,10 @@ is_singbox_installed() {
 # Function to prompt user for choice and kill processes accordingly
 manage_processes() {
   # Define color codes
-  RED_BOLD='\033[1;31m'
+  RED_BOLD='\033[1;3;31m'
   RESET='\033[0m'
-    RED_BOLD='\033[1;31m'
-  YELLOW='\033[1;33m'
+    RED_BOLD='\033[1;3;31m'
+  YELLOW='\033[1;3;33m'
   RESET='\033[0m'
   
   # 获取当前用户名
