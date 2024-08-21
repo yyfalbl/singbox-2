@@ -783,15 +783,14 @@ sleep 1
         # 自动检测IP地址
         IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
     fi
-yellow() {
-    echo -e "\\033[1;33m$*\\033[0m"
-}
+bold_italic_red='\033[1;3;31m'
+RESET='\033[0m'
     # 输出最终使用的IP地址
     echo -e "${CYAN}\033[1;3;32m设备的IP地址是: $IP${RESET}"
     # 获取IP信息
       USERNAME=$(whoami)
    echo ""
-    yellow "注意：v2ray或其他软件的跳过证书验证需设置为true,否则hy2或tuic节点可能不通\n"
+   echo -e "${bold_italic_red}注意：v2ray或其他软件的跳过证书验证需设置为true,否则hy2或tuic节点可能不通${RESET}"
 
     # 生成并保存配置文件
 cat <<EOF > "$WORKDIR/list.txt"
