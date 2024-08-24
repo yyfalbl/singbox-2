@@ -923,7 +923,7 @@ stop_web() {
         kill -9 $BOT_PID
            echo -n -e "\033[1;3;31m已成功停止 BOT 进程!\033[0m\n"
     else
-        echo "未找到 bot 进程，可能已经停止。"
+         echo -n -e "\033[1;3;31m未找到BOT进程，可能已经停止了!\033[0m\n"
     fi
 
     sleep 2  # Optional: pause to allow the user to see the message before exiting
