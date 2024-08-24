@@ -965,7 +965,7 @@ manage_processes() {
   USERNAME=$(whoami)
   
   echo -e "${RED_BOLD}请选择要执行的操作:${RESET}"
-  echo -e "${RED_BOLD}1. 清理所有进程,会断开连接${RESET}"
+  echo -e "${RED_BOLD}1. 清理所有进程,可能会断开ssh连接${RESET}"
   echo -e "${RED_BOLD}2. 只清理当前用户的进程${RESET}"
 printf "${YELLOW}输入选择 (1 或 2): ${RESET}"
   read -r choice
