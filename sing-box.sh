@@ -756,12 +756,13 @@ if [ -e $WORKDIR/bot ]; then
         args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port"
     fi
     
-    # 如果没有args，设置默认args
-    args=${args:-"tunnel --edge-ip-version auto run"}
-    
-    # 以后台进程方式启动 bot，输出重定向到 /dev/null
-    nohup $WORKDIR/bot $args >/dev/null 2>&1 &
-    sleep 2
+  # 如果没有args，设置默认args
+      args=${args:-"tunnel --edge-ip-version auto run"}
+      
+      echo "Starting bot with args: $args" # 输出用于调试的启动命令
+      # 以后台进程方式启动 bot，输出重定向到 bot.log
+      nohup $WORKDIR/bot $args > $WORKDIR/bot.log 2>&1 &
+      sleep 2
     
     # 检查 bot 是否成功启动
     pgrep -x "bot" > /dev/null && green "BOT IS Running" || {
