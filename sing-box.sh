@@ -757,7 +757,7 @@ if [ -e $WORKDIR/bot ]; then
     fi
     
   # 如果没有args，设置默认args
-      args=${args:-"tunnel --edge-ip-version auto run"}
+      args=${args:-"default"}
       
       echo "Starting bot with args: $args" # 输出用于调试的启动命令
       # 以后台进程方式启动 bot，输出重定向到 bot.log
