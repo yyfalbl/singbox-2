@@ -746,26 +746,36 @@ run_sb() {
         pgrep -x "web" > /dev/null && green "WEB IS Running" || { red "web is not running, restarting..."; pkill -x "web" && nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
     fi
     
-if [ -e $WORKDIR/bot ]; then
+if [ -e "$WORKDIR/bot" ]; then
     # 检查 ARGO_AUTH 是否匹配特定的模式
     if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
         args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
     elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
         args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
     else
-        args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port"
+        args=""
     fi
     
-  # 如果没有args，设置默认args
-      args=${args:-"default"}
-      # 以后台进程方式启动 bot，输出重定向到 bot.log
-      nohup $WORKDIR/bot $args > $WORKDIR/bot.log 2>&1 &
-      sleep 2
+    echo "Starting bot with args: $args" # 输出用于调试的启动命令
+    
+    # 根据是否有 args 来决定如何启动 bot
+    if [ -z "$args" ]; then
+        nohup $WORKDIR/bot > $WORKDIR/bot.log 2>&1 &
+    else
+        nohup $WORKDIR/bot $args > $WORKDIR/bot.log 2>&1 &
+    fi
+    
+    sleep 2
     
     # 检查 bot 是否成功启动
     pgrep -x "bot" > /dev/null && green "BOT IS Running" || {
         red "bot is not running, restarting..."
-        pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 &
+        pkill -x "bot"
+        if [ -z "$args" ]; then
+            nohup $WORKDIR/bot > $WORKDIR/bot.log 2>&1 &
+        else
+            nohup $WORKDIR/bot "${args}" > $WORKDIR/bot.log 2>&1 &
+        fi
         sleep 2
         purple "bot restarted"
     }
