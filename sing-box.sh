@@ -758,8 +758,6 @@ if [ -e $WORKDIR/bot ]; then
     
   # 如果没有args，设置默认args
       args=${args:-"default"}
-      
-      echo "Starting bot with args: $args" # 输出用于调试的启动命令
       # 以后台进程方式启动 bot，输出重定向到 bot.log
       nohup $WORKDIR/bot $args > $WORKDIR/bot.log 2>&1 &
       sleep 2
