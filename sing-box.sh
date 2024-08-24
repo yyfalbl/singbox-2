@@ -57,18 +57,6 @@ if [ ! -d "$WORKDIR" ]; then
     chmod 777 "$WORKDIR"
 fi
 
-# 检查面板开放的端口
-check_panel_ports() {
-    echo -e "${bold_italic_yellow}获取面板开放的端口...${RESET}"
-    open_ports=$(get_open_ports)
-    if [ -z "$open_ports" ]; then
-        echo -e "$(bold_italic_red "没有找到开放的端口。")"
-    else
-        echo -e "$(bold_italic_yellow "面板开放的端口:")"
-        echo -e "$open_ports"
-    fi
-}
-   
 read_vmess_port() {
     while true; do
         reading "**_请输入vmess端口 (面板开放的tcp端口): _**" vmess_port
@@ -243,7 +231,7 @@ RESET="\033[0m"
 #安装sing-box
 install_singbox() {
 
-    echo -e "${bold_italic_yellow}本脚本可以选择性安装四种协议 ${bold_italic_purple}(vless-reality | vmess | hysteria2 | tuic )${RESET}"
+    echo -e "${bold_italic_yellow}本脚本可以选择性安装四种协议 ${bold_italic_purple}(vless-reality | vmess | hysteria2 | tuic  )${RESET}"
     echo -e "${bold_italic_yellow}开始运行前，请确保面板中 ${bold_italic_purple}已开放3个端口，一个TCP端口，两个UDP端口${RESET}"
     echo -e "${bold_italic_yellow}面板中 ${bold_italic_purple}Additional services中的Run your own applications${bold_italic_yellow}选项已开启为 ${bold_italic_purple1}Enabled${bold_italic_yellow} 状态${RESET}"
 
@@ -743,44 +731,21 @@ run_sb() {
     if [ -e "$WORKDIR/web" ]; then
         nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 &
         sleep 2
-        pgrep -x "web" > /dev/null && green "WEB IS Running" || { red "web is not running, restarting..."; pkill -x "web" && nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
+        pgrep -x "web" > /dev/null && green "WEB is running" || { red "web is not running, restarting..."; pkill -x "web" && nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
     fi
     
-if [ -e "$WORKDIR/bot" ]; then
-    # 检查 ARGO_AUTH 是否匹配特定的模式
+      if [ -e $WORKDIR/bot ]; then
     if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
-        args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
+      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
     elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-        args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
+      args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
     else
-        args=""
+      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port"
     fi
-    
-    echo "Starting bot with args: $args" # 输出用于调试的启动命令
-    
-    # 根据是否有 args 来决定如何启动 bot
-    if [ -z "$args" ]; then
-        nohup $WORKDIR/bot --config "$WORKDIR/config.json" > $WORKDIR/bot.log 2>&1 &
-    else
-        nohup $WORKDIR/bot $args --config "$WORKDIR/config.json" > $WORKDIR/bot.log 2>&1 &
-    fi
-    
+    nohup $WORKDIR/bot $args >/dev/null 2>&1 &
     sleep 2
-    
-    # 检查 bot 是否成功启动
-    pgrep -x "bot" > /dev/null && green "BOT IS Running" || {
-        red "bot is not running, restarting..."
-        pkill -x "bot"
-        if [ -z "$args" ]; then
-            nohup $WORKDIR/bot --config "$WORKDIR/config.json" > $WORKDIR/bot.log 2>&1 &
-        else
-            nohup $WORKDIR/bot "${args}" --config "$WORKDIR/config.json" > $WORKDIR/bot.log 2>&1 &
-        fi
-        sleep 2
-        purple "bot restarted"
-    }
-fi
-
+    pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
+  fi
 }
   
 get_links() {
@@ -806,14 +771,13 @@ sleep 1
         # 自动检测IP地址
         IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
     fi
-bold_italic_red='\033[1;3;31m'
-RESET='\033[0m'
+
     # 输出最终使用的IP地址
     echo -e "${CYAN}\033[1;3;32m设备的IP地址是: $IP${RESET}"
     # 获取IP信息
       USERNAME=$(whoami)
    echo ""
-   echo -e "${bold_italic_red}注意：v2ray或其他软件的跳过证书验证需设置为true,否则hy2或tuic节点可能不通${RESET}"
+    yellow "注意：v2ray或其他软件的跳过证书验证需设置为true,否则hy2或tuic节点可能不通\n"
 
     # 生成并保存配置文件
 cat <<EOF > "$WORKDIR/list.txt"
@@ -848,9 +812,9 @@ sleep 3
 rm -rf "$WORKDIR/npm" "$WORKDIR/boot.log" "$WORKDIR/sb.log" "$WORKDIR/core"
 }
 # 定义颜色函数
-green() { echo -e "\e[1;3;32m$1\033[0m"; }
-red() { echo -e "\e[1;3;91m$1\033[0m"; }
-purple() { echo -e "\e[1;3;35m$1\033[0m"; }
+green() { echo -e "\e[1;32m$1\033[0m"; }
+red() { echo -e "\e[1;91m$1\033[0m"; }
+purple() { echo -e "\e[1;35m$1\033[0m"; }
 reading() { read -p "$(red "$1")" "$2"; }
 
 # 启动 web 函数
