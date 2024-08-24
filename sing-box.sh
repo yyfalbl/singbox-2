@@ -4,6 +4,7 @@ bold_red='\033[1;3;31m'
 bold_green='\033[1;3;32m'
 bold_yellow='\033[1;3;33m'
 bold_purple='\033[1;3;35m'
+red='\033[1;3;31m'
 reset='\033[0m'
 
 # Formatting functions
@@ -136,6 +137,12 @@ argo_configure() {
             return
         fi
 
+        
+    # 提示用户生成配置信息
+    echo -e "${yellow}请访问以下网站生成 Argo 固定隧道所需的配置信息。${RESET}"
+       echo ""
+    echo -e "${red}      https://fscarmen.cloudflare.now.cc/ ${reset}"
+           echo ""
         if [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
             while [[ -z $ARGO_DOMAIN ]]; do
                 reading "请输入 Argo 固定隧道域名: " ARGO_DOMAIN
@@ -852,20 +859,40 @@ start_web() {
     fi
     
      # Start the bot process
-if [ -e $WORKDIR/bot ]; then
-  # 直接使用提供的启动命令
-  args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
+# 检查是否安装了 VMess 协议并使用隧道功能
+if [ "$INSTALL_VMESS" == "true" ] && [ -n "$ARGO_AUTH" ]; then
+  if [ -e $WORKDIR/bot ]; then
+    # 直接使用提供的启动命令
+    args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
 
-  # 启动 bot
-  nohup $WORKDIR/bot $args >/dev/null 2>&1 &
+    # 定义日志文件路径
+    log_file="$WORKDIR/bot.log"
+
+    # 启动 bot，并将输出重定向到日志文件
+    nohup $WORKDIR/bot $args >"$log_file" 2>&1 &
+    sleep 2
+    
+    # 检查 bot 是否启动成功
+    if pgrep -x "bot" > /dev/null; then
+      green "BOT进程启动成功, 并正在运行！日志保存在 $log_file"
+    else
+      red "bot is not running, restarting..."
+      pkill -x "bot" && nohup $WORKDIR/bot "${args}" >"$log_file" 2>&1 &
+      sleep 2
+      purple "bot restarted, 日志保存在 $log_file"
+    fi
+  fi
+else
+  green "未使用隧道功能，仅启动 WEB 进程。"
+fi
+
+if [ -e $WORKDIR/web ]; then
+  # 启动 web 进程
+  nohup $WORKDIR/web >/dev/null 2>&1 &
   sleep 2
-  
-  # 检查 bot 是否启动成功
-  pgrep -x "bot" > /dev/null && green "BOT进程启动成功,并正在运行！" || {
-    red "bot is not running, restarting...";
-    pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 &
-    sleep 2;
-    purple "bot restarted";
+  pgrep -x "web" > /dev/null && green "WEB进程启动成功,并正在运行！" || {
+    red "web is not running, please check logs";
+    return
   }
 fi
 
