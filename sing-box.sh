@@ -743,21 +743,35 @@ run_sb() {
     if [ -e "$WORKDIR/web" ]; then
         nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 &
         sleep 2
-        pgrep -x "web" > /dev/null && green "WEB is running" || { red "web is not running, restarting..."; pkill -x "web" && nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
+        pgrep -x "web" > /dev/null && green "WEB IS Running" || { red "web is not running, restarting..."; pkill -x "web" && nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
     fi
     
-      if [ -e $WORKDIR/bot ]; then
+if [ -e $WORKDIR/bot ]; then
+    # 检查 ARGO_AUTH 是否匹配特定的模式
     if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
-      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
+        args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
     elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-      args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
+        args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
     else
-      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port"
+        args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port"
     fi
+    
+    # 如果没有args，设置默认args
+    args=${args:-"tunnel --edge-ip-version auto run"}
+    
+    # 以后台进程方式启动 bot，输出重定向到 /dev/null
     nohup $WORKDIR/bot $args >/dev/null 2>&1 &
     sleep 2
-    pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
-  fi
+    
+    # 检查 bot 是否成功启动
+    pgrep -x "bot" > /dev/null && green "BOT IS Running" || {
+        red "bot is not running, restarting..."
+        pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 &
+        sleep 2
+        purple "bot restarted"
+    }
+fi
+
 }
   
 get_links() {
