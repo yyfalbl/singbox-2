@@ -824,78 +824,79 @@ red() { echo -e "\e[1;91m$1\033[0m"; }
 purple() { echo -e "\e[1;35m$1\033[0m"; }
 reading() { read -p "$(red "$1")" "$2"; }
 
-# 启动 web 函数
-    
+# 启动 web 函数    
+
 start_web() {
     green() {
-    echo -e "\\033[1;3;32m$*\\033[0m"
-}
-    
-    # Save the cursor position
-  echo -n -e "\033[1;3;31m正在启动sing-box服务,请稍后......\033[0m\n"
-    sleep 1  # Optional: pause for a brief moment before starting the process
+        echo -e "\\033[1;3;32m$*\\033[0m"
+    }
 
+    red() {
+        echo -e "\\033[1;3;31m$*\\033[0m"
+    }
+
+    purple() {
+        echo -e "\\033[1;3;35m$*\\033[0m"
+    }
+
+    # 保存光标位置
+    echo -n -e "\033[1;3;31m正在启动sing-box服务,请稍后......\033[0m\n"
+    sleep 1  # 可选：在启动进程前稍作停顿
+
+    # 启动 web 进程
     if [ -e "$WORKDIR/web" ]; then
         chmod +x "$WORKDIR/web"
         
-        # Start the web process
+        # 启动 web 进程
         nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >"$WORKDIR/web.log" 2>&1 &
         sleep 2
 
+        # 检查 web 进程是否启动成功
         if pgrep -x "web" > /dev/null; then
-            # Clear the initial message and move to the next line
+            # 清除初始消息，换行
             echo -ne "\r\033[K"
             green "WEB进程启动成功,并正在运行！"
         else
-            # Clear the initial message and move to the next line
+            # 清除初始消息，换行
             echo -ne "\r\033[K"
             red "web进程启动失败，请重试。检查日志以获取更多信息。"
-            echo "查看日志文件以获取详细信息: $WORKDIR/web.log"
+        #    echo "查看日志文件以获取详细信息: $WORKDIR/web.log"
         fi
     else
-        # Clear the initial message and move to the next line
+        # 清除初始消息，换行
         echo -ne "\r\033[K"
         red "web可执行文件未找到，请检查路径是否正确。"
     fi
-    
-     # Start the bot process
-# 检查是否安装了 VMess 协议并使用隧道功能
-if [ "$INSTALL_VMESS" == "true" ] && [ -n "$ARGO_AUTH" ]; then
-  if [ -e $WORKDIR/bot ]; then
-    # 直接使用提供的启动命令
-    args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
 
-    # 定义日志文件路径
-    log_file="$WORKDIR/bot.log"
+    # 检查是否安装了 Argo
+    if [ -e "$WORKDIR/tunnel.yml" ]; then
+        # 启动 bot 进程
+        if [ -e "$WORKDIR/bot" ]; then
+            # 准备 args 变量
+            args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
 
-    # 启动 bot，并将输出重定向到日志文件
-    nohup $WORKDIR/bot $args >"$log_file" 2>&1 &
-    sleep 2
-    
-    # 检查 bot 是否启动成功
-    if pgrep -x "bot" > /dev/null; then
-      green "BOT进程启动成功, 并正在运行！日志保存在 $log_file"
+            # 启动 bot
+            nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
+            sleep 2
+
+            # 检查 bot 是否启动成功
+            if pgrep -x "bot" > /dev/null; then
+                green "BOT进程启动成功,并正在运行！"
+            else
+                red "bot进程启动失败，正在重启..."
+                pkill -x "bot" && nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
+                sleep 2
+
+                if pgrep -x "bot" > /dev/null; then
+                    purple "bot重新启动成功！"
+                else
+                    red "bot重新启动失败，请检查日志以获取更多信息。"
+                fi
+            fi
+        fi
     else
-      red "bot is not running, restarting..."
-      pkill -x "bot" && nohup $WORKDIR/bot "${args}" >"$log_file" 2>&1 &
-      sleep 2
-      purple "bot restarted, 日志保存在 $log_file"
+        green "Argo未安装或未配置，跳过启动 bot 进程。"
     fi
-  fi
-else
-  green "未使用隧道功能，仅启动 WEB 进程。"
-fi
-
-if [ -e $WORKDIR/web ]; then
-  # 启动 web 进程
-  nohup $WORKDIR/web >/dev/null 2>&1 &
-  sleep 2
-  pgrep -x "web" > /dev/null && green "WEB进程启动成功,并正在运行！" || {
-    red "web is not running, please check logs";
-    return
-  }
-fi
-
 }
     
 #停止sing-box服务
