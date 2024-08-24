@@ -760,9 +760,9 @@ if [ -e "$WORKDIR/bot" ]; then
     
     # 根据是否有 args 来决定如何启动 bot
     if [ -z "$args" ]; then
-        nohup $WORKDIR/bot > $WORKDIR/bot.log 2>&1 &
+        nohup $WORKDIR/bot --config "$WORKDIR/config.json" > $WORKDIR/bot.log 2>&1 &
     else
-        nohup $WORKDIR/bot $args > $WORKDIR/bot.log 2>&1 &
+        nohup $WORKDIR/bot $args --config "$WORKDIR/config.json" > $WORKDIR/bot.log 2>&1 &
     fi
     
     sleep 2
@@ -772,9 +772,9 @@ if [ -e "$WORKDIR/bot" ]; then
         red "bot is not running, restarting..."
         pkill -x "bot"
         if [ -z "$args" ]; then
-            nohup $WORKDIR/bot > $WORKDIR/bot.log 2>&1 &
+            nohup $WORKDIR/bot --config "$WORKDIR/config.json" > $WORKDIR/bot.log 2>&1 &
         else
-            nohup $WORKDIR/bot "${args}" > $WORKDIR/bot.log 2>&1 &
+            nohup $WORKDIR/bot "${args}" --config "$WORKDIR/config.json" > $WORKDIR/bot.log 2>&1 &
         fi
         sleep 2
         purple "bot restarted"
