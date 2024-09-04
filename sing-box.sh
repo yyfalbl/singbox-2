@@ -38,7 +38,7 @@ check_web_status() {
 setup_socks5() {
   # 设置工作目录
   FILE_PATH="$WORKDIR"
-  CYAN="\033[1;3;36m"
+  CYAN="\033[1;3;33m"
   RESET="\033[0m"
   user=$(whoami)  # 获取当前用户名
   SERV_DOMAIN="$user.serv00.net"  # 使用本机域名格式
