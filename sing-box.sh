@@ -13,6 +13,9 @@ bold_italic_green() { echo -e "${bold_green}\033[3m$1${reset}"; }
 bold_italic_yellow() { echo -e "${bold_yellow}\033[3m$1${reset}"; }
 bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
 
+# 设置工作目录
+WORKDIR="$HOME/sbox"
+
 # Function to check if sing-box is installed
 check_singbox_installed() {
     if [ -e "$HOME/sbox/web" ]; then
@@ -31,6 +34,119 @@ check_web_status() {
     fi
 }
 
+# Socks5 安装和配置的主函数
+setup_socks5() {
+  # 设置工作目录
+  FILE_PATH="$WORKDIR"
+  CYAN="\033[1;3;36m"
+  RESET="\033[0m"
+  user=$(whoami)  # 获取当前用户名
+  SERV_DOMAIN="$user.serv00.net"  # 使用本机域名格式
+
+  # 提示用户是否安装 Socks5 代理
+read -p "$(echo -e "${CYAN}是否安装 Socks5 代理？(Y/N 回车N) ${RESET}") " install_socks5_answer
+install_socks5_answer=${install_socks5_answer^^}
+
+  # 判断是否安装 Socks5 代理
+  if [[ "$install_socks5_answer" != "Y" ]]; then
+    echo -e "${CYAN}已取消安装 Socks5 代理。${RESET}"
+    return
+  fi
+
+  # 提示用户输入IP地址（或按回车自动检测）
+  read -p "$(echo -e "${CYAN}请输入IP地址（或按回车自动检测）: ${RESET}") " user_ip
+
+  # 如果用户输入了IP地址，使用用户提供的IP地址，否则自动检测
+  if [ -n "$user_ip" ]; then
+      IP="$user_ip"
+  else
+      IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
+  fi
+
+  # 输出最终使用的IP地址和域名
+  echo -e "${CYAN}设备的IP地址是: ${IP}${RESET}"
+  echo -e "${CYAN}本机域名是: ${SERV_DOMAIN}${RESET}"
+
+  # 提示用户输入 socks5 端口号
+  read -p "$(echo -e "${CYAN}请输入 socks5 端口 (面板开放的TCP端口): ${RESET}")" SOCKS5_PORT
+
+  # 提示用户输入用户名和密码
+  read -p "$(echo -e "${CYAN}请输入 socks5 用户名: ${RESET}")" SOCKS5_USER
+
+  while true; do
+    read -p "$(echo -e "${CYAN}请输入 socks5 密码（不能包含@和:）: ${RESET}")" SOCKS5_PASS
+    echo
+    if [[ "$SOCKS5_PASS" == *"@"* || "$SOCKS5_PASS" == *":"* ]]; then
+      echo -e "${CYAN}密码中不能包含@和:符号，请重新输入。${RESET}"
+    else
+      break
+    fi
+  done
+
+  # 创建配置文件
+  cat > "$FILE_PATH/config.json" << EOF
+{
+  "log": {
+    "access": "/dev/null",
+    "error": "/dev/null",
+    "loglevel": "none"
+  },
+  "inbounds": [
+    {
+      "port": "$SOCKS5_PORT",
+      "protocol": "socks",
+      "tag": "socks",
+      "settings": {
+        "auth": "password",
+        "udp": false,
+        "ip": "0.0.0.0",
+        "userLevel": 0,
+        "accounts": [
+          {
+            "user": "$SOCKS5_USER",
+            "pass": "$SOCKS5_PASS"
+          }
+        ]
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "direct",
+      "protocol": "freedom"
+    }
+  ]
+}
+EOF
+
+  # 检查是否需要重新下载 socks5 程序
+  if [[ ! -e "${FILE_PATH}/s5" ]]; then
+    curl -L -sS -o "${FILE_PATH}/s5" "https://github.com/eooce/test/releases/download/freebsd/web"
+  else
+    read -p "$(echo -e "${CYAN}socks5 程序已存在，是否重新下载？(Y/N 回车N): ${RESET}")" reinstall_socks5_answer
+    reinstall_socks5_answer=${reinstall_socks5_answer^^}
+    if [[ "$reinstall_socks5_answer" == "Y" ]]; then
+      curl -L -sS -o "${FILE_PATH}/s5" "https://github.com/eooce/test/releases/download/freebsd/web"
+    fi
+  fi
+
+  # 启动 socks5 程序
+  chmod +x "${FILE_PATH}/s5"
+  nohup "${FILE_PATH}/s5" -c "${FILE_PATH}/config.json" >/dev/null 2>&1 &
+  sleep 1
+
+  # 检查程序是否启动成功
+  if pgrep -x "s5" > /dev/null; then
+    echo -e "\033[1;3;32mSocks5 代理程序启动成功\033[0m"
+    echo -e "\033[1;3;33mSocks5 代理地址： $IP:$SOCKS5_PORT 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS\033[0m"
+    echo -e "\033[1;3;33m本机域名：$SERV_DOMAIN\033[0m"
+    # 显示代理 URL
+    echo -e "\033[1;3;33msocks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${SOCKS5_PORT}\033[0m"
+  else
+    echo -e "\033[1;3;31mSocks5 代理程序启动失败\033[0m"
+  fi
+}
+    
 # 定义存储 UUID 的文件路径
 UUID_FILE="${HOME}/.singbox_uuid"
 
@@ -46,8 +162,7 @@ export NEZHA_SERVER=${NEZHA_SERVER:-''}
 export NEZHA_PORT=${NEZHA_PORT:-'5555'}     
 export NEZHA_KEY=${NEZHA_KEY:-''}
 
-# 设置工作目录
-WORKDIR="$HOME/sbox"
+
 
 # 确保工作目录存在
 mkdir -p "$WORKDIR"
@@ -376,35 +491,51 @@ install_singbox() {
 
     
 uninstall_singbox() {
-    echo -e "$(bold_italic_purple "正在卸载sing-box，请稍后...")"
+    echo -e "$(bold_italic_purple "正在卸载 sing-box，请稍后...")"
     read -p $'\033[1;3;38;5;220m确定要卸载吗?<ENTER默认Y>【y/n】:\033[0m ' choice
     choice=${choice:-y}  # 默认值为 y
 
     case "$choice" in
         [Yy])
-            # 终止相关进程
+            # 终止 sing-box 相关进程
             for process in 'web' 'bot' 'npm'; do
                 pids=$(pgrep -f "$process" 2>/dev/null)
                 if [ -n "$pids" ]; then
                     kill -9 $pids 2>/dev/null
+                    echo -e "$(bold_italic_purple "已终止 $process 进程。")"
                 fi
             done
-            
+
+            # 终止 Socks5 代理进程
+            if pgrep -x "s5" > /dev/null; then
+                pkill -9 s5
+                echo -e "$(bold_italic_purple "已终止 Socks5 代理进程。")"
+            fi
+
             # 删除下载目录
             WORKDIR="$HOME/sbox"
             if [ -d "$WORKDIR" ]; then
                 rm -rf "$WORKDIR" 2>/dev/null
+                echo -e "$(bold_italic_purple "已删除工作目录：$WORKDIR。")"
+            fi
+
+            # 删除 Socks5 配置文件
+            SOCKS5_CONFIG="$WORKDIR/config.json"
+            if [ -f "$SOCKS5_CONFIG" ]; then
+                rm -f "$SOCKS5_CONFIG" 2>/dev/null
+                echo -e "$(bold_italic_purple "已删除 Socks5 配置文件：$SOCKS5_CONFIG。")"
             fi
 
             echo -e "$(bold_italic_purple "正在卸载......")"
-            sleep 2  # Optional: pause for a brief moment to let the user see the message
+            sleep 2  # 可选：暂停片刻让用户看到消息
             echo -e "$(bold_italic_purple "卸载完成！")"
             ;;
         [Nn])
+            echo -e "$(bold_italic_purple "已取消卸载。")"
             exit 0
             ;;
         *)
-            echo -e "$(bold_italic_red "无效的选择，请输入y或n")"
+            echo -e "$(bold_italic_red "无效的选择，请输入 y 或 n")"
             menu
             ;;
     esac
@@ -1039,27 +1170,30 @@ menu() {
    echo ""
    green "\033[1;3m1. 安装sing-box\033[0m"
    echo "==============="
-   red "\033[1;3m2. 卸载sing-box\033[0m"
+     green "\033[1;3m2. 安装Socks5\033[0m"
    echo "==============="
-   bold_italic_light_blue "\033[1;3m3. 查看节点信息\033[0m"
+   red "\033[1;3m3. 卸载sing-box或socks5\033[0m"
    echo "==============="
-yellow "\\033[1;3m4. 清理系统进程\\033[0m"
+   bold_italic_light_blue "\033[1;3m4. 查看节点信息\033[0m"
    echo "==============="
-   green "\033[1;3m5. 启动sing-box服务\033[0m"
+yellow "\\033[1;3m5. 清理系统进程\\033[0m"
    echo "==============="
-      pink "\033[1;3m6. 停止sing-box服务\033[0m"
+   green "\033[1;3m6. 启动sing-box服务\033[0m"
+   echo "==============="
+      pink "\033[1;3m7. 停止sing-box服务\033[0m"
    echo "==============="
    red "\033[1;3m0. 退出脚本\033[0m"
    echo "==========="
-reading "请输入选择(0-6): " choice
+reading "请输入选择(0-7): " choice
    echo ""
    case "${choice}" in
         1) install_singbox ;;
-        2) uninstall_singbox ;;
-        3) cat $WORKDIR/list.txt ;;
-        4) manage_processes ;;
-        5) start_web ;;
-        6) stop_web ;;
+        2) setup_socks5  ;;
+        3) uninstall_singbox ;;
+        4) cat $WORKDIR/list.txt ;;
+        5) manage_processes ;;
+        6) start_web ;;
+        7) stop_web ;;
         0) exit 0 ;;
         *) red "\033[1;3m无效的选项，请输入 0 到 5\033[0m" ;;
     esac
