@@ -6,7 +6,9 @@ bold_yellow='\033[1;3;33m'
 bold_purple='\033[1;3;35m'
 red='\033[1;3;31m'
 reset='\033[0m'
-
+RED='\033[1;31m'
+BOLD_ITALIC='\033[1;3m'
+RESET='\033[0m'
 # Formatting functions
 bold_italic_red() { echo -e "${bold_red}\033[3m$1${reset}"; }
 bold_italic_green() { echo -e "${bold_green}\033[3m$1${reset}"; }
@@ -242,7 +244,7 @@ read_nz_variables() {
 #固定argo隧道  
 argo_configure() {
     if [[ "$INSTALL_VMESS" == "true" ]]; then
-        reading "是否需要使用固定 Argo 隧道？【y/n】(默认使用临时隧道):\c" argo_choice
+        reading "是否需要使用固定 Argo 隧道？【y/n】(N 或者回车为默认使用临时隧道):\c" argo_choice
         # 处理用户输入
         if [[ -z $argo_choice ]]; then
             green "没有输入任何内容，默认使用临时隧道"
@@ -491,6 +493,7 @@ install_singbox() {
 
     
 uninstall_singbox() {
+   
     echo -e "$(bold_italic_purple "正在卸载 sing-box，请稍后...")"
     read -p $'\033[1;3;38;5;220m确定要卸载吗?<ENTER默认Y>【y/n】:\033[0m ' choice
     choice=${choice:-y}  # 默认值为 y
@@ -530,6 +533,7 @@ uninstall_singbox() {
             sleep 2  # 可选：暂停片刻让用户看到消息
             echo -e "$(bold_italic_purple "卸载完成！")"
             ;;
+      
         [Nn])
             echo -e "$(bold_italic_purple "已取消卸载。")"
             exit 0
@@ -547,18 +551,18 @@ download_singbox() {
     
      if [ "$ARCH" == "arm" ] || [ "$ARCH" == "arm64" ] || [ "$ARCH" == "aarch64" ]; then
       # if [[ -z $ARGO_AUTH || -z $ARGO_DOMAIN ]]; then
-      #   FILE_INFO=("https://github.com/ansoncloud8/am-serv00-vmess/releases/download/1.0.0/arm64-sb web")
+      #   FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-sb web")
       # else
-        FILE_INFO=("https://github.com/ansoncloud8/am-serv00-vmess/releases/download/1.0.0/arm64-sb web" "https://github.com/ansoncloud8/am-serv00-vmess/releases/download/1.0.0/arm64-bot13 bot")
+        FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-sb web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-bot13 bot")
       # fi
-      # FILE_INFO=("https://github.com/ansoncloud8/am-serv00-vmess/releases/download/1.0.0/arm64-sb web" "https://github.com/ansoncloud8/am-serv00-vmess/releases/download/1.0.0/arm64-bot13 bot" "https://github.com/ansoncloud8/am-serv00-vmess/releases/download/1.0.0/arm64-swith npm")
+      # FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-sb web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-bot13 bot" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-swith npm")
   elif [ "$ARCH" == "amd64" ] || [ "$ARCH" == "x86_64" ] || [ "$ARCH" == "x86" ]; then
       # if [[ -z $ARGO_AUTH || -z $ARGO_DOMAIN ]]; then
-      #   FILE_INFO=("https://github.com/ansoncloud8/am-serv00-vmess/releases/download/1.0.0/amd64-web web")
+      #   FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-web web")
       # else
-        FILE_INFO=("https://github.com/ansoncloud8/am-serv00-vmess/releases/download/1.0.0/amd64-web web" "https://github.com/ansoncloud8/am-serv00-vmess/releases/download/1.0.0/amd64-bot bot")
+        FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-web web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-bot bot")
       # fi
-      # FILE_INFO=("https://github.com/ansoncloud8/am-serv00-vmess/releases/download/1.0.0/amd64-web web" "https://github.com/ansoncloud8/am-serv00-vmess/releases/download/1.0.0/arm64-bot bot" "https://github.com/ansoncloud8/am-serv00-vmess/releases/download/1.0.0/arm64-npm npm")
+      # FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-web web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-bot bot" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-npm npm")
   else
       echo "Unsupported architecture: $ARCH"
       exit 1
@@ -910,33 +914,44 @@ sleep 1
         IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
     fi
 
+current_fqdn=$(hostname -f)
+
+# 检查域名是否以 serv00.com 结尾
+if [[ "$current_fqdn" == *.serv00.com ]]; then
+echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}"
+   # echo "该服务器属于 serv00.com 域"
+
+    # 提取子域名（假设子域名在主域名前缀的第一部分）
+    subdomain=${current_fqdn%%.*}    
+  fi  
+    
     # 输出最终使用的IP地址
     echo -e "${CYAN}\033[1;3;32m设备的IP地址是: $IP${RESET}"
-    # 获取IP信息
+    # 获取用户名信息
       USERNAME=$(whoami)
    echo ""
-    yellow "注意：v2ray或其他软件的跳过证书验证需设置为true,否则hy2或tuic节点可能不通\n"
+  printf "${RED}${BOLD_ITALIC}注意：v2ray或其他软件的跳过证书验证需设置为true, 否则hy2或tuic节点可能不通${RESET}\n"
 
     # 生成并保存配置文件
 cat <<EOF > "$WORKDIR/list.txt"
 $(if [ "$INSTALL_VLESS" = "true" ]; then
-    printf "${YELLOW}\033[1mvless://$UUID@$IP:$vless_port?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.ups.com&fp=chrome&pbk=$public_key&type=tcp&headerType=none#${USERNAME}${RESET}\n"
+    printf "${YELLOW}\033[1mvless://$UUID@$IP:$vless_port?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.ups.com&fp=chrome&pbk=$public_key&type=tcp&headerType=none#${USERNAME}-${subdomain}${RESET}\n"
 fi)
 
 $(if [ "$INSTALL_VMESS" = "true" ]; then
-    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}\", \"add\": \"$IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
 fi)
 
 $(if [ "$INSTALL_VMESS" = "true" ] && [ -n "$argodomain" ]; then
-    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}\", \"add\": \"www.visa.com\", \"port\": \"443\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"www.visa.com\", \"port\": \"443\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
 fi)
 
 $(if [ "$INSTALL_HYSTERIA2" = "true" ]; then
-    printf "${YELLOW}\033[1mhysteria2://$UUID@$IP:$hy2_port/?sni=www.bing.com&alpn=h3&insecure=1#${USERNAME}${RESET}\n"
+    printf "${YELLOW}\033[1mhysteria2://$UUID@$IP:$hy2_port/?sni=www.bing.com&alpn=h3&insecure=1#${USERNAME}-${subdomain}${RESET}\n"
 fi)
 
 $(if [ "$INSTALL_TUIC" = "true" ]; then
-    printf "${YELLOW}\033[1mtuic://$UUID:admin123@$IP:$tuic_port?sni=www.bing.com&congestion_control=bbr&udp_relay_mode=native&alpn=h3&allow_insecure=1#${USERNAME}${RESET}\n"
+    printf "${YELLOW}\033[1mtuic://$UUID:admin123@$IP:$tuic_port?sni=www.bing.com&congestion_control=bbr&udp_relay_mode=native&alpn=h3&allow_insecure=1#${USERNAME}-${subdomain}${RESET}\n"
 fi)
 EOF
 
@@ -1146,16 +1161,18 @@ bold_italic_orange() {
 }
     bold_italic_light_blue() {
     echo -e "\033[1;3;36m$1\033[0m"
-}
+}    
 # 主菜单
 menu() {
    clear
+      while true; do
    echo ""
    magenta "=== SERV00和CT8|SING-BOX一键安装脚本 ==="
    echo ""
   bold_italic_orange "\033[1;3m=== 脚本支持:VLESS VMESS HY2 TUIC socks5 协议，UUID自动生成 ===\033[0m\n"
     magenta "=== 支持安装：单，双，三个协议(面板最多只能开放3个端口)，自由选择 ===\n"
-  bold_italic_light_blue "=== 固定argo隧道 可以优选ip或优选域名！ ===\n"
+  bold_italic_light_blue "=== 固定argo隧道 可以优选ip或优选域名！  ===\n"
+    bold_italic_light_blue "=== argo隧道配置文件生成网址  https://fscarmen.cloudflare.now.cc/ ===\n"
   echo -e "${green}\033[1;3;33m脚本地址：\033[0m${re}\033[1;3;33mhttps://github.com/yyfalbl/singbox-2\033[0m${re}\n"
    purple "\033[1;3m*****转载请著名出处，请勿滥用*****\033[0m\n"
    echo ""
@@ -1168,6 +1185,7 @@ menu() {
    echo ""  # 添加空行
 
    echo ""
+
    green "\033[1;3m1. 安装sing-box\033[0m"
    echo "==============="
      green "\033[1;3m2. 安装Socks5\033[0m"
@@ -1187,16 +1205,48 @@ yellow "\\033[1;3m5. 清理系统进程\\033[0m"
 reading "请输入选择(0-7): " choice
    echo ""
    case "${choice}" in
-        1) install_singbox ;;
-        2) setup_socks5  ;;
-        3) uninstall_singbox ;;
-        4) cat $WORKDIR/list.txt ;;
-        5) manage_processes ;;
-        6) start_web ;;
-        7) stop_web ;;
+       1) 
+            install_singbox
+             read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
+            clear
+            ;;
+       2) 
+            setup_socks5
+             read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
+            clear
+            ;;
+        3)
+            uninstall_singbox
+            read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
+            clear
+            ;;
+        4)
+            cat $WORKDIR/list.txt
+            read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
+            clear
+            ;;
+        5)
+            manage_processes
+            read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
+            clear
+            ;;
+        6)
+            start_web
+            read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
+            clear
+            ;;
+        7)
+            stop_web
+            read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
+            clear
+            ;;
         0) exit 0 ;;
-        *) red "\033[1;3m无效的选项，请输入 0 到 5\033[0m" ;;
+*) 
+            red "\033[1;3m无效的选项，请输入 0 到 7\033[0m"
+            echo ""
+            ;;
     esac
+    done
 }
 
 menu
