@@ -48,8 +48,8 @@ setup_socks5() {
   SERV_DOMAIN="$user.serv00.net"  # 使用本机域名格式
 
   # 提示用户是否安装 Socks5 代理
-read -p "$(echo -e "${CYAN}是否安装 Socks5 代理？(Y/N 回车N) ${RESET}") " install_socks5_answer
-install_socks5_answer=${install_socks5_answer^^}
+  read -p "$(echo -e "${CYAN}是否安装 Socks5 代理？(Y/N 回车N) ${RESET}") " install_socks5_answer
+  install_socks5_answer=${install_socks5_answer^^}
 
   # 判断是否安装 Socks5 代理
   if [[ "$install_socks5_answer" != "Y" ]]; then
@@ -146,7 +146,7 @@ EOF
     echo -e "\033[1;3;33m本机域名：$SERV_DOMAIN\033[0m"
     # 显示代理 URL
     echo -e "\033[1;3;33msocks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${SOCKS5_PORT}\033[0m"
-# 将 socks5 代理信息添加到 list.txt 文件中
+    # 将 socks5 代理信息添加到 list.txt 文件中
     cat <<EOF >> "$WORKDIR/list.txt"
 Socks5 代理地址： $IP:$SOCKS5_PORT 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS
 socks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${SOCKS5_PORT}
@@ -155,6 +155,7 @@ EOF
     echo -e "\033[1;3;31mSocks5 代理程序启动失败\033[0m"
   fi
 }
+
     
 # 定义存储 UUID 的文件路径
 UUID_FILE="${HOME}/.singbox_uuid"
