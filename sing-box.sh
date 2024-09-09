@@ -576,19 +576,12 @@ download_singbox() {
     ARCH=$(uname -m) && DOWNLOAD_DIR="$HOME/sbox" && mkdir -p "$DOWNLOAD_DIR" && FILE_INFO=()
     
      if [ "$ARCH" == "arm" ] || [ "$ARCH" == "arm64" ] || [ "$ARCH" == "aarch64" ]; then
-      # if [[ -z $ARGO_AUTH || -z $ARGO_DOMAIN ]]; then
-      #   FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-sb web")
-      # else
         FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-sb web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-bot13 bot")
-      # fi
-      # FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-sb web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-bot13 bot" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-swith npm")
+     
   elif [ "$ARCH" == "amd64" ] || [ "$ARCH" == "x86_64" ] || [ "$ARCH" == "x86" ]; then
-      # if [[ -z $ARGO_AUTH || -z $ARGO_DOMAIN ]]; then
-      #   FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-web web")
-      # else
+     
         FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-web web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-bot bot")
-      # fi
-      # FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-web web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-bot bot" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-npm npm")
+     
   else
       echo "Unsupported architecture: $ARCH"
       exit 1
