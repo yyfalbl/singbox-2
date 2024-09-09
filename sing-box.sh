@@ -969,6 +969,11 @@ $(if [ "$INSTALL_HYSTERIA2" = "true" ]; then
     printf "${YELLOW}\033[1mhysteria2://$UUID@$IP:$hy2_port/?sni=www.bing.com&alpn=h3&insecure=1#${USERNAME}-${subdomain}${RESET}\n"
 fi)
 
+$(if [ "$INSTALL_HYSTERIA2" = "true" ]; then
+    printf "${YELLOW}\033[1mSocks5 代理地址： $IP:$SOCKS5_PORT 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS${RESET}\n"
+    printf "${YELLOW}\033[1msocks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${SOCKS5_PORT}${RESET}\n"
+fi)
+
 $(if [ "$INSTALL_TUIC" = "true" ]; then
     printf "${YELLOW}\033[1mtuic://$UUID:admin123@$IP:$tuic_port?sni=www.bing.com&congestion_control=bbr&udp_relay_mode=native&alpn=h3&allow_insecure=1#${USERNAME}-${subdomain}${RESET}\n"
 fi)
