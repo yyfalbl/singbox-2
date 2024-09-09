@@ -125,12 +125,12 @@ EOF
 
   # 检查是否需要重新下载 socks5 程序
   if [[ ! -e "${FILE_PATH}/s5" ]]; then
-    curl -L -sS -o "${FILE_PATH}/s5" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/socks5 "
+    curl -L -sS -o "${FILE_PATH}/s5" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/web "
   else
     read -p "$(echo -e "${CYAN}socks5 程序已存在，是否重新下载？(Y/N 回车N): ${RESET}")" reinstall_socks5_answer
     reinstall_socks5_answer=${reinstall_socks5_answer^^}
     if [[ "$reinstall_socks5_answer" == "Y" ]]; then
-      curl -L -sS -o "${FILE_PATH}/s5" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/socks5 "
+      curl -L -sS -o "${FILE_PATH}/s5" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/web "
     fi
   fi
 
