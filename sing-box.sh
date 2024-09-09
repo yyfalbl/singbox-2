@@ -125,12 +125,12 @@ EOF
 
   # 检查是否需要重新下载 socks5 程序
   if [[ ! -e "${FILE_PATH}/s5" ]]; then
-    curl -L -sS -o "${FILE_PATH}/s5" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/web"
+    curl -L -sS -o "${FILE_PATH}/s5" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/web "
   else
     read -p "$(echo -e "${CYAN}socks5 程序已存在，是否重新下载？(Y/N 回车N): ${RESET}")" reinstall_socks5_answer
     reinstall_socks5_answer=${reinstall_socks5_answer^^}
     if [[ "$reinstall_socks5_answer" == "Y" ]]; then
-      curl -L -sS -o "${FILE_PATH}/s5" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/web"
+      curl -L -sS -o "${FILE_PATH}/s5" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/web "
     fi
   fi
 
@@ -376,7 +376,8 @@ install_singbox() {
 
     CERT_PATH="${HOME}/sbox/cert.pem"
     PRIVATE_KEY_PATH="${HOME}/sbox/private.key"
-
+# 显示选项函数
+display_options() {
     echo -e "${GREEN}\033[1m\033[3m请选择需要安装的服务（请输入对应的序号）：${RESET}"
     echo -e "${bold_italic_yellow}1: vless-reality${RESET}"
     echo -e "${bold_italic_yellow}2: vmess${RESET}"
@@ -384,13 +385,21 @@ install_singbox() {
     echo -e "${bold_italic_yellow}4: tuic${RESET}"
     echo -e "${bold_italic_yellow}5: 安装两个协议${RESET}"
     echo -e "${bold_italic_yellow}6: 安装三个协议${RESET}"
+}
+
+# 初始化安装选项
+INSTALL_VLESS="false"
+INSTALL_VMESS="false"
+INSTALL_HYSTERIA2="false"
+INSTALL_TUIC="false"
+
+# 循环直到获取有效输入
+while true; do
+    # 显示选项并读取用户选择
+    display_options
     read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " choices
 
-    INSTALL_VLESS="false"
-    INSTALL_VMESS="false"
-    INSTALL_HYSTERIA2="false"
-    INSTALL_TUIC="false"
-
+    # 处理用户选择
     if [[ "$choices" == "5" ]]; then
         echo -e "${bold_italic_yellow}请选择要安装的两个协议（请输入对应的序号，用空格分隔）${RESET}"
         read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " choices
@@ -399,15 +408,30 @@ install_singbox() {
         read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " choices
     fi
 
+    # 设置安装选项
+    valid_choice=true
     for choice in $choices; do
         case "$choice" in
             1) INSTALL_VLESS="true" ;;
             2) INSTALL_VMESS="true" ;;
             3) INSTALL_HYSTERIA2="true" ;;
             4) INSTALL_TUIC="true" ;;
-            *) echo -e "$(bold_italic_red "无效的选择: $choice")" ;;
+            *)
+             # echo -e "${RED}\033[1m\033[1;3;31m无效的选择,请重新输入正确的序号!${RESET}"
+                valid_choice=false
+                break
+                ;;
         esac
     done
+
+    # 如果所有选择都是有效的，则退出循环
+    if $valid_choice; then
+        break
+    else
+      echo -e "${RED}\033[1m\033[1;3;31m输入错误，请重新输入!!!${RESET}"
+       
+    fi
+done
 
     validate_port() {
         local port=$1
@@ -1207,12 +1231,12 @@ yellow "\\033[1;3m5. 清理系统进程\\033[0m"
 reading "请输入选择(0-7): " choice
    echo ""
    case "${choice}" in
-       1) 
+       1)
             install_singbox
              read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
             clear
             ;;
-       2) 
+       2)
             setup_socks5
              read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
             clear
@@ -1243,7 +1267,7 @@ reading "请输入选择(0-7): " choice
             clear
             ;;
         0) exit 0 ;;
-*) 
+*)
             red "\033[1;3m无效的选项，请输入 0 到 7\033[0m"
             echo ""
             ;;
