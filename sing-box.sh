@@ -9,6 +9,8 @@ reset='\033[0m'
 RED='\033[1;31m'
 BOLD_ITALIC='\033[1;3m'
 RESET='\033[0m'
+GREEN_BOLD_ITALIC="\033[1;3;32m"
+RESET="\033[0m"
 # Formatting functions
 bold_italic_red() { echo -e "${bold_red}\033[3m$1${reset}"; }
 bold_italic_green() { echo -e "${bold_green}\033[3m$1${reset}"; }
