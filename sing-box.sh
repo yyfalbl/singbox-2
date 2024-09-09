@@ -124,23 +124,23 @@ install_socks5_answer=${install_socks5_answer^^}
 EOF
 
   # 检查是否需要重新下载 socks5 程序
-  if [[ ! -e "${FILE_PATH}/s5" ]]; then
-    curl -L -sS -o "${FILE_PATH}/s5" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/web"
+  if [[ ! -e "${FILE_PATH}/socks5" ]]; then
+    curl -L -sS -o "${FILE_PATH}/socks5" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/socks5"
   else
     read -p "$(echo -e "${CYAN}socks5 程序已存在，是否重新下载？(Y/N 回车N): ${RESET}")" reinstall_socks5_answer
     reinstall_socks5_answer=${reinstall_socks5_answer^^}
     if [[ "$reinstall_socks5_answer" == "Y" ]]; then
-      curl -L -sS -o "${FILE_PATH}/s5" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/web"
+      curl -L -sS -o "${FILE_PATH}/socks5" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/socks5"
     fi
   fi
 
   # 启动 socks5 程序
-  chmod +x "${FILE_PATH}/s5"
-  nohup "${FILE_PATH}/s5" -c "${FILE_PATH}/config.json" >/dev/null 2>&1 &
+  chmod +x "${FILE_PATH}/socks5"
+  nohup "${FILE_PATH}/socks5" -c "${FILE_PATH}/config.json" >/dev/null 2>&1 &
   sleep 1
 
   # 检查程序是否启动成功
-  if pgrep -x "s5" > /dev/null; then
+  if pgrep -x "socks5" > /dev/null; then
     echo -e "\033[1;3;32mSocks5 代理程序启动成功\033[0m"
     echo -e "\033[1;3;33mSocks5 代理地址： $IP:$SOCKS5_PORT 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS\033[0m"
     echo -e "\033[1;3;33m本机域名：$SERV_DOMAIN\033[0m"
