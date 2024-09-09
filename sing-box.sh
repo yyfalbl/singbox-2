@@ -536,8 +536,8 @@ uninstall_singbox() {
             done
 
             # 终止 Socks5 代理进程
-            if pgrep -x "s5" > /dev/null; then
-                pkill -9 s5
+            if pgrep -x "socks5" > /dev/null; then
+                pkill -9 sosks5
                 echo -e "$(bold_italic_purple "已终止 Socks5 代理进程。")"
             fi
 
