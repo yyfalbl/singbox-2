@@ -1153,7 +1153,7 @@ menu() {
    echo ""
    magenta "=== SERV00和CT8|SING-BOX一键安装脚本 ==="
    echo ""
-  bold_italic_orange "\033[1;3m=== 脚本支持:VLESS VMESS HY2 TUIC 协议，UUID自动生成 ===\033[0m\n"
+  bold_italic_orange "\033[1;3m=== 脚本支持:VLESS VMESS HY2 TUIC socks5 协议，UUID自动生成 ===\033[0m\n"
     magenta "=== 支持安装：单，双，三个协议(面板最多只能开放3个端口)，自由选择 ===\n"
   bold_italic_light_blue "=== 固定argo隧道 可以优选ip或优选域名！ ===\n"
   echo -e "${green}\033[1;3;33m脚本地址：\033[0m${re}\033[1;3;33mhttps://github.com/yyfalbl/singbox-2\033[0m${re}\n"
