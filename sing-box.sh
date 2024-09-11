@@ -1361,15 +1361,13 @@ menu() {
             read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
             clear
             ;;  
-        0) exit 0 ;;
-        
-    esac
-    done 
-*)
+        0) exit 0 ;;   
+      *)
             red "\033[1;3m无效的选项，请输入 0 到 8\033[0m"
             echo ""
             ;;
-   
+    esac
+    done 
    
 }
 
