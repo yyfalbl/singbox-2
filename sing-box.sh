@@ -35,6 +35,7 @@ cleanup_and_delete() {
         # 检查删除是否成功
         if [ -d "$target_dir/$exclude_dir" ] && [ ! "$(ls -A "$target_dir" | grep -v "$exclude_dir")" ]; then
             echo -n -e "\033[1;3;31m所有文件已成功删除!\033[0m\n"
+             echo ""
         else
             echo "目录 $target_dir 删除时出现问题，请检查是否有权限问题或其他错误。"
         fi
@@ -1299,31 +1300,31 @@ menu() {
 
    green "\033[1;3m1. 安装sing-box\033[0m"
    echo "==============="
-     green "\033[1;3m2. 安装Socks5\033[0m"
+   green "\033[1;3m2. 安装Socks5\033[0m"
    echo "==============="
-   red "\033[1;3m3. 卸载sing-box或socks5\033[0m"
+   red "\033[1;3m3. 卸载sing-box和socks5\033[0m"
    echo "==============="
    bold_italic_light_blue "\033[1;3m4. 查看节点信息\033[0m"
    echo "==============="
-yellow "\\033[1;3m5. 清理系统进程\\033[0m"
+   yellow "\\033[1;3m5. 清理系统进程\\033[0m"
    echo "==============="
    green "\033[1;3m6. 启动sing-box服务\033[0m"
    echo "==============="
-      pink "\033[1;3m7. 停止sing-box服务\033[0m"
-       echo "==============="
-      pink "\033[1;3m8. 清理所有文件\033[0m"
+   pink "\033[1;3m7. 停止sing-box服务\033[0m"
+   echo "==============="
+   pink "\033[1;3m8. 清理所有文件\033[0m"
    echo "==============="
    red "\033[1;3m0. 退出脚本\033[0m"
    echo "==========="
-reading "请输入选择(0-8): " choice
+   reading "请输入选择(0-8): " choice
    echo ""
    case "${choice}" in
-       1)
+        1)
             install_singbox
              read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
             clear
             ;;
-       2)
+        2)
             setup_socks5
              read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
             clear
