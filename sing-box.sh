@@ -73,6 +73,12 @@ check_web_status() {
 }
 
 # Socks5 安装和配置的主函数
+
+generate_random_string() {
+  local length=$1
+  openssl rand -base64 "$length" | tr -dc 'a-zA-Z0-9'
+}
+
 setup_socks5() {
   # 设置工作目录
   FILE_PATH="$WORKDIR"
@@ -80,6 +86,8 @@ setup_socks5() {
   RESET="\033[0m"
   user=$(whoami)  # 获取当前用户名
   SERV_DOMAIN="$user.serv00.net"  # 使用本机域名格式
+
+
 
   # 提示用户是否安装 Socks5 代理
   read -p "$(echo -e "${CYAN}是否安装 Socks5 代理？(Y/N 回车N) ${RESET}") " install_socks5_answer
@@ -96,9 +104,9 @@ setup_socks5() {
 
   # 如果用户输入了IP地址，使用用户提供的IP地址，否则自动检测
   if [ -n "$user_ip" ]; then
-    IP="$user_ip"
+      IP="$user_ip"
   else
-    IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
+      IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
   fi
 
   # 输出最终使用的IP地址和域名
@@ -108,20 +116,27 @@ setup_socks5() {
   # 提示用户输入 socks5 端口号
   read -p "$(echo -e "${CYAN}请输入 socks5 端口 (面板开放的TCP端口): ${RESET}")" SOCKS5_PORT
 
-  # 提示用户输入用户名和密码
-  read -p "$(echo -e "${CYAN}请输入 socks5 用户名: ${RESET}")" SOCKS5_USER
+  # 提示用户输入用户名和密码，如果按回车则生成随机用户名和密码
+  read -p "$(echo -e "${CYAN}请输入 socks5 用户名（按回车生成随机用户名）: ${RESET}")" SOCKS5_USER
+  if [ -z "$SOCKS5_USER" ]; then
+    SOCKS5_USER=$(generate_random_string 6)  # 生成6位随机用户名
+    echo -e "${CYAN}随机生成的 socks5 用户名是: ${SOCKS5_USER}${RESET}"
+  fi
 
-  while true; do
-    read -p "$(echo -e "${CYAN}请输入 socks5 密码（不能包含@和:）: ${RESET}")" SOCKS5_PASS
-    echo
+  read -p "$(echo -e "${CYAN}请输入 socks5 密码（按回车生成随机密码，不能包含@和:）: ${RESET}")" SOCKS5_PASS
+  while [[ -z "$SOCKS5_PASS" ]]; do
+    SOCKS5_PASS=$(generate_random_string 10)  # 生成10位随机密码
     if [[ "$SOCKS5_PASS" == *"@"* || "$SOCKS5_PASS" == *":"* ]]; then
-      echo -e "${CYAN}密码中不能包含@和:符号，请重新输入。${RESET}"
-    else
-      break
+      continue
     fi
+    break
   done
+  if [ -z "$SOCKS5_PASS" ]; then
+    echo -e "${CYAN}随机生成的 socks5 密码是: ${SOCKS5_PASS}${RESET}"
+  fi
 
   # 创建配置文件
+  echo -e "${CYAN}创建配置文件: ${FILE_PATH}/config.json${RESET}"
   cat > "$FILE_PATH/config.json" << EOF
 {
   "log": {
@@ -159,12 +174,22 @@ EOF
 
   # 检查是否需要重新下载 socks5 程序
   if [[ ! -e "${FILE_PATH}/socks5" ]]; then
+    echo -e "${CYAN}下载 socks5 程序...${RESET}"
     curl -L -sS -o "${FILE_PATH}/socks5" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/socks5"
+    if [ $? -ne 0 ]; then
+      echo -e "${CYAN}下载 socks5 程序失败，请检查网络连接。${RESET}"
+      return
+    fi
   else
     read -p "$(echo -e "${CYAN}socks5 程序已存在，是否重新下载？(Y/N 回车N): ${RESET}")" reinstall_socks5_answer
     reinstall_socks5_answer=${reinstall_socks5_answer^^}
     if [[ "$reinstall_socks5_answer" == "Y" ]]; then
+      echo -e "${CYAN}重新下载 socks5 程序...${RESET}"
       curl -L -sS -o "${FILE_PATH}/socks5" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/socks5"
+      if [ $? -ne 0 ]; then
+        echo -e "${CYAN}重新下载 socks5 程序失败，请检查网络连接。${RESET}"
+        return
+      fi
     fi
   fi
 
@@ -180,14 +205,10 @@ EOF
     echo -e "\033[1;3;33m本机域名：$SERV_DOMAIN\033[0m"
     # 显示代理 URL
     echo -e "\033[1;3;33msocks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${SOCKS5_PORT}\033[0m"
-    # 将 socks5 代理信息添加到 list.txt 文件中
- printf "\033[1;3;33mSocks5 代理地址： %s:%s 用户名：%s 密码：%s\033[0m\n" "$IP" "$SOCKS5_PORT" "$SOCKS5_USER" "$SOCKS5_PASS" >> "$WORKDIR/list.txt"
-    printf "\033[1;3;33msocks://%s:%s@%s:%s\033[0m\n" "$SOCKS5_USER" "$SOCKS5_PASS" "$SERV_DOMAIN" "$SOCKS5_PORT" >> "$WORKDIR/list.txt"
   else
     echo -e "\033[1;3;31mSocks5 代理程序启动失败\033[0m"
   fi
 }
-
     
 # 定义存储 UUID 的文件路径
 UUID_FILE="${HOME}/.singbox_uuid"
