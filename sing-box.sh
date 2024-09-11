@@ -27,14 +27,14 @@ cleanup_and_delete() {
 
     # 检查目录是否存在
     if [ -d "$target_dir" ]; then
-        echo "准备删除所有文件 $exclude_dir..."
+        echo -n -e "\033[1;3;31m准备删除所有文件...\033[0m\n"
 
         # 删除除 $exclude_dir 以外的所有内容
         find "$target_dir" -mindepth 1 -maxdepth 1 ! -name "$exclude_dir" -exec rm -rf {} + 2>/dev/null
 
         # 检查删除是否成功
         if [ -d "$target_dir/$exclude_dir" ] && [ ! "$(ls -A "$target_dir" | grep -v "$exclude_dir")" ]; then
-            echo " $target_dir 所有文件已成功删除。"
+            echo -n -e "\033[1;3;31m所有文件已成功删除!\033[0m\n"
         else
             echo "目录 $target_dir 删除时出现问题，请检查是否有权限问题或其他错误。"
         fi
