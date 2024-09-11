@@ -1276,99 +1276,107 @@ bold_italic_orange() {
 }    
 # 主菜单
 menu() {
-   clear
-      while true; do
-   echo ""
-   magenta "=== SERV00和CT8|SING-BOX一键安装脚本 ==="
-   echo ""
-  bold_italic_orange "\033[1;3m=== 脚本支持:VLESS VMESS HY2 TUIC socks5 协议，UUID自动生成 ===\033[0m\n"
-    magenta "=== 支持安装：单，双，三个协议(面板最多只能开放3个端口)，自由选择 ===\n"
-  bold_italic_light_blue "=== 固定argo隧道 可以优选ip或优选域名！  ===\n"
-    bold_italic_light_blue "=== argo隧道配置文件生成网址  https://fscarmen.cloudflare.now.cc/ ===\n"
-  echo -e "${green}\033[1;3;33m脚本地址：\033[0m${re}\033[1;3;33mhttps://github.com/yyfalbl/singbox-2\033[0m${re}\n"
-   purple "\033[1;3m*****转载请著名出处，请勿滥用*****\033[0m\n"
-   echo ""
-    get_server_info
-    echo ""
-   # Example usage
-   check_singbox_installed
-   echo ""
-   # 显示 web 进程状态（仅在 sing-box 已安装时显示）
-   echo ""  # 添加空行
-   check_web_status
-   echo ""  # 添加空行
+    clear
+    while true; do
+        echo ""
+        echo -e "\033[35m=== SERV00和CT8|SING-BOX一键安装脚本 ===\033[0m"
+        echo ""
+        echo -e "\033[1;3;33m=== 脚本支持:VLESS VMESS HY2 TUIC socks5 协议，UUID自动生成 ===\033[0m\n"
+        echo -e "\033[1;3;34m=== 支持安装：单，双，三个协议(面板最多只能开放3个端口)，自由选择 ===\n"
+        echo -e "\033[1;3;34m=== 固定argo隧道 可以优选ip或优选域名！  ===\n"
+        echo -e "\033[1;3;34m=== argo隧道配置文件生成网址  https://fscarmen.cloudflare.now.cc/ ===\n"
+        echo -e "\033[1;3;33m脚本地址：\033[0m\033[1;3;33mhttps://github.com/yyfalbl/singbox-2\033[0m\n"
+        echo -e "\033[1;3m*****转载请著名出处，请勿滥用*****\033[0m\n"
+        echo ""
+        
+        get_server_info
+        echo ""
+        
+        # Example usage
+        check_singbox_installed
+        echo ""
+        
+        # 显示 web 进程状态（仅在 sing-box 已安装时显示）
+        echo ""  # 添加空行
+        check_web_status
+        echo ""  # 添加空行
 
-   echo ""
+        echo ""
 
-   green "\033[1;3m1. 安装sing-box\033[0m"
-   echo "==============="
-   green "\033[1;3m2. 安装Socks5\033[0m"
-   echo "==============="
-   red "\033[1;3m3. 卸载sing-box和socks5\033[0m"
-   echo "==============="
-   bold_italic_light_blue "\033[1;3m4. 查看节点信息\033[0m"
-   echo "==============="
-   yellow "\\033[1;3m5. 清理系统进程\\033[0m"
-   echo "==============="
-   green "\033[1;3m6. 启动sing-box服务\033[0m"
-   echo "==============="
-   pink "\033[1;3m7. 停止sing-box服务\033[0m"
-   echo "==============="
-   pink "\033[1;3m8. 清理所有文件\033[0m"
-   echo "==============="
-   red "\033[1;3m0. 退出脚本\033[0m"
-   echo "==========="
-   reading "请输入选择(0-8): " choice
-   echo ""
-   case "${choice}" in
-        1)
-            install_singbox
-             read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
-            clear
-            ;;
-        2)
-            setup_socks5
-             read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
-            clear
-            ;;
-        3)
-            uninstall_singbox
-            read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
-            clear
-            ;;
-        4)
-            cat $WORKDIR/list.txt
-            read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
-            clear
-            ;;
-        5)
-            manage_processes
-            read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
-            clear
-            ;;
-        6)
-            start_web
-            read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
-            clear
-            ;;
-        7)
-            stop_web
-            read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
-            clear
-            ;;
-        8)
-            cleanup_and_delete
-            read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
-            clear
-            ;;  
-        0) exit 0 ;;   
-      *)
-            red "\033[1;3m无效的选项，请输入 0 到 8\033[0m"
-            echo ""
-            ;;
-    esac
-    done 
-   
+        echo -e "\033[1;32m1. 安装sing-box\033[0m"
+        echo "==============="
+        echo -e "\033[1;32m2. 安装Socks5\033[0m"
+        echo "==============="
+        echo -e "\033[1;31m3. 卸载sing-box和socks5\033[0m"
+        echo "==============="
+        echo -e "\033[1;3;34m4. 查看节点信息\033[0m"
+        echo "==============="
+        echo -e "\033[1;33m5. 清理系统进程\033[0m"
+        echo "==============="
+        echo -e "\033[1;32m6. 启动sing-box服务\033[0m"
+        echo "==============="
+        echo -e "\033[1;35m7. 停止sing-box服务\033[0m"
+        echo "==============="
+        echo -e "\033[1;35m8. 清理所有文件\033[0m"
+        echo "==============="
+        echo -e "\033[1;31m0. 退出脚本\033[0m"
+        echo "==========="
+
+        # 读取用户选择
+        read -p "请输入选择(0-8): " choice
+        echo "用户选择: $choice"  # 调试信息
+        
+        case "${choice}" in
+            1)
+                install_singbox
+                read -p "$(echo -e "\033[1;33m操作完成，按任意键继续...\033[0m")" -n1 -s
+                clear
+                ;;
+            2)
+                setup_socks5
+                read -p "$(echo -e "\033[1;33m操作完成，按任意键继续...\033[0m")" -n1 -s
+                clear
+                ;;
+            3)
+                uninstall_singbox
+                read -p "$(echo -e "\033[1;33m操作完成，按任意键继续...\033[0m")" -n1 -s
+                clear
+                ;;
+            4)
+                cat $WORKDIR/list.txt
+                read -p "$(echo -e "\033[1;33m操作完成，按任意键继续...\033[0m")" -n1 -s
+                clear
+                ;;
+            5)
+                manage_processes
+                read -p "$(echo -e "\033[1;33m操作完成，按任意键继续...\033[0m")" -n1 -s
+                clear
+                ;;
+            6)
+                start_web
+                read -p "$(echo -e "\033[1;33m操作完成，按任意键继续...\033[0m")" -n1 -s
+                clear
+                ;;
+            7)
+                stop_web
+                read -p "$(echo -e "\033[1;33m操作完成，按任意键继续...\033[0m")" -n1 -s
+                clear
+                ;;
+            8)
+                cleanup_and_delete
+                read -p "$(echo -e "\033[1;33m操作完成，按任意键继续...\033[0m")" -n1 -s
+                clear
+                ;;  
+            0)
+                exit 0
+                ;;
+            *)
+                echo -e "\033[1;31m无效的选项，请输入 0 到 8\033[0m"
+                echo ""
+                ;;
+        esac
+    done
 }
+
 
 menu
