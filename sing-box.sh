@@ -23,7 +23,7 @@ WORKDIR="$HOME/sbox"
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
-
+local exclude_dir="backups"  # 要排除的目录名称
    
 
     # 检查目录是否存在
