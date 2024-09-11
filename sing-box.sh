@@ -23,21 +23,20 @@ WORKDIR="$HOME/sbox"
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
-local exclude_dir="backups"  # 要排除的目录名称
-   
+    local exclude_dir="backups"  # 要排除的目录名称
 
     # 检查目录是否存在
     if [ -d "$target_dir" ]; then
-        echo "准备删除目录 $target_dir 及其所有内容..."
+        echo "准备删除目录 $target_dir 中的内容，排除 $exclude_dir..."
 
-        # 删除目录及其所有内容
-        rm -rf "$target_dir"
+        # 删除除 $exclude_dir 以外的所有内容
+        find "$target_dir" -mindepth 1 -maxdepth 1 ! -name "$exclude_dir" -exec rm -rf {} + 2>/dev/null
 
         # 检查删除是否成功
-        if [ ! -d "$target_dir" ]; then
-            echo "目录 $target_dir 已成功删除。"
+        if [ -d "$target_dir/$exclude_dir" ] && [ ! "$(ls -A "$target_dir" | grep -v "$exclude_dir")" ]; then
+            echo "目录 $target_dir 中的内容已成功删除，但保留了 $exclude_dir。"
         else
-            echo "目录 $target_dir 删除失败。请检查是否有权限问题或其他错误。"
+            echo "目录 $target_dir 删除时出现问题，请检查是否有权限问题或其他错误。"
         fi
     else
         echo "目录 $target_dir 不存在。"
