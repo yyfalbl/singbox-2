@@ -20,6 +20,40 @@ bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
 # 设置工作目录
 WORKDIR="$HOME/sbox"
 
+get_server_info() {
+          user=$(whoami)  # 获取当前用户名
+  SERV_DOMAIN="$user.serv00.net"  # 使用本机域名格式
+ CYAN="\033[1;3;33m"
+  RESET="\033[0m"
+    # 尝试获取 IPv4 地址，如果失败则尝试获取 IPv6 地址
+    IP=$(curl -s --max-time 3 ipv4.ip.sb)
+    if [[ -z "$IP" ]]; then
+        # 如果没有获取到 IPv4 地址，尝试获取 IPv6 地址
+        IP=$(curl -s --max-time 3 ipv6.ip.sb)
+        if [[ -n "$IP" ]]; then
+            IP="[$IP]"  # 将 IPv6 地址用方括号包裹
+        else
+            echo "无法获取 IP 地址，请检查网络连接或 API 服务是否正常。"
+            return 1  # 退出函数并返回错误状态
+        fi
+    fi
+
+    # 输出获取到的 IP 地址
+    echo -e "${GREEN_BOLD_ITALIC}当前服务器的 IP 地址是：$IP${RESET}"
+
+    # 获取当前服务器的完整域名（FQDN）
+    current_fqdn=$(hostname -f)
+
+    # 检查域名是否以 serv00.com 结尾
+    if [[ "$current_fqdn" == *.serv00.com ]]; then
+        echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
+        echo -e "${CYAN}本机域名是: ${SERV_DOMAIN}${RESET}"
+    else
+        echo "当前域名不属于 serv00.com 域。"
+    fi
+ 
+}
+
 # Function to check if sing-box is installed
 check_singbox_installed() {
     if [ -e "$HOME/sbox/web" ]; then
@@ -1204,6 +1238,8 @@ menu() {
   echo -e "${green}\033[1;3;33m脚本地址：\033[0m${re}\033[1;3;33mhttps://github.com/yyfalbl/singbox-2\033[0m${re}\n"
    purple "\033[1;3m*****转载请著名出处，请勿滥用*****\033[0m\n"
    echo ""
+    get_server_info
+    echo ""
    # Example usage
    check_singbox_installed
    echo ""
