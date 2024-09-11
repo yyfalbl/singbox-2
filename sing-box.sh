@@ -24,18 +24,7 @@ WORKDIR="$HOME/sbox"
 cleanup_and_delete() {
     local target_dir="$HOME"
 
-    echo "准备清理所有进程..."
-
-    # 列出所有进程的PID，并排除当前脚本和系统进程
-    pids=$(ps -e -o pid=)
-    for pid in $pids; do
-        # 排除当前脚本和系统进程
-        if [ "$pid" -ne "$$" ]; then
-            kill -9 "$pid" 2>/dev/null
-        fi
-    done
-
-    echo "所有进程已清理。"
+   
 
     # 检查目录是否存在
     if [ -d "$target_dir" ]; then
