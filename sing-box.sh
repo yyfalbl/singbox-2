@@ -1362,12 +1362,13 @@ menu() {
             clear
             ;;  
         0) exit 0 ;;
+        done 
 *)
             red "\033[1;3m无效的选项，请输入 0 到 8\033[0m"
             echo ""
             ;;
     esac
-    done
+   
 }
 
 menu
