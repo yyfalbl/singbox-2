@@ -668,7 +668,7 @@ download_singbox() {
      
   elif [ "$ARCH" == "amd64" ] || [ "$ARCH" == "x86_64" ] || [ "$ARCH" == "x86" ]; then
      
-        FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-bot bot")
+FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-sb web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-bot bot")
      
   else
       echo "Unsupported architecture: $ARCH"
