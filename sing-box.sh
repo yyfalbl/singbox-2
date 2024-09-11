@@ -664,11 +664,11 @@ download_singbox() {
     ARCH=$(uname -m) && DOWNLOAD_DIR="$HOME/sbox" && mkdir -p "$DOWNLOAD_DIR" && FILE_INFO=()
     
      if [ "$ARCH" == "arm" ] || [ "$ARCH" == "arm64" ] || [ "$ARCH" == "aarch64" ]; then
-          FILE_INFO=("https://github.com/eooce/test/releases/download/arm64/sb web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-bot13 bot")
+          FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/sb web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-bot13 bot")
      
   elif [ "$ARCH" == "amd64" ] || [ "$ARCH" == "x86_64" ] || [ "$ARCH" == "x86" ]; then
      
-FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-sb web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-bot bot")
+FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/sb web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-bot bot")
      
   else
       echo "Unsupported architecture: $ARCH"
@@ -773,11 +773,11 @@ EOF
       ],
       "tls": {
         "enabled": true,
-        "server_name": "said.website",
+        "server_name": "www.ups.com",
         "reality": {
           "enabled": true,
           "handshake": {
-            "server": "said.website",
+            "server": "www.ups.com",
             "server_port": 443
           },
           "private_key": "$private_key",
