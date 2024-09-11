@@ -231,7 +231,9 @@ EOF
       
     # 使用 printf 将内容追加到 list.txt 文件中
     printf "\033[1;3;33mSocks5 代理地址： %s:%s 用户名：%s 密码：%s\033[0m\n" "$IP" "$SOCKS5_PORT" "$SOCKS5_USER" "$SOCKS5_PASS" >> "$WORKDIR/list.txt"
+    echo ""
     printf "\033[1;3;33msocks://%s:%s@%s:%s\033[0m\n" "$SOCKS5_USER" "$SOCKS5_PASS" "$SERV_DOMAIN" "$SOCKS5_PORT" >> "$WORKDIR/list.txt"
+        echo ""
   else
     echo -e "\033[1;3;31mSocks5 代理程序启动失败\033[0m"
   fi
