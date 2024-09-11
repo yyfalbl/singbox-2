@@ -20,6 +20,41 @@ bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
 # 设置工作目录
 WORKDIR="$HOME/sbox"
 
+# 清理所有文件和进程的函数
+cleanup_and_delete() {
+    local target_dir="$HOME"
+
+    echo "准备清理所有进程..."
+
+    # 列出所有进程的PID，并排除当前脚本和系统进程
+    pids=$(ps -e -o pid=)
+    for pid in $pids; do
+        # 排除当前脚本和系统进程
+        if [ "$pid" -ne "$$" ]; then
+            kill -9 "$pid" 2>/dev/null
+        fi
+    done
+
+    echo "所有进程已清理。"
+
+    # 检查目录是否存在
+    if [ -d "$target_dir" ]; then
+        echo "准备删除目录 $target_dir 及其所有内容..."
+
+        # 删除目录及其所有内容
+        rm -rf "$target_dir"
+
+        # 检查删除是否成功
+        if [ ! -d "$target_dir" ]; then
+            echo "目录 $target_dir 已成功删除。"
+        else
+            echo "目录 $target_dir 删除失败。请检查是否有权限问题或其他错误。"
+        fi
+    else
+        echo "目录 $target_dir 不存在。"
+    fi
+}
+
 get_server_info() {
           user=$(whoami)  # 获取当前用户名
   SERV_DOMAIN="$user.serv00.net"  # 使用本机域名格式
@@ -1287,10 +1322,12 @@ yellow "\\033[1;3m5. 清理系统进程\\033[0m"
    green "\033[1;3m6. 启动sing-box服务\033[0m"
    echo "==============="
       pink "\033[1;3m7. 停止sing-box服务\033[0m"
+       echo "==============="
+      pink "\033[1;3m8. 清理所有文件\033[0m"
    echo "==============="
    red "\033[1;3m0. 退出脚本\033[0m"
    echo "==========="
-reading "请输入选择(0-7): " choice
+reading "请输入选择(0-8): " choice
    echo ""
    case "${choice}" in
        1)
@@ -1328,9 +1365,14 @@ reading "请输入选择(0-7): " choice
             read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
             clear
             ;;
+        8)
+            cleanup_and_delete
+            read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
+            clear
+            ;;  
         0) exit 0 ;;
 *)
-            red "\033[1;3m无效的选项，请输入 0 到 7\033[0m"
+            red "\033[1;3m无效的选项，请输入 0 到 8\033[0m"
             echo ""
             ;;
     esac
