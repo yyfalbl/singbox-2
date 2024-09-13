@@ -1163,35 +1163,55 @@ start_web() {
         red "web可执行文件未找到，请检查路径是否正确。"
     fi
 
-    # 检查是否安装了 Argo
-    if [ -e "$WORKDIR/tunnel.yml" ]; then
-        # 启动 bot 进程
-        if [ -e "$WORKDIR/bot" ]; then
-            # 准备 args 变量
-            args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
+   # 检查是否存在 tunnel.yml 文件
+if [ -e "$WORKDIR/tunnel.yml" ]; then
+    # 如果存在 tunnel.yml 文件，设置使用 tunnel 配置的 args
+    args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
+else
+    # 如果不存在 tunnel.yml 文件，设置默认的 args 参数
+    urls=""
+    [ -n "$vmess_port" ] && urls="$urls --url http://localhost:$vmess_port"
+    [ -n "$vless_port" ] && urls="$urls --url http://localhost:$vless_port"
+    [ -n "$tuic_port" ] && urls="$urls --url http://localhost:$tuic_port"
+    [ -n "$hy2_port" ] && urls="$urls --url http://localhost:$hy2_port"
 
-            # 启动 bot
-            nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
-            sleep 2
-
-            # 检查 bot 是否启动成功
-            if pgrep -x "bot" > /dev/null; then
-                green "BOT进程启动成功,并正在运行！"
-            else
-                red "bot进程启动失败，正在重启..."
-                pkill -x "bot" && nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
-                sleep 2
-
-                if pgrep -x "bot" > /dev/null; then
-                    purple "bot重新启动成功！"
-                else
-                    red "bot重新启动失败，请检查日志以获取更多信息。"
-                fi
-            fi
-        fi
-    else
-        green "Argo未安装或未配置，跳过启动 bot 进程。"
+    # 如果没有定义任何端口，使用默认端口
+    if [ -z "$urls" ]; then
+        urls="--url http://localhost:8080"
     fi
+
+    args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info $urls}"
+fi
+
+# 启动 bot 进程
+if [ -e "$WORKDIR/bot" ]; then
+
+    # 启动 bot
+    nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
+    sleep 2
+
+    # 检查 bot 是否启动成功
+    if pgrep -x "bot" > /dev/null; then
+        green "BOT进程启动成功, 并正在运行！"
+    else
+        red "bot进程启动失败，正在重启..."
+        pkill -x "bot"
+        nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
+        sleep 2
+
+        # 重新检查 bot 是否启动成功
+        if pgrep -x "bot" > /dev/null; then
+            purple "bot重新启动成功！"
+        else
+            red "bot重新启动失败，请检查日志以获取更多信息。"
+            echo "尝试的启动参数: $args"
+            echo "检查日志文件 $WORKDIR/boot.log 以获取更多细节。"
+        fi
+    fi
+else
+    red "未找到 bot 文件，无法启动 bot 进程。"
+fi
+
 }
     
 #停止sing-box服务
