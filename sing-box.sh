@@ -993,7 +993,8 @@ if [ -e "$WORKDIR/bot" ]; then
     fi
 
     # 启动 bot
-    nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
+   nohup "$WORKDIR/bot" $args > "$WORKDIR/boot.log" 2>&1 &
+
     sleep 2
 
     # 检查 bot 是否启动成功
