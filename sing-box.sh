@@ -19,11 +19,7 @@ bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
 
 # 设置工作目录
 WORKDIR="$HOME/sbox"
-# 设置环境变量以指定 origin 证书路径
-export TUNNEL_ORIGIN_CERT="$HOME/sbox/cert.pem"
 
-# 启动 cloudflared
-nohup cloudflared tunnel run > "$HOME/sbox/cloudflared.log" 2>&1 &
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
