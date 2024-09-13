@@ -1127,40 +1127,34 @@ start_web() {
     fi
 
     # 检查是否安装了 Argo
-   if [ -e "$WORKDIR/bot" ]; then
-    # 准备 args 变量，如果 tunnel.yml 存在则使用它
-    if [ -e "$WORKDIR/tunnel.yml" ]; then
-        args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
-    else
-        # 默认 args 变量，不依赖 tunnel.yml，设置适当的 URL
-        args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080}"
-    fi
+      if [ -e "$WORKDIR/tunnel.yml" ]; then
+        # 启动 bot 进程
+        if [ -e "$WORKDIR/bot" ]; then
+            # 准备 args 变量
+            args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
 
-    # 启动 bot
-       nohup "$WORKDIR/bot" $args > "$WORKDIR/boot.log" 2>&1 &
-    sleep 2
+            # 启动 bot
+            nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
+            sleep 2
 
-    # 检查 bot 是否启动成功
-    if pgrep -x "bot" > /dev/null; then
-        green "BOT进程启动成功, 并正在运行！"
-    else
-        red "bot进程启动失败，正在重启..."
-        pkill -x "bot"
-           nohup "$WORKDIR/bot" $args > "$WORKDIR/boot.log" 2>&1 &
-        sleep 2
+            # 检查 bot 是否启动成功
+            if pgrep -x "bot" > /dev/null; then
+                green "BOT进程启动成功,并正在运行！"
+            else
+                red "bot进程启动失败，正在重启..."
+                pkill -x "bot" && nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
+                sleep 2
 
-        # 重新检查 bot 是否启动成功
-        if pgrep -x "bot" > /dev/null; then
-            purple "bot重新启动成功！"
-        else
-            red "bot重新启动失败，请检查日志以获取更多信息。"
-            echo "尝试的启动参数: $args"
-            echo "检查日志文件 $WORKDIR/boot.log 以获取更多细节。"
+                if pgrep -x "bot" > /dev/null; then
+                    purple "bot重新启动成功！"
+                else
+                    red "bot重新启动失败，请检查日志以获取更多信息。"
+                fi
+            fi
         fi
+    else
+        green "Argo未安装或未配置，跳过启动 bot 进程。"
     fi
-else
-    red "未找到 bot 文件，无法启动 bot 进程。"
-fi
 }
     
 #停止sing-box服务
