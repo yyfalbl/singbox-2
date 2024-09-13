@@ -1011,7 +1011,7 @@ if [ -e "$WORKDIR/bot" ]; then
 
     # 检查 bot 是否启动成功
     if pgrep -x "bot" > /dev/null; then
-        green "BOT is running！"
+        green "BOT进程启动成功, 并正在运行！"
     else
         red "bot进程启动失败，正在重启..."
         pkill -x "bot"
@@ -1163,55 +1163,35 @@ start_web() {
         red "web可执行文件未找到，请检查路径是否正确。"
     fi
 
-   # 检查是否存在 tunnel.yml 文件
-if [ -e "$WORKDIR/tunnel.yml" ]; then
-    # 如果存在 tunnel.yml 文件，设置使用 tunnel 配置的 args
-    args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
-else
-    # 如果不存在 tunnel.yml 文件，设置默认的 args 参数
-    urls=""
-    [ -n "$vmess_port" ] && urls="$urls --url http://localhost:$vmess_port"
-    [ -n "$vless_port" ] && urls="$urls --url http://localhost:$vless_port"
-    [ -n "$tuic_port" ] && urls="$urls --url http://localhost:$tuic_port"
-    [ -n "$hy2_port" ] && urls="$urls --url http://localhost:$hy2_port"
+    # 检查是否安装了 Argo
+    if [ -e "$WORKDIR/tunnel.yml" ]; then
+        # 启动 bot 进程
+        if [ -e "$WORKDIR/bot" ]; then
+            # 准备 args 变量
+            args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
 
-    # 如果没有定义任何端口，使用默认端口
-    if [ -z "$urls" ]; then
-        urls="--url http://localhost:8080"
-    fi
+            # 启动 bot
+            nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
+            sleep 2
 
-    args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info $urls}"
-fi
+            # 检查 bot 是否启动成功
+            if pgrep -x "bot" > /dev/null; then
+                green "BOT进程启动成功,并正在运行！"
+            else
+                red "bot进程启动失败，正在重启..."
+                pkill -x "bot" && nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
+                sleep 2
 
-# 启动 bot 进程
-if [ -e "$WORKDIR/bot" ]; then
-
-    # 启动 bot
-    nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
-    sleep 2
-
-    # 检查 bot 是否启动成功
-    if pgrep -x "bot" > /dev/null; then
-        green "BOT进程启动成功, 并正在运行！"
-    else
-        red "bot进程启动失败，正在重启..."
-        pkill -x "bot"
-        nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
-        sleep 2
-
-        # 重新检查 bot 是否启动成功
-        if pgrep -x "bot" > /dev/null; then
-            purple "bot重新启动成功！"
-        else
-            red "bot重新启动失败，请检查日志以获取更多信息。"
-            echo "尝试的启动参数: $args"
-            echo "检查日志文件 $WORKDIR/boot.log 以获取更多细节。"
+                if pgrep -x "bot" > /dev/null; then
+                    purple "bot重新启动成功！"
+                else
+                    red "bot重新启动失败，请检查日志以获取更多信息。"
+                fi
+            fi
         fi
+    else
+        green "Argo未安装或未配置，跳过启动 bot 进程。"
     fi
-else
-    red "未找到 bot 文件，无法启动 bot 进程。"
-fi
-
 }
     
 #停止sing-box服务
@@ -1227,7 +1207,7 @@ stop_web() {
         kill -9 $WEB_PID
         echo -n -e "\033[1;3;31m已成功停止 WEB 进程!\033[0m\n"
     else
-        echo -n -e "\033[1;3;31m未找到 web 进程，可能已经停止!\033[0m\n"
+        echo "未找到 web 进程，可能已经停止。"
     fi
 
     # 查找 bot 进程的 PID
@@ -1279,7 +1259,7 @@ printf "${YELLOW}输入选择 (1 或 2): ${RESET}"
 
   case $choice in
     1)
-      if killall -9 -u  "$USERNAME"; then
+      if pkill -kill -u "$USERNAME"; then
         echo -e "${RED_BOLD}已成功清理所有进程。${RESET}"
       else
         echo -e "${RED_BOLD}清理进程失败。请检查是否有足够的权限或进程是否存在。${RESET}"
@@ -1287,7 +1267,7 @@ printf "${YELLOW}输入选择 (1 或 2): ${RESET}"
       ;;
     2)
       if pkill -u "$USERNAME"; then
-        echo -e "${RED_BOLD}已成功清理当前用户进程。${RESET}"
+        echo -e "${RED_BOLD}已成功清理所有属于用户 $USERNAME 的进程。${RESET}"
       else
         echo -e "${RED_BOLD}清理进程失败。请检查是否有足够的权限或进程是否存在。${RESET}"
       fi
