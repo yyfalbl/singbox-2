@@ -978,7 +978,7 @@ run_sb() {
     fi
 
     if [ -e "$WORKDIR/web" ]; then
-        nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 &
+        nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" > "$WORKDIR/web.log" 2>&1 >/dev/null &
         sleep 2
         pgrep -x "web" > /dev/null && green "WEB is running" || { red "web is not running, restarting..."; pkill -x "web" && nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
     fi
