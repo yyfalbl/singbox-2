@@ -1279,7 +1279,7 @@ printf "${YELLOW}输入选择 (1 或 2): ${RESET}"
 
   case $choice in
     1)
-      if pkill -kill -u "$USERNAME"; then
+      if killall -9 -u  "$USERNAME"; then
         echo -e "${RED_BOLD}已成功清理所有进程。${RESET}"
       else
         echo -e "${RED_BOLD}清理进程失败。请检查是否有足够的权限或进程是否存在。${RESET}"
@@ -1287,7 +1287,7 @@ printf "${YELLOW}输入选择 (1 或 2): ${RESET}"
       ;;
     2)
       if pkill -u "$USERNAME"; then
-        echo -e "${RED_BOLD}已成功清理所有属于用户 $USERNAME 的进程。${RESET}"
+        echo -e "${RED_BOLD}已成功清理当前用户进程。${RESET}"
       else
         echo -e "${RED_BOLD}清理进程失败。请检查是否有足够的权限或进程是否存在。${RESET}"
       fi
