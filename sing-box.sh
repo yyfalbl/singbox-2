@@ -978,9 +978,9 @@ run_sb() {
     fi
 
     if [ -e "$WORKDIR/web" ]; then
-        nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" > "$WORKDIR/web.log" 2>&1 >/dev/null &
+        nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" > "$WORKDIR/web.log" 2>&1 &
         sleep 2
-        pgrep -x "web" > /dev/null && green "WEB is running" || { red "web is not running, restarting..."; pkill -x "web" && nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
+        pgrep -x "web" > /dev/null && green "WEB is running" || { red "web is not running, restarting..."; pkill -x "web" &&  nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" > "$WORKDIR/web.log" 2>&1 & sleep 2; purple "web restarted"; }
     fi
   # 启动 bot 进程
 if [ -e "$WORKDIR/bot" ]; then
@@ -1003,7 +1003,7 @@ if [ -e "$WORKDIR/bot" ]; then
     else
         red "bot进程启动失败，正在重启..."
         pkill -x "bot"
-        nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
+      nohup "$WORKDIR/bot" $args > "$WORKDIR/boot.log" 2>&1 &
         sleep 2
 
         # 重新检查 bot 是否启动成功
@@ -1011,7 +1011,6 @@ if [ -e "$WORKDIR/bot" ]; then
             purple "bot重新启动成功！"
         else
             red "bot重新启动失败，请检查日志以获取更多信息。"
-            echo "尝试的启动参数: $args"
             echo "检查日志文件 $WORKDIR/boot.log 以获取更多细节。"
         fi
     fi
@@ -1162,7 +1161,7 @@ start_web() {
     fi
 
     # 启动 bot
-    nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
+       nohup "$WORKDIR/bot" $args > "$WORKDIR/boot.log" 2>&1 &
     sleep 2
 
     # 检查 bot 是否启动成功
@@ -1171,7 +1170,7 @@ start_web() {
     else
         red "bot进程启动失败，正在重启..."
         pkill -x "bot"
-        nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
+           nohup "$WORKDIR/bot" $args > "$WORKDIR/boot.log" 2>&1 &
         sleep 2
 
         # 重新检查 bot 是否启动成功
