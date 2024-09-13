@@ -1011,7 +1011,7 @@ if [ -e "$WORKDIR/bot" ]; then
 
     # 检查 bot 是否启动成功
     if pgrep -x "bot" > /dev/null; then
-        green "BOT进程启动成功, 并正在运行！"
+        green "BOT is running！"
     else
         red "bot进程启动失败，正在重启..."
         pkill -x "bot"
