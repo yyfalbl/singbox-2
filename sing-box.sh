@@ -978,47 +978,23 @@ run_sb() {
     fi
 
     if [ -e "$WORKDIR/web" ]; then
-        nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" > "$WORKDIR/web.log" 2>&1 &
+        nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 &
         sleep 2
-        pgrep -x "web" > /dev/null && green "WEB is running" || { red "web is not running, restarting..."; pkill -x "web" &&  nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" > "$WORKDIR/web.log" 2>&1 & sleep 2; purple "web restarted"; }
+        pgrep -x "web" > /dev/null && green "WEB is running" || { red "web is not running, restarting..."; pkill -x "web" && nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
     fi
-  # 启动 bot 进程
-if [ -e "$WORKDIR/bot" ]; then
-    # 准备 args 变量，如果 tunnel.yml 存在则使用它
-    if [ -e "$WORKDIR/tunnel.yml" ]; then
-        args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
+    
+      if [ -e $WORKDIR/bot ]; then
+    if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
+      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
+    elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
+      args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
     else
-        # 默认 args 变量，不依赖 tunnel.yml，设置适当的 URL
-        args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080}"
+      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080"
     fi
-
-    # 启动 bot
-   nohup "$WORKDIR/bot" $args > "$WORKDIR/boot.log" 2>&1 &
-
+    nohup $WORKDIR/bot $args >/dev/null 2>&1 &
     sleep 2
-
-    # 检查 bot 是否启动成功
-    if pgrep -x "bot" > /dev/null; then
-        green "BOT进程启动成功, 并正在运行！"
-    else
-        red "bot进程启动失败，正在重启..."
-        pkill -x "bot"
-      nohup "$WORKDIR/bot" $args > "$WORKDIR/boot.log" 2>&1 &
-        sleep 2
-
-        # 重新检查 bot 是否启动成功
-        if pgrep -x "bot" > /dev/null; then
-            purple "bot重新启动成功！"
-        else
-            red "bot重新启动失败，请检查日志以获取更多信息。"
-            echo "检查日志文件 $WORKDIR/boot.log 以获取更多细节。"
-        fi
-    fi
-else
-    red "未找到 bot 文件，无法启动 bot 进程。"
-fi
-  
-  
+    pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
+  fi
 }
   
 get_links() {
