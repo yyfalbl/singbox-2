@@ -1,4 +1,14 @@
 #!/bin/bash
+# 定义隐藏的配置文件路径
+config_dir="$HOME/.config/panel"
+password_file="$config_dir/.panel_password"
+panel_number_file="$config_dir/.panel_number"
+
+# 确保配置文件目录存在
+if [[ ! -d "$config_dir" ]]; then
+    mkdir -p "$config_dir"
+    chmod 700 "$config_dir"  # 确保目录只能被用户访问
+fi
 # Color definitions
 bold_red='\033[1;3;31m'
 bold_green='\033[1;3;32m'
@@ -19,16 +29,6 @@ bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
 
 # 设置工作目录
 WORKDIR="$HOME/sbox"
-# 定义隐藏的配置文件路径
-config_dir="$HOME/.config/panel"
-password_file="$config_dir/.panel_password"
-panel_number_file="$config_dir/.panel_number"
-
-# 确保配置文件目录存在
-if [[ ! -d "$config_dir" ]]; then
-    mkdir -p "$config_dir"
-    chmod 700 "$config_dir"  # 确保目录只能被用户访问
-fi
 
 # 定义函数来检查密码是否存在
 get_password() {
