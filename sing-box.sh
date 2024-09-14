@@ -1,35 +1,9 @@
 #!/bin/bash
-# 定义隐藏的配置文件路径
-config_dir="$HOME/.config/panel"
-password_file="$config_dir/.panel_password"
-panel_number_file="$config_dir/.panel_number"
+#!/bin/bash
 
-# 确保配置文件目录存在
-if [[ ! -d "$config_dir" ]]; then
-    echo "创建配置目录: $config_dir"
-    mkdir -p "$config_dir"
-    chmod 700 "$config_dir"  # 确保目录只能被用户访问
-fi
-# Color definitions
-bold_red='\033[1;3;31m'
-bold_green='\033[1;3;32m'
-bold_yellow='\033[1;3;33m'
-bold_purple='\033[1;3;35m'
-red='\033[1;3;31m'
-reset='\033[0m'
-RED='\033[1;31m'
-BOLD_ITALIC='\033[1;3m'
-RESET='\033[0m'
-GREEN_BOLD_ITALIC="\033[1;3;32m"
-RESET="\033[0m"
-# Formatting functions
-bold_italic_red() { echo -e "${bold_red}\033[3m$1${reset}"; }
-bold_italic_green() { echo -e "${bold_green}\033[3m$1${reset}"; }
-bold_italic_yellow() { echo -e "${bold_yellow}\033[3m$1${reset}"; }
-bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
-
-# 设置工作目录
-WORKDIR="$HOME/sbox"
+# 定义配置文件路径
+password_file="$HOME/.panel_password"
+panel_number_file="$HOME/.panel_number"
 
 # 定义函数来检查密码是否存在
 get_password() {
@@ -66,10 +40,22 @@ process_ip() {
     local username=$(whoami)
     get_password
     local cookies_file="cookies.txt"
-      
+    
+    # 执行 wget 命令并记录日志
+    echo "登录 URL: $login_url"
+    echo "目标 URL: $target_url"
+    
     wget -S --save-cookies "$cookies_file" --keep-session-cookies --post-data "username=$username&password=$password" "$login_url" -O /dev/null 2> "$log_file"
     wget -S --load-cookies "$cookies_file" -O /dev/null "$target_url" 2>> "$log_file"
-     
+    
+    # 检查日志文件是否生成
+    if [[ -f "$log_file" ]]; then
+        echo "wget 日志内容:"
+        cat "$log_file"
+    else
+        echo "$log_file 文件未生成"
+    fi
+    
     # 提取 IP 地址，忽略其他内容
     local ip_addresses=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq)
     
@@ -84,8 +70,29 @@ process_ip() {
     fi
     
     # 清理临时文件
-    rm -f "$cookies_file" 
+    rm -f "$cookies_file" "$log_file"
 }
+
+# Color definitions
+bold_red='\033[1;3;31m'
+bold_green='\033[1;3;32m'
+bold_yellow='\033[1;3;33m'
+bold_purple='\033[1;3;35m'
+red='\033[1;3;31m'
+reset='\033[0m'
+RED='\033[1;31m'
+BOLD_ITALIC='\033[1;3m'
+RESET='\033[0m'
+GREEN_BOLD_ITALIC="\033[1;3;32m"
+RESET="\033[0m"
+# Formatting functions
+bold_italic_red() { echo -e "${bold_red}\033[3m$1${reset}"; }
+bold_italic_green() { echo -e "${bold_green}\033[3m$1${reset}"; }
+bold_italic_yellow() { echo -e "${bold_yellow}\033[3m$1${reset}"; }
+bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
+
+# 设置工作目录
+WORKDIR="$HOME/sbox"
 
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
