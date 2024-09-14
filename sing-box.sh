@@ -55,6 +55,11 @@ get_login_url() {
 
 # 定义主函数
 process_ip() {
+ # 确保用户已经输入了用户名和面板编号
+    if [[ -z "$username" || -z "$panel_number" ]]; then
+        echo "用户名或面板编号未输入，无法获取备用 IP!"
+        return
+    fi
     get_login_url
     local log_file="wget_log.txt"
     local username=$(whoami)
