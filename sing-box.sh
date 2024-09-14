@@ -6,6 +6,7 @@ panel_number_file="$config_dir/.panel_number"
 
 # 确保配置文件目录存在
 if [[ ! -d "$config_dir" ]]; then
+    echo "创建配置目录: $config_dir"
     mkdir -p "$config_dir"
     chmod 700 "$config_dir"  # 确保目录只能被用户访问
 fi
