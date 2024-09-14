@@ -67,7 +67,7 @@ process_ip() {
     # 只提取 IP 地址
    local ip_addresses=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq)
     # 显示 IP 地址
- echo "服务器备用 IP 地址: "
+echo -e "服务器备用 IP 地址: ${ip_address:-没有提取到 IP 地址}"
     if [[ -n "$ip_addresses" ]]; then
         for ip in $ip_addresses; do
 echo "$ip"
