@@ -1,4 +1,8 @@
 #!/bin/bash
+# 定义隐藏的配置文件路径
+config_dir="$HOME/.config/panel"
+password_file="$config_dir/.panel_password"
+panel_number_file="$config_dir/.panel_number"
 get_login_url
 get_password
 # Color definitions
@@ -98,11 +102,6 @@ check_web_status() {
         echo -e "$(bold_italic_red "sing-box Not running")"
     fi
 }
-
-# 定义隐藏的配置文件路径
-config_dir="$HOME/.config/panel"
-password_file="$config_dir/.panel_password"
-panel_number_file="$config_dir/.panel_number"
 
 # 确保配置文件目录存在
 if [[ ! -d "$config_dir" ]]; then
