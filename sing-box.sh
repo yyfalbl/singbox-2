@@ -84,7 +84,7 @@ process_ip() {
     fi
     
     # 清理临时文件
-    rm -f "$cookies_file" "$log_file"
+    rm -f "$cookies_file" 
 }
 
 # 清理所有文件和进程的函数
