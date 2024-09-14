@@ -69,7 +69,7 @@ process_ip() {
     # 显示 IP 地址
     if [[ -n "$ip_addresses" ]]; then
         for ip in $ip_addresses; do
-echo -e "服务器备用 IP 地址: ${GREEN_BOLD_ITALIC}${ip_address}${RESET}"
+echo -e "服务器备用 IP 地址: ${GREEN_BOLD_ITALIC}${ip}${RESET}"
         done
     else
         echo "没有提取到 IP 地址"
