@@ -1,5 +1,7 @@
 #!/bin/bash
-#!/bin/bash
+# 定义颜色和样式
+GREEN_BOLD_ITALIC="\033[1;3;32m"  # 绿色、加粗、斜体
+RESET="\033[0m"  # 重置颜色和样式
 
 # 定义配置文件路径
 password_file="$HOME/.panel_password"
