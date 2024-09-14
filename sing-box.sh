@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Color definitions
 bold_red='\033[1;3;31m'
 bold_green='\033[1;3;32m'
@@ -20,6 +19,72 @@ bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
 
 # 设置工作目录
 WORKDIR="$HOME/sbox"
+# 定义隐藏的配置文件路径
+config_dir="$HOME/.config/panel"
+password_file="$config_dir/.panel_password"
+panel_number_file="$config_dir/.panel_number"
+
+# 确保配置文件目录存在
+if [[ ! -d "$config_dir" ]]; then
+    mkdir -p "$config_dir"
+    chmod 700 "$config_dir"  # 确保目录只能被用户访问
+fi
+
+# 定义函数来检查密码是否存在
+get_password() {
+    # 如果密码文件存在，读取密码
+    if [[ -f "$password_file" ]]; then
+        password=$(cat "$password_file")
+    else
+        # 如果密码文件不存在，提示用户输入密码并保存
+        read -sp "请输入登录面板的密码: " password
+        echo
+        # 将密码保存到文件中
+        echo "$password" > "$password_file"
+        chmod 600 "$password_file"  # 确保只有用户自己能读写这个文件
+    fi
+}
+
+# 动态设置 login_url，基于当前服务器的 panel 号
+get_login_url() {
+    if [[ -f "$panel_number_file" ]]; then
+        panel_number=$(cat "$panel_number_file")
+    else
+        read -p "请输入面板编号 (例如0,1,2,3,...): " panel_number
+        echo "$panel_number" > "$panel_number_file"
+        chmod 600 "$panel_number_file"
+    fi
+    login_url="https://panel${panel_number}.serv00.com/login"
+    target_url="https://panel${panel_number}.serv00.com/ssl/www"
+}
+
+# 定义主函数
+process_ip() {
+    get_login_url
+    local log_file="wget_log.txt"
+    local username=$(whoami)
+    get_password
+    local cookies_file="cookies.txt"
+      
+    wget -S --save-cookies "$cookies_file" --keep-session-cookies --post-data "username=$username&password=$password" "$login_url" -O /dev/null 2> "$log_file"
+    wget -S --load-cookies "$cookies_file" -O /dev/null "$target_url" 2>> "$log_file"
+     
+    # 提取 IP 地址，忽略其他内容
+    local ip_addresses=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq)
+    
+    # 显示 IP 地址
+    echo "服务器备用 IP 地址:"
+    if [[ -n "$ip_addresses" ]]; then
+        for ip in $ip_addresses; do
+            echo "$ip"
+        done
+    else
+        echo "没有提取到 IP 地址"
+    fi
+    
+    # 清理临时文件
+    rm -f "$cookies_file" "$log_file"
+}
 
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
@@ -72,7 +137,7 @@ get_server_info() {
     # 检查域名是否以 serv00.com 结尾
     if [[ "$current_fqdn" == *.serv00.com ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
-   
+         process_ip
         echo -e "${CYAN}本机域名是: ${SERV_DOMAIN}${RESET}"
     else
         echo "当前域名不属于 serv00.com 域。"
