@@ -7,7 +7,7 @@ panel_number_file="$config_dir/.panel_number"
 # 确保配置文件目录存在
 if [[ ! -d "$config_dir" ]]; then
     mkdir -p "$config_dir"
-    chmod 700 "$config_dir"  # 确保目录只能被用户访问
+    chmod +x "$config_dir"  # 确保目录只能被用户访问
 fi
 # Color definitions
 bold_red='\033[1;3;31m'
@@ -137,7 +137,7 @@ get_server_info() {
     # 检查域名是否以 serv00.com 结尾
     if [[ "$current_fqdn" == *.serv00.com ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
-    
+    process_ip
         echo -e "${CYAN}本机域名是: ${SERV_DOMAIN}${RESET}"
     else
         echo "当前域名不属于 serv00.com 域。"
