@@ -50,7 +50,7 @@ process_ip() {
     echo "服务器备用 IP 地址: ${ip}"
     if [[ -n "$ip_addresses" ]]; then
         for ip in $ip_addresses; do
-            echo "$ip"
+            #echo "$ip"
         done
     else
         echo "没有提取到 IP 地址"
