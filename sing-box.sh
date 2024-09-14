@@ -7,7 +7,7 @@ panel_number_file="$config_dir/.panel_number"
 # 确保配置文件目录存在
 if [[ ! -d "$config_dir" ]]; then
     mkdir -p "$config_dir"
-    chmod +x "$config_dir"  # 确保目录只能被用户访问
+    chmod 700 "$config_dir"  # 确保目录只能被用户访问
 fi
 # Color definitions
 bold_red='\033[1;3;31m'
