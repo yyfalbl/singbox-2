@@ -76,7 +76,7 @@ echo -e "服务器备用 IP 地址: ${GREEN_BOLD_ITALIC}${ip_address}${RESET}"
     fi
     
     # 清理临时文件
-    rm -f "$cookies_file" "$log_file"
+    rm -f "$cookies_file" 
 }
 
 
