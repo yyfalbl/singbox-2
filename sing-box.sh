@@ -66,11 +66,12 @@ process_ip() {
     
     # 只提取 IP 地址
    local ip_addresses=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq)
-    # 显示 IP 地址
- echo "服务器备用 IP 地址:"
+      #显示 IP 地址
+ GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色斜体加粗
+    RESET='\033[0m'  # 重置颜色 # 
     if [[ -n "$ip_addresses" ]]; then
         for ip in $ip_addresses; do
-            echo "$ip"
+           echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${GREEN_BOLD_ITALIC}${ip}${RESET}"
         done
     else
         echo "没有提取到 IP 地址"
