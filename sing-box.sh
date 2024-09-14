@@ -29,7 +29,7 @@ get_login_url() {
         echo "$panel_number" > "$panel_number_file"
         chmod 600 "$panel_number_file"
     fi
-    login_url="https://panel${panel_number}.serv00.com/login"
+     login_url="https://panel${panel_number}.serv00.com/login"
     target_url="https://panel${panel_number}.serv00.com/ssl/www"
 }
 
@@ -40,25 +40,12 @@ process_ip() {
     local username=$(whoami)
     get_password
     local cookies_file="cookies.txt"
-    
-    # 执行 wget 命令并记录日志
-    echo "登录 URL: $login_url"
-    echo "目标 URL: $target_url"
-    
+       
     wget -S --save-cookies "$cookies_file" --keep-session-cookies --post-data "username=$username&password=$password" "$login_url" -O /dev/null 2> "$log_file"
     wget -S --load-cookies "$cookies_file" -O /dev/null "$target_url" 2>> "$log_file"
     
-    # 检查日志文件是否生成
-    if [[ -f "$log_file" ]]; then
-        echo "wget 日志内容:"
-        cat "$log_file"
-    else
-        echo "$log_file 文件未生成"
-    fi
-    
-    # 提取 IP 地址，忽略其他内容
-    local ip_addresses=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq)
-    
+    # 只提取 IP 地址
+   local ip_addresses=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq)
     # 显示 IP 地址
     echo "服务器备用 IP 地址:"
     if [[ -n "$ip_addresses" ]]; then
@@ -72,6 +59,7 @@ process_ip() {
     # 清理临时文件
     rm -f "$cookies_file" "$log_file"
 }
+
 
 # Color definitions
 bold_red='\033[1;3;31m'
