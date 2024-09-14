@@ -1,4 +1,5 @@
 #!/bin/bash
+get_login_url
 get_password
 # Color definitions
 bold_red='\033[1;3;31m'
