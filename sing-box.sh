@@ -96,21 +96,6 @@ check_web_status() {
     fi
 }
 
-# Socks5 安装和配置的主函数
-
-generate_random_string() {
-  local length=$1
-  openssl rand -base64 "$length" | tr -dc 'a-zA-Z0-9'
-}
-
-setup_socks5() {
-  # 设置工作目录
-  FILE_PATH="$WORKDIR"
-  CYAN="\033[1;3;33m"
-  RESET="\033[0m"
-  user=$(whoami)  # 获取当前用户名
-  SERV_DOMAIN="$user.serv00.net"  # 使用本机域名格式
-
 # 定义隐藏的配置文件路径
 config_dir="$HOME/.config/panel"
 password_file="$config_dir/.panel_password"
@@ -168,6 +153,23 @@ process_ip() {
     done
     rm -f "$cookies_file" "$log_file"
 }
+
+
+
+# Socks5 安装和配置的主函数
+
+generate_random_string() {
+  local length=$1
+  openssl rand -base64 "$length" | tr -dc 'a-zA-Z0-9'
+}
+
+setup_socks5() {
+  # 设置工作目录
+  FILE_PATH="$WORKDIR"
+  CYAN="\033[1;3;33m"
+  RESET="\033[0m"
+  user=$(whoami)  # 获取当前用户名
+  SERV_DOMAIN="$user.serv00.net"  # 使用本机域名格式
 
 
   # 提示用户是否安装 Socks5 代理
