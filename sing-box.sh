@@ -1,7 +1,25 @@
 #!/bin/bash
-# 定义颜色和样式
-GREEN_BOLD_ITALIC="\033[1;3;32m"  # 绿色、加粗、斜体
-RESET="\033[0m"  # 重置颜色和样式
+
+# Color definitions
+bold_red='\033[1;3;31m'
+bold_green='\033[1;3;32m'
+bold_yellow='\033[1;3;33m'
+bold_purple='\033[1;3;35m'
+red='\033[1;3;31m'
+reset='\033[0m'
+RED='\033[1;31m'
+BOLD_ITALIC='\033[1;3m'
+RESET='\033[0m'
+GREEN_BOLD_ITALIC="\033[1;3;32m"
+RESET="\033[0m"
+# Formatting functions
+bold_italic_red() { echo -e "${bold_red}\033[3m$1${reset}"; }
+bold_italic_green() { echo -e "${bold_green}\033[3m$1${reset}"; }
+bold_italic_yellow() { echo -e "${bold_yellow}\033[3m$1${reset}"; }
+bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
+
+# 设置工作目录
+WORKDIR="$HOME/sbox"
 
 # 定义配置文件路径
 password_file="$HOME/.panel_password"
@@ -62,27 +80,6 @@ process_ip() {
     rm -f "$cookies_file" "$log_file"
 }
 
-
-# Color definitions
-bold_red='\033[1;3;31m'
-bold_green='\033[1;3;32m'
-bold_yellow='\033[1;3;33m'
-bold_purple='\033[1;3;35m'
-red='\033[1;3;31m'
-reset='\033[0m'
-RED='\033[1;31m'
-BOLD_ITALIC='\033[1;3m'
-RESET='\033[0m'
-GREEN_BOLD_ITALIC="\033[1;3;32m"
-RESET="\033[0m"
-# Formatting functions
-bold_italic_red() { echo -e "${bold_red}\033[3m$1${reset}"; }
-bold_italic_green() { echo -e "${bold_green}\033[3m$1${reset}"; }
-bold_italic_yellow() { echo -e "${bold_yellow}\033[3m$1${reset}"; }
-bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
-
-# 设置工作目录
-WORKDIR="$HOME/sbox"
 
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
