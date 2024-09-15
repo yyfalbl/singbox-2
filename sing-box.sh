@@ -25,7 +25,7 @@ WORKDIR="$HOME/sbox"
 password_file="$HOME/.panel_password"
 panel_number_file="$HOME/.panel_number"
 
-# 定义函数来检查密码是否存在
+# 动态设置 login_url，基于当前服务器的 panel 号
 get_login_url() {
     if [[ -f "$panel_number_file" ]]; then
         panel_number=$(cat "$panel_number_file")
@@ -38,20 +38,20 @@ get_login_url() {
     login_url="https://panel${panel_number}.serv00.com/login"
     target_url="https://panel${panel_number}.serv00.com/ssl/www"
 }
-
-# 动态设置 login_url，基于当前服务器的 panel 号
-get_login_url() {
-    if [[ -f "$panel_number_file" ]]; then
-        panel_number=$(cat "$panel_number_file")
+# 定义函数来检查密码是否存在
+get_password() {
+    # 如果密码文件存在，读取密码
+    if [[ -f "$password_file" ]]; then
+        password=$(cat "$password_file")
     else
-        read -p "请输入面板编号 (例如0,1,2,3,...): " panel_number
-        echo "$panel_number" > "$panel_number_file"
-        chmod 600 "$panel_number_file"
+        # 如果密码文件不存在，提示用户输入密码并保存
+        echo -ne "\033[1;3;33m请输入登录面板的密码: \033[0m"  # 黄色斜体加粗，不换行
+        read password  # 不隐藏输入
+        # 将密码保存到文件中
+        echo "$password" > "$password_file"
+        chmod 600 "$password_file"  # 确保只有用户自己能读写这个文件
     fi
-     login_url="https://panel${panel_number}.serv00.com/login"
-    target_url="https://panel${panel_number}.serv00.com/ssl/www"
 }
-
 # 定义主函数
 process_ip() {
     get_login_url
@@ -59,27 +59,39 @@ process_ip() {
     local username=$(whoami)
     get_password
     local cookies_file="cookies.txt"
-       
+    
+    # 发送登录请求并检查是否成功
     wget -S --save-cookies "$cookies_file" --keep-session-cookies --post-data "username=$username&password=$password" "$login_url" -O /dev/null 2> "$log_file"
-    wget -S --load-cookies "$cookies_file" -O /dev/null "$target_url" 2>> "$log_file"
     
-    # 只提取 IP 地址
-   local ip_addresses=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq)
-      #显示 IP 地址
- GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色斜体加粗
-    RESET='\033[0m'  # 重置颜色 # 
-    if [[ -n "$ip_addresses" ]]; then
-        for ip in $ip_addresses; do
-           echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${GREEN_BOLD_ITALIC}${ip}${RESET}"
-        done
+    # 检查登录是否成功（通过判断 log 文件中是否包含 HTTP 状态码 200 或 302）
+    if grep -q "HTTP/.* 200 OK" "$log_file" || grep -q "HTTP/.* 302 Found" "$log_file"; then
+        wget -S --load-cookies "$cookies_file" -O /dev/null "$target_url" 2>> "$log_file"
+        
+        # 只提取 IP 地址
+        local ip_addresses=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq)
+        GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色斜体加粗
+        RESET='\033[0m'  # 重置颜色
+        
+        if [[ -n "$ip_addresses" ]]; then
+            for ip in $ip_addresses; do
+                echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${GREEN_BOLD_ITALIC}${ip}${RESET}"
+            done
+            
+            # 清理临时文件
+            rm -f "$cookies_file"
+            rm -f "$log_file"
+        else
+            echo "没有提取到 IP 地址"
+            # 清理临时文件
+            rm -f "$cookies_file"
+        fi
     else
-        echo "没有提取到 IP 地址"
+        echo "登录失败，请检查用户名或密码。"
+        # 清理临时文件
+        rm -f "$cookies_file"
+        rm -f "$log_file"
     fi
-    
-    # 清理临时文件
-    rm -f "$cookies_file" 
 }
-
 
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
