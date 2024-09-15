@@ -32,8 +32,8 @@ get_password() {
         password=$(cat "$password_file")
     else
         # 如果密码文件不存在，提示用户输入密码并保存
-        echo -e "\033[1;3;33m请输入登录面板的密码: \033[0m"  # 黄色斜体加粗
-        read password  # 不隐藏输入
+        echo -e "\033[1;3;33m请输入登录面板的密码: \033[0m"  read password  
+       
         # 将密码保存到文件中
         echo "$password" > "$password_file"
         chmod 600 "$password_file"  # 确保只有用户自己能读写这个文件
