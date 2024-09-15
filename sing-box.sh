@@ -1352,7 +1352,6 @@ bold_italic_orange() {
 # 主菜单
 # 主菜单
 menu() {
-   clear
       
    echo ""
    magenta "=== SERV00和CT8|SING-BOX一键安装脚本 ==="
