@@ -26,21 +26,18 @@ password_file="$HOME/.panel_password"
 panel_number_file="$HOME/.panel_number"
 
 # 定义函数来检查密码是否存在
-get_password() {
-    # 如果密码文件存在，读取密码
-    if [[ -f "$password_file" ]]; then
-        password=$(cat "$password_file")
+get_login_url() {
+    if [[ -f "$panel_number_file" ]]; then
+        panel_number=$(cat "$panel_number_file")
     else
-        # 如果密码文件不存在，提示用户输入密码并保存
-        echo -ne "\033[1;3;33m请输入登录面板的密码: \033[0m"  # 黄色斜体加粗，不换行
-        read password  # 不隐藏输入
-        # 将密码保存到文件中
-        echo "$password" > "$password_file"
-        chmod 600 "$password_file"  # 确保只有用户自己能读写这个文件
+        echo -ne "\033[1;3;33m请输入面板编号 (例如0,1,2,3,...): \033[0m"  # 黄色斜体加粗，不换行
+        read panel_number
+        echo "$panel_number" > "$panel_number_file"
+        chmod 600 "$panel_number_file"
     fi
+    login_url="https://panel${panel_number}.serv00.com/login"
+    target_url="https://panel${panel_number}.serv00.com/ssl/www"
 }
-
-
 
 # 动态设置 login_url，基于当前服务器的 panel 号
 get_login_url() {
