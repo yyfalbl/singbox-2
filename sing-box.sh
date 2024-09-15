@@ -45,7 +45,7 @@ get_password() {
         password=$(cat "$password_file")
     else
         # 如果密码文件不存在，提示用户输入密码并保存
-        echo -ne "\033[1;3;33m请输入登录面板的密码: \033[0m"  # 黄色斜体加粗，不换行
+        echo -ne "\033[1;3;33m请输入登录panel面板的密码: \033[0m"  # 黄色斜体加粗，不换行
         read password  # 不隐藏输入
         # 将密码保存到文件中
         echo "$password" > "$password_file"
@@ -54,6 +54,8 @@ get_password() {
 }
 # 定义主函数
 process_ip() {
+   RED_BOLD_ITALIC='\033[1;3;31m'  # 红色加粗斜体
+RESET='\033[0m'  # 重置颜色
     local log_file="wget_log.txt"
     local cookies_file="cookies.txt"
     local username=$(whoami)
@@ -102,7 +104,7 @@ process_ip() {
                 return  # 没有 IP 地址时退出
             fi
         else
-            echo "登录失败，请检查用户名或密码。"
+            echo -n "${RED_BOLD_ITALIC}登录失败，请检查用户名或密码。${RESET}"
             # 清理旧的密码和编号文件
             rm -f ".panel_password" ".panel_number"
             # 清理临时文件
