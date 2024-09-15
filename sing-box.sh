@@ -87,7 +87,7 @@ process_ip() {
     # 检查是否已有保存的 IP 地址
     if [[ -f "$ip_file" ]]; then
         ip_address=$(cat "$ip_file")
-        echo -e "${GREEN_BOLD_ITALIC}读取到保存的 IP 地址: ${ip_address}${RESET}"
+        echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址: ${ip_address}${RESET}"
         return  # 已有 IP 地址则直接返回
     fi
 
