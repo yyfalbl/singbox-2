@@ -54,45 +54,78 @@ get_password() {
 }
 # 定义主函数
 process_ip() {
-    get_login_url
     local log_file="wget_log.txt"
-    local username=$(whoami)
-    get_password
     local cookies_file="cookies.txt"
-    
-    # 发送登录请求并检查是否成功
-    wget -S --save-cookies "$cookies_file" --keep-session-cookies --post-data "username=$username&password=$password" "$login_url" -O /dev/null 2> "$log_file"
-    
-    # 检查登录是否成功（通过判断 log 文件中是否包含 HTTP 状态码 200 或 302）
-    if grep -q "HTTP/.* 200 OK" "$log_file" || grep -q "HTTP/.* 302 Found" "$log_file"; then
-        wget -S --load-cookies "$cookies_file" -O /dev/null "$target_url" 2>> "$log_file"
+    local username=$(whoami)
+    local ip_address=""
+
+    # 检查是否存在 panel_password 和 panel_number 文件
+    if [[ -f ".panel_password" && -f ".panel_number" ]]; then
+     
+        # 从文件中读取数据
+        password=$(cat .panel_password)
+        login_url=$(cat .panel_number)  # 假设 .panel_number 存储的是登录 URL
+    else
+     
+        # 重新获取登录信息
+        get_login_url
+        get_password
+        # 保存密码和登录 URL
+        echo "$password" > ".panel_password"
+        echo "$login_url" > ".panel_number"
+    fi
+
+    # 登录循环，直到登录成功或用户选择不再尝试
+    while true; do
+        # 发送登录请求并检查是否成功
+
+        wget -S --save-cookies "$cookies_file" --keep-session-cookies --post-data "username=$username&password=$password" "$login_url" -O /dev/null 2> "$log_file"
         
-        # 只提取 IP 地址
-        local ip_addresses=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq)
-        GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色斜体加粗
-        RESET='\033[0m'  # 重置颜色
-        
-        if [[ -n "$ip_addresses" ]]; then
-            for ip in $ip_addresses; do
-                echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${GREEN_BOLD_ITALIC}${ip}${RESET}"
-            done
+        # 检查登录是否成功（通过判断 log 文件中是否包含 HTTP 状态码 200 或 302）
+        if grep -q "HTTP/.* 200 OK" "$log_file" || grep -q "HTTP/.* 302 Found" "$log_file"; then
+          
+            wget -S --load-cookies "$cookies_file" -O /dev/null "$target_url" 2>> "$log_file"
             
+            # 提取第一个 IP 地址
+            ip_address=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq | head -n 1)
+            GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色斜体加粗
+            RESET='\033[0m'  # 重置颜色
+            
+            if [[ -n "$ip_address" ]]; then
+                echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip_address}${RESET}"
+                # 登录成功并提取到 IP 后，退出循环和函数
+                break
+            else
+                echo "没有提取到 IP 地址"
+                rm -f "$cookies_file"
+                rm -f "$log_file"
+                return  # 没有 IP 地址时退出
+            fi
+        else
+            echo "登录失败，请检查用户名或密码。"
+            # 清理旧的密码和编号文件
+            rm -f ".panel_password" ".panel_number"
             # 清理临时文件
             rm -f "$cookies_file"
             rm -f "$log_file"
-        else
-            echo "没有提取到 IP 地址"
-            # 清理临时文件
-            rm -f "$cookies_file"
+            
+            # 提示用户是否重新尝试登录
+            read -p "是否重新登录？（y/n）: " choice
+            if [[ "$choice" =~ ^[Nn]$ ]]; then
+                echo "退出登录流程。"
+                return  # 用户选择不再登录时退出
+            fi
+            
+            # 重新获取登录信息
+            echo "重新获取登录信息..."
+            get_login_url
+            get_password
+            echo "$password" > ".panel_password"
+            echo "$login_url" > ".panel_number"
         fi
-    else
-        echo "登录失败，请检查用户名或密码。"
-        # 清理临时文件
-        rm -f "$cookies_file"
-        rm -f "$log_file"
-    fi
-}
+    done
 
+}
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
@@ -1352,7 +1385,7 @@ bold_italic_orange() {
 # 主菜单
 # 主菜单
 menu() {
-     while true; do 
+     while true; do
         clear
    echo ""
    magenta "=== SERV00和CT8|SING-BOX一键安装脚本 ==="
@@ -1443,7 +1476,7 @@ menu() {
             echo ""
             ;;
     esac
-    done 
+    done
    
 }
 menu
