@@ -58,35 +58,36 @@ process_ip() {
     GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色斜体加粗
     RESET='\033[0m'  # 重置颜色
     
-    local log_file="wget_log.txt"
-    local cookies_file="cookies.txt"
+    local base_dir="$HOME/beiyong_ip"
+    local log_file="$base_dir/wget_log.txt"
+    local cookies_file="$base_dir/cookies.txt"
     local username=$(whoami)
     local ip_address=""
-    local ip_file="$HOME/sbox/saved_ip.txt"
+    local ip_file="$base_dir/saved_ip.txt"
+
+    # 确保 base_dir 目录存在
+    if [[ ! -d "$base_dir" ]]; then
+        mkdir -p "$base_dir"
+    fi
 
     # 检查是否存在 panel_password 和 panel_number 文件
-    if [[ -f ".panel_password" && -f ".panel_number" ]]; then
+    if [[ -f "$base_dir/.panel_password" && -f "$base_dir/.panel_number" ]]; then
         # 从文件中读取数据
-        password=$(cat .panel_password)
-        login_url=$(cat .panel_number)  # 假设 .panel_number 存储的是登录 URL
+        password=$(cat "$base_dir/.panel_password")
+        login_url=$(cat "$base_dir/.panel_number")  # 假设 .panel_number 存储的是登录 URL
     else
         # 重新获取登录信息
         get_login_url
         get_password
         # 保存密码和登录 URL
-        echo "$password" > ".panel_password"
-        echo "$login_url" > ".panel_number"
-    fi
-
- # 确保 IP 文件路径存在
-    if [[ ! -d "$HOME/sbox" ]]; then
-        mkdir -p "$HOME/sbox"
+        echo "$password" > "$base_dir/.panel_password"
+        echo "$login_url" > "$base_dir/.panel_number"
     fi
 
     # 检查是否已有保存的 IP 地址
     if [[ -f "$ip_file" ]]; then
         ip_address=$(cat "$ip_file")
-        echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址: ${ip_address}${RESET}"
+        echo -e "${GREEN_BOLD_ITALIC}读取到保存的 IP 地址: ${ip_address}${RESET}"
         return  # 已有 IP 地址则直接返回
     fi
 
@@ -116,7 +117,7 @@ process_ip() {
         else
             echo "登录失败，请检查用户名或密码。"
             # 清理旧的密码和编号文件
-            rm -f ".panel_password" ".panel_number"
+            rm -f "$base_dir/.panel_password" "$base_dir/.panel_number"
             # 清理临时文件
             rm -f "$cookies_file"
             rm -f "$log_file"
@@ -132,11 +133,12 @@ process_ip() {
             echo "重新获取登录信息..."
             get_login_url
             get_password
-            echo "$password" > ".panel_password"
-            echo "$login_url" > ".panel_number"
+            echo "$password" > "$base_dir/.panel_password"
+            echo "$login_url" > "$base_dir/.panel_number"
         fi
     done
 }
+
 
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
