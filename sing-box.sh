@@ -172,7 +172,7 @@ get_server_info() {
 
     # 输出获取到的 IP 地址
     echo -e "${GREEN_BOLD_ITALIC}当前服务器的 IP 地址是：$IP${RESET}"
-
+ process_ip
     # 获取当前服务器的完整域名（FQDN）
     current_fqdn=$(hostname -f)
 
