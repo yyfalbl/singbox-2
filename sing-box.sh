@@ -22,8 +22,8 @@ bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
 WORKDIR="$HOME/sbox"
 
 # 定义配置文件路径
-password_file="$HOME/.panel_password"
-panel_number_file="$HOME/.panel_number"
+password_file="$HOME/beiyong_ip/.panel_password"
+panel_number_file="$HOME/beiyong_ip/.panel_number"
 
 # 动态设置 login_url，基于当前服务器的 panel 号
 get_login_url() {
