@@ -1368,9 +1368,10 @@ yellow() {
 purple() {
     echo -e "\\033[1;35m$*\\033[0m"
 }
- reading() {
+reading() {
     echo -ne "\\033[1;3;33m$1\\033[0m"  # 显示黄色加粗斜体的提示
-    read -r "$2"  # 读取用户输入
+    read -r input  # 暂时存储用户输入
+    eval "$2=\$input"  # 将用户输入的内容赋值给指定的变量
 }
     magenta() {
     echo -e "\033[1;3;33m$1\033[0m"
@@ -1431,7 +1432,7 @@ menu() {
    echo "==========="
  # 清理输入缓冲区
         while read -t 0 -n 1; do : ; done
-    read -p "请输入选择(0-8): " choice
+   reading "请输入选择(0-8): " choice
    echo ""
    case "${choice}" in
         1)
