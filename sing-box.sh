@@ -1352,7 +1352,7 @@ bold_italic_orange() {
 # 主菜单
 # 主菜单
 menu() {
-      
+     while true; do 
    echo ""
    magenta "=== SERV00和CT8|SING-BOX一键安装脚本 ==="
    echo ""
@@ -1363,7 +1363,7 @@ menu() {
   echo -e "${green}\033[1;3;33m脚本地址：\033[0m${re}\033[1;3;33mhttps://github.com/yyfalbl/singbox-2\033[0m${re}\n"
    purple "\033[1;3m*****转载请著名出处，请勿滥用*****\033[0m\n"
    echo ""  
-   while true; do
+   
    clear
     get_server_info
     echo ""
