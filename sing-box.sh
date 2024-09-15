@@ -104,7 +104,7 @@ RESET='\033[0m'  # 重置颜色
                 return  # 没有 IP 地址时退出
             fi
         else
-            echo -n "${RED_BOLD_ITALIC}登录失败，请检查用户名或密码。${RESET}"
+            echo "登录失败，请检查用户名或密码。"
             # 清理旧的密码和编号文件
             rm -f ".panel_password" ".panel_number"
             # 清理临时文件
