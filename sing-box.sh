@@ -78,6 +78,11 @@ process_ip() {
         echo "$login_url" > ".panel_number"
     fi
 
+ # 确保 IP 文件路径存在
+    if [[ ! -d "$HOME/sbox" ]]; then
+        mkdir -p "$HOME/sbox"
+    fi
+
     # 检查是否已有保存的 IP 地址
     if [[ -f "$ip_file" ]]; then
         ip_address=$(cat "$ip_file")
