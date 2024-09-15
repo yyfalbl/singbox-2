@@ -30,7 +30,7 @@ get_login_url() {
     if [[ -f "$panel_number_file" ]]; then
         panel_number=$(cat "$panel_number_file")
     else
-        echo -ne "\033[1;3;33m请输入面板编号 (例如0,1,2,3,...): \033[0m"  # 黄色斜体加粗，不换行
+        echo -ne "\033[1;3;33m请输入panel面板编号 (例如0,1,2,3,...): \033[0m"  # 黄色斜体加粗，不换行
         read panel_number
         echo "$panel_number" > "$panel_number_file"
         chmod 600 "$panel_number_file"
