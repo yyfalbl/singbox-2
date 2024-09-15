@@ -54,21 +54,22 @@ get_password() {
 }
 # 定义主函数
 process_ip() {
-   RED_BOLD_ITALIC='\033[1;3;31m'  # 红色加粗斜体
-RESET='\033[0m'  # 重置颜色
+    RED_BOLD_ITALIC='\033[1;3;31m'  # 红色加粗斜体
+    GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色斜体加粗
+    RESET='\033[0m'  # 重置颜色
+    
     local log_file="wget_log.txt"
     local cookies_file="cookies.txt"
     local username=$(whoami)
     local ip_address=""
+    local ip_file="$HOME/sbox/saved_ip.txt"
 
     # 检查是否存在 panel_password 和 panel_number 文件
     if [[ -f ".panel_password" && -f ".panel_number" ]]; then
-     
         # 从文件中读取数据
         password=$(cat .panel_password)
         login_url=$(cat .panel_number)  # 假设 .panel_number 存储的是登录 URL
     else
-     
         # 重新获取登录信息
         get_login_url
         get_password
@@ -77,26 +78,30 @@ RESET='\033[0m'  # 重置颜色
         echo "$login_url" > ".panel_number"
     fi
 
+    # 检查是否已有保存的 IP 地址
+    if [[ -f "$ip_file" ]]; then
+        ip_address=$(cat "$ip_file")
+        echo -e "${GREEN_BOLD_ITALIC}读取到保存的 IP 地址: ${ip_address}${RESET}"
+        return  # 已有 IP 地址则直接返回
+    fi
+
     # 登录循环，直到登录成功或用户选择不再尝试
     while true; do
         # 发送登录请求并检查是否成功
-
         wget -S --save-cookies "$cookies_file" --keep-session-cookies --post-data "username=$username&password=$password" "$login_url" -O /dev/null 2> "$log_file"
         
         # 检查登录是否成功（通过判断 log 文件中是否包含 HTTP 状态码 200 或 302）
         if grep -q "HTTP/.* 200 OK" "$log_file" || grep -q "HTTP/.* 302 Found" "$log_file"; then
-          
             wget -S --load-cookies "$cookies_file" -O /dev/null "$target_url" 2>> "$log_file"
             
             # 提取第一个 IP 地址
             ip_address=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq | head -n 1)
-            GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色斜体加粗
-            RESET='\033[0m'  # 重置颜色
             
             if [[ -n "$ip_address" ]]; then
                 echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip_address}${RESET}"
-                # 登录成功并提取到 IP 后，退出循环和函数
-                break
+                # 保存 IP 地址到文件
+                echo "$ip_address" > "$ip_file"
+                break  # 登录成功并提取到 IP 后，退出循环和函数
             else
                 echo "没有提取到 IP 地址"
                 rm -f "$cookies_file"
@@ -126,8 +131,8 @@ RESET='\033[0m'  # 重置颜色
             echo "$login_url" > ".panel_number"
         fi
     done
-
 }
+
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
