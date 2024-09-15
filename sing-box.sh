@@ -1431,7 +1431,7 @@ menu() {
    echo "==========="
    # 清理输入缓冲区
         while read -t 0 -n 1; do : ; done
-   reading "请输入选择(0-8): " choice
+    read -p "请输入选择(0-8): " choice
    echo ""
    case "${choice}" in
         1)
