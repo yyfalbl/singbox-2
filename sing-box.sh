@@ -1429,8 +1429,7 @@ menu() {
    echo "==============="
    red "\033[1;3m0. 退出脚本\033[0m"
    echo "==========="
-   # 清理输入缓冲区
-        while read -t 0 -n 1; do : ; done
+ 
     read -p "请输入选择(0-8): " choice
    echo ""
    case "${choice}" in
