@@ -55,7 +55,8 @@ get_password() {
 # 定义主函数
 process_ip() {
     RED_BOLD_ITALIC='\033[1;3;31m'  # 红色加粗斜体
-    GREEN_BOLD_ITALIC='\033[1;3;35m'  # 绿色斜体加粗
+    GREEN_BOLD_ITALIC='\033[1;3;32m'# 绿色斜体加粗
+    ZREEN_BOLD_ITALIC='\033[1;3;35m' 
     RESET='\033[0m'  # 重置颜色
     
     local base_dir="$HOME/beiyong_ip"
@@ -87,7 +88,7 @@ process_ip() {
     # 检查是否已有保存的 IP 地址
     if [[ -f "$ip_file" ]]; then
         ip_address=$(cat "$ip_file")
-        echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址: ${ip_address}${RESET}"
+        echo -e "${ZREEN_BOLD_ITALIC}当前服务器备用 IP 地址: ${ip_address}${RESET}"
         return  # 已有 IP 地址则直接返回
     fi
 
