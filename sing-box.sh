@@ -592,7 +592,7 @@ while true; do
         echo -e "$(bold_italic_red "安装已取消")"
         exit 0  # 如果输入是 n 或 N，取消安装并退出
     else
-        echo -e "${bold_italic_red}无效输入，请重新输入【y/n】${reset}"
+        echo -e "${bold_italic_red}无效输入，请重新输入！！！${reset}"
     fi
 done
 
