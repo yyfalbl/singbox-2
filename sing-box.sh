@@ -55,7 +55,6 @@ get_password() {
 # 定义主函数
 process_ip() {
     RED_BOLD_ITALIC='\033[1;3;31m'  # 红色加粗斜体
-    GREEN_BOLD_ITALIC='\033[1;3;32m'# 绿色斜体加粗
     ZREEN_BOLD_ITALIC='\033[1;3;35m' 
     RESET='\033[0m'  # 重置颜色
     
