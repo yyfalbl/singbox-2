@@ -124,14 +124,14 @@ process_ip() {
             
             # 提示用户是否重新尝试登录
          echo -e "\e[1;3;33m是否重新登录？（y/n）:\e[0m"
-          read choice
+          read -r choice
              if [[ "$choice" =~ ^[Nn]$ ]]; then
            echo -e "\e[1;3;31m退出登录流程。\e[0m"
                 return  # 用户选择不再登录时退出
             fi
             
             # 重新获取登录信息
-            echo "重新获取登录信息..."
+         #   echo "重新获取登录信息..."
             get_login_url
             get_password
             echo "$password" > "$base_dir/.panel_password"
