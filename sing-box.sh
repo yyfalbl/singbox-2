@@ -1510,7 +1510,7 @@ menu() {
       *)
             red "\033[1;3m无效的选项，请输入 0 到 8\033[0m"
             echo ""
-                  sleep 3
+                  sleep 2
             ;;
     esac
     done
