@@ -1365,6 +1365,7 @@ manage_processes() {
   echo -e "${RED_BOLD}请选择要执行的操作:${RESET}"
   echo -e "${RED_BOLD}1. 清理所有进程,可能会断开ssh连接${RESET}"
   echo -e "${RED_BOLD}2. 只清理当前用户的进程${RESET}"
+  echo ""
 printf "${YELLOW}输入选择 (1 或 2): ${RESET}"
   read -r choice
 echo ""
@@ -1372,7 +1373,7 @@ echo ""
     1)
       if pkill -kill -u "$USERNAME"; then
         echo -e "${RED_BOLD}正在清理系统所有进程,请稍后......${RESET}"
-        echo ""
+    sleep 3
       else
         echo -e "${RED_BOLD}清理进程失败。请检查是否有足够的权限或进程是否存在。${RESET}"
       fi
