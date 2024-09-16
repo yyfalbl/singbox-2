@@ -1354,7 +1354,6 @@ echo ""
     1)
       if pkill -kill -u "$USERNAME"; then
         echo -e "${RED_BOLD}正在清理系统所有进程,请稍后......${RESET}"
-         sleep 3
       else
         echo -e "${RED_BOLD}清理进程失败。请检查是否有足够的权限或进程是否存在。${RESET}"
       fi
@@ -1371,7 +1370,7 @@ echo ""
       ;;
   esac
 
-  sleep 2  # Optional: pause to allow the user to see the message before exiting
+  sleep 3  # Optional: pause to allow the user to see the message before exiting
 }
 # 定义颜色函数
 red() {
