@@ -1140,7 +1140,7 @@ echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
 sleep 1
   
   # 提示用户是否使用备用IP地址
-  read -p "$(echo -e "${CYAN}\033[1;3;33m是否使用备用IP地址？（输入y确认，否则按Enter自动检测）: ${RESET}") " choice
+  read -p "$(echo -e "${CYAN}\033[1;3;33m是否启用备用IP地址（输入y确认，否则按Enter键自动检测）: ${RESET}") " choice
 
  # 如果用户输入 y，则调用备用IP处理函数
   if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
@@ -1178,7 +1178,8 @@ echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}
    echo ""
     sleep 3
   printf "${RED}${BOLD_ITALIC}注意：v2ray或其他软件的跳过证书验证需设置为true, 否则hy2或tuic节点可能不通${RESET}\n"
-
+     echo ""
+      sleep 3
     # 生成并保存配置文件
 cat <<EOF > "$WORKDIR/list.txt"
 $(if [ "$INSTALL_VLESS" = "true" ]; then
