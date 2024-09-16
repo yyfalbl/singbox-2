@@ -1379,7 +1379,6 @@ echo ""
       ;;
     *)
       echo -e "${RED_BOLD}无效的选择。${RESET}"
-      sleep 3
       ;;
   esac
 
@@ -1511,6 +1510,7 @@ menu() {
       *)
             red "\033[1;3m无效的选项，请输入 0 到 8\033[0m"
             echo ""
+                  sleep 3
             ;;
     esac
     done
