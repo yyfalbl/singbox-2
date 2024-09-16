@@ -1128,8 +1128,7 @@ run_sb() {
 }
   
 get_links() {
-  
-    get_argodomain() {
+  get_argodomain() {
     if [[ -n $ARGO_AUTH ]]; then
       echo "$ARGO_DOMAIN"
     else
@@ -1138,19 +1137,29 @@ get_links() {
   }
 argodomain=$(get_argodomain)
 echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
-sleep 3
+sleep 1
   
-    # 提示用户输入IP地址
-   read -p "$(echo -e "${CYAN}\033[1;3;31m请输入IP地址（或按回车自动检测）: ${RESET}") " user_ip
+  # 提示用户是否使用备用IP地址
+  read -p "$(echo -e "${CYAN}\033[1;3;33m是否使用备用IP地址？（输入y确认，否则按Enter自动检测）: ${RESET}") " choice
 
-    # 如果用户输入了IP地址，使用用户提供的IP地址
-    if [ -n "$user_ip" ]; then
-        IP=$user_ip
+ # 如果用户输入 y，则调用备用IP处理函数
+  if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
+   if [[ -f "$HOME/beiyong_ip/saved_ip.txt" ]]; then
+        process_ip
+        IP=$(cat "$HOME/beiyong_ip/saved_ip.txt")  # 从文件中读取备用 IP 地址
+       # echo -e "${CYAN}\033[1;3;32m用户选择备用IP地址: $IP${RESET}"
     else
-        # 自动检测IP地址
+            echo -e "${RED_BOLD_ITALIC}备用 IP 文件不存在，自动获取 IP 地址...${RESET}"
+            # 自动获取 IP 地址 (首先检测IPv4，如果失败，则尝试IPv6)
+            IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
+            echo -e "${CYAN}\033[1;3;32m自动获取的设备IP地址是: $IP${RESET}"
+        fi
+    else
+        # 自动检测IP地址 (首先检测IPv4，如果失败，则尝试IPv6)
         IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
+        echo -e "${CYAN}\033[1;3;32m自动检测的设备IP地址是: $IP${RESET}"
     fi
-
+    
 current_fqdn=$(hostname -f)
 
 # 检查域名是否以 serv00.com 结尾
@@ -1163,7 +1172,7 @@ echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}
   fi  
     
     # 输出最终使用的IP地址
-    echo -e "${CYAN}\033[1;3;32m设备的IP地址是: $IP${RESET}"
+    echo -e "${CYAN}\033[1;3;32m最终使用的IP地址是: $IP${RESET}"
     # 获取用户名信息
       USERNAME=$(whoami)
    echo ""
