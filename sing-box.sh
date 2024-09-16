@@ -1205,7 +1205,7 @@ red() { echo -e "\e[1;91m$1\033[0m"; }
 purple() { echo -e "\e[1;35m$1\033[0m"; }
 reading() { read -p "$(red "$1")" "$2"; }
 
-# 启动 web 函数    
+# 启动 web和bot 函数    
 
 start_web() {
     green() {
@@ -1249,35 +1249,35 @@ start_web() {
         red "web可执行文件未找到，请检查路径是否正确。"
     fi
 
-    # 检查是否安装了 Argo
-      if [ -e "$WORKDIR/tunnel.yml" ]; then
-        # 启动 bot 进程
-        if [ -e "$WORKDIR/bot" ]; then
-            # 准备 args 变量
-            args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
+    # 启动bot进程
+     if [ -e "$WORKDIR/bot" ]; then
+    # 检查 tunnel.yml 文件是否存在
+    if [ -e "$WORKDIR/tunnel.yml" ]; then
+        args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
+    else
+        args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080"
+    fi
+    
+    # 启动 bot 进程
+    nohup "$WORKDIR/bot" $args >> "$WORKDIR/bot.log" 2>&1 &
+    sleep 2
 
-            # 启动 bot
-            nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
-            sleep 2
-
-            # 检查 bot 是否启动成功
-            if pgrep -x "bot" > /dev/null; then
-                green "BOT进程启动成功,并正在运行！"
-            else
-                red "bot进程启动失败，正在重启..."
-                pkill -x "bot" && nohup "$WORKDIR/bot" $args >/dev/null 2>&1 &
-                sleep 2
-
-                if pgrep -x "bot" > /dev/null; then
-                    purple "bot重新启动成功！"
-                else
-                    red "bot重新启动失败，请检查日志以获取更多信息。"
-                fi
-            fi
+    # 检查 bot 是否启动成功
+    if pgrep -x "bot" > /dev/null; then
+        green "BOT进程启动成功,并正在运行！"
+        
+        # 检查 Argo 功能是否开启
+        if grep -q "edge-ip-version" "$WORKDIR/boot.log"; then
+            green "Argo功能已开启。"
+        else
+            red "Argo功能未开启，请检查配置或启动参数。"
         fi
     else
-        green "Argo未安装或未配置，跳过启动 bot 进程。"
+        red "bot进程启动失败，请检查日志以获取更多信息。"
     fi
+else
+    green "没有找到 bot 文件，无法启动 bot 进程。"
+fi
 }
     
 #停止sing-box服务
