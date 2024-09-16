@@ -1268,9 +1268,9 @@ start_web() {
         
         # 检查 Argo 功能是否开启
         if grep -q "edge-ip-version" "$WORKDIR/boot.log"; then
-            green "Argo功能已开启。"
+            green "Argo隧道功能已启动。"
         else
-            red "Argo功能未开启，请检查配置或启动参数。"
+            red "Argo隧道未启动！。"
         fi
     else
         red "bot进程启动失败，请检查日志以获取更多信息。"
