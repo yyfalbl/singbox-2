@@ -1379,6 +1379,7 @@ echo ""
       ;;
     *)
       echo -e "${RED_BOLD}无效的选择。${RESET}"
+      sleep 3
       ;;
   esac
 
