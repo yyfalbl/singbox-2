@@ -30,7 +30,7 @@ get_login_url() {
     if [[ -f "$panel_number_file" ]]; then
         panel_number=$(cat "$panel_number_file")
     else
-        echo -ne "\033[1;3;33m请输入panel面板编号 (例如0,1,2,3,...): \033[0m"  # 黄色斜体加粗，不换行
+        echo -ne "\033[1;3;33m请输入panel面板编号 (必须输入panel后面的数字...): \033[0m"  # 黄色斜体加粗，不换行
         read panel_number
         echo "$panel_number" > "$panel_number_file"
         chmod 600 "$panel_number_file"
@@ -45,7 +45,7 @@ get_password() {
         password=$(cat "$password_file")
     else
         # 如果密码文件不存在，提示用户输入密码并保存
-        echo -ne "\033[1;3;33m请输入登录panel面板的密码: \033[0m"  # 黄色斜体加粗，不换行
+        echo -ne "\033[1;3;33m请输入登录panel面板的密码(填不填谁便你,直接按Enter键): \033[0m"  # 黄色斜体加粗，不换行
         read password  # 不隐藏输入
         # 将密码保存到文件中
         echo "$password" > "$password_file"
