@@ -184,15 +184,15 @@ get_server_info() {
 
     # 输出获取到的 IP 地址
     echo -e "${GREEN_BOLD_ITALIC}当前服务器的 IP 地址是：$IP${RESET}"
-              process_ip
+              
     # 获取当前服务器的完整域名（FQDN）
     current_fqdn=$(hostname -f)
 
     # 检查域名是否以 serv00.com 结尾
     if [[ "$current_fqdn" == *.serv00.com ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
-   
         echo -e "${CYAN}本机域名是: ${SERV_DOMAIN}${RESET}"
+        process_ip
     else
         echo "当前域名不属于 serv00.com 域。"
     fi
