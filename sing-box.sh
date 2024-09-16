@@ -763,18 +763,18 @@ uninstall_singbox() {
             WORKDIR="$HOME/sbox"
             if [ -d "$WORKDIR" ]; then
                 rm -rf "$WORKDIR" 2>/dev/null
-                echo -e "$(bold_italic_purple "已删除工作目录：$WORKDIR。")"
+                echo -e "$(bold_italic_purple "已删除程序配置文件")"
             fi
 
             # 删除 Socks5 配置文件
             SOCKS5_CONFIG="$WORKDIR/config.json"
             if [ -f "$SOCKS5_CONFIG" ]; then
                 rm -f "$SOCKS5_CONFIG" 2>/dev/null
-                echo -e "$(bold_italic_purple "已删除 Socks5 配置文件：$SOCKS5_CONFIG。")"
+                echo -e "$(bold_italic_purple "已删除 Socks5 配置文件")"
             fi
 
             echo -e "$(bold_italic_purple "正在卸载......")"
-            sleep 2  # 可选：暂停片刻让用户看到消息
+            sleep 3  # 可选：暂停片刻让用户看到消息
             echo -e "$(bold_italic_purple "卸载完成！")"
             ;;
       
