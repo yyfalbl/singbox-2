@@ -144,19 +144,26 @@ process_ip() {
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
-    local exclude_dir="backups"  # 要排除的目录名称
+    local exclude_dirs=("backups" "beiyong_ip")  # 要排除的目录名称数组
 
     # 检查目录是否存在
     if [ -d "$target_dir" ]; then
         echo -n -e "\033[1;3;31m准备删除所有文件...\033[0m\n"
+       sleep 3
+        # 构建排除条件
+        local exclude_pattern=""
+        for dir in "${exclude_dirs[@]}"; do
+            exclude_pattern+="! -name $dir "
+        done
 
-        # 删除除 $exclude_dir 以外的所有内容
-        find "$target_dir" -mindepth 1 -maxdepth 1 ! -name "$exclude_dir" -exec rm -rf {} + 2>/dev/null
+        # 删除除排除目录以外的所有内容
+        eval "find \"$target_dir\" -mindepth 1 -maxdepth 1 $exclude_pattern-exec rm -rf {} + 2>/dev/null"
 
         # 检查删除是否成功
-        if [ -d "$target_dir/$exclude_dir" ] && [ ! "$(ls -A "$target_dir" | grep -v "$exclude_dir")" ]; then
+        local remaining_items=$(find "$target_dir" -mindepth 1 -maxdepth 1 | grep -v "${exclude_dirs[0]}" | grep -v "${exclude_dirs[1]}")
+        if [ -d "$target_dir/${exclude_dirs[0]}" ] && [ -d "$target_dir/${exclude_dirs[1]}" ] && [ -z "$remaining_items" ]; then
             echo -n -e "\033[1;3;31m所有文件已成功删除!\033[0m\n"
-             echo ""
+            echo ""
         else
             echo "目录 $target_dir 删除时出现问题，请检查是否有权限问题或其他错误。"
         fi
@@ -1131,7 +1138,7 @@ get_links() {
   }
 argodomain=$(get_argodomain)
 echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
-sleep 1
+sleep 3
   
     # 提示用户输入IP地址
    read -p "$(echo -e "${CYAN}\033[1;3;31m请输入IP地址（或按回车自动检测）: ${RESET}") " user_ip
@@ -1160,6 +1167,7 @@ echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}
     # 获取用户名信息
       USERNAME=$(whoami)
    echo ""
+    sleep 3
   printf "${RED}${BOLD_ITALIC}注意：v2ray或其他软件的跳过证书验证需设置为true, 否则hy2或tuic节点可能不通${RESET}\n"
 
     # 生成并保存配置文件
@@ -1325,7 +1333,6 @@ is_singbox_installed() {
     [ -e "$WORKDIR/web" ] || [ -e "$WORKDIR/npm" ]
 }
 # 终止所有进程
-# Function to prompt user for choice and kill processes accordingly
 manage_processes() {
   # Define color codes
   RED_BOLD='\033[1;3;31m'
@@ -1346,14 +1353,15 @@ echo ""
   case $choice in
     1)
       if pkill -kill -u "$USERNAME"; then
-        echo -e "${RED_BOLD}已成功清理所有进程。${RESET}"
+        echo -e "${RED_BOLD}正在清理系统所有进程,请稍后......${RESET}"
+         sleep 3
       else
         echo -e "${RED_BOLD}清理进程失败。请检查是否有足够的权限或进程是否存在。${RESET}"
       fi
       ;;
     2)
       if pkill -u "$USERNAME"; then
-        echo -e "${RED_BOLD}已成功清理所有属于用户 $USERNAME 的进程。${RESET}"
+        echo -e "${RED_BOLD}正在清理当前用户进程,请稍后......${RESET}"
       else
         echo -e "${RED_BOLD}清理进程失败。请检查是否有足够的权限或进程是否存在。${RESET}"
       fi
@@ -1398,7 +1406,6 @@ bold_italic_orange() {
     bold_italic_light_blue() {
     echo -e "\033[1;3;36m$1\033[0m"
 }    
-# 主菜单
 # 主菜单
 menu() {
      while true; do
