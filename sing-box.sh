@@ -579,14 +579,21 @@ install_singbox() {
     echo -e "${bold_italic_yellow}开始运行前，请确保面板中 ${bold_italic_purple}已开放3个端口，一个TCP端口，两个UDP端口${RESET}"
     echo -e "${bold_italic_yellow}面板中 ${bold_italic_purple}Additional services中的Run your own applications${bold_italic_yellow}选项已开启为 ${bold_italic_purple1}Enabled${bold_italic_yellow} 状态${RESET}"
 
-    echo -e "${bold_italic_yellow}确定继续安装吗?<ENTER默认安装>【y/n】${reset}:\c"  
+  # 提示用户输入
+while true; do
+    echo -e "${bold_italic_yellow}确定继续安装吗?<ENTER默认安装>【y/n】${reset}:\c"
     read -p "" choice
-    choice=${choice:-y}  # Default to y
+    choice=${choice:-y}  # 如果没有输入，默认值为 y
 
-    if [[ "$choice" != [Yy] ]]; then
+    if [[ "$choice" =~ ^[Yy]$ ]]; then
+        break  # 如果输入是 y 或 Y，退出循环
+    elif [[ "$choice" =~ ^[Nn]$ ]]; then
         echo -e "$(bold_italic_red "安装已取消")"
-        exit 0
+        exit 0  # 如果输入是 n 或 N，取消安装并退出
+    else
+        echo -e "${bold_italic_red}无效输入，请重新输入【y/n】${reset}"
     fi
+done
 
     WORKDIR="$HOME/sbox"
     mkdir -p "$WORKDIR"
