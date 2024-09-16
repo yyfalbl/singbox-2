@@ -115,7 +115,7 @@ process_ip() {
                 return  # 没有 IP 地址时退出
             fi
         else
-            echo "登录失败，请检查用户名或密码。"
+           echo -e "\e[1;3;31m登录失败，请检查用户名或密码！\e[0m"
             # 清理旧的密码和编号文件
             rm -f "$base_dir/.panel_password" "$base_dir/.panel_number"
             # 清理临时文件
@@ -123,9 +123,10 @@ process_ip() {
             rm -f "$log_file"
             
             # 提示用户是否重新尝试登录
-            read -p "是否重新登录？（y/n）: " choice
-            if [[ "$choice" =~ ^[Nn]$ ]]; then
-                echo "退出登录流程。"
+         echo -e "\e[1;3;33m是否重新登录？（y/n）:\e[0m"
+          read choice
+             if [[ "$choice" =~ ^[Nn]$ ]]; then
+           echo -e "\e[1;3;31m退出登录流程。\e[0m"
                 return  # 用户选择不再登录时退出
             fi
             
