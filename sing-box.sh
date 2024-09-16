@@ -1267,7 +1267,7 @@ start_web() {
         green "BOT进程启动成功,并正在运行！"
         
         # 检查 Argo 功能是否开启
-        if grep -q "edge-ip-version" "$WORKDIR/boot.log"; then
+        if grep -q "edge-ip-version" "$WORKDIR/tunnel.yml"; then
             green "===Argo隧道功能已启动==="
         else
             red "===Argo隧道未启动==="
