@@ -1341,7 +1341,7 @@ manage_processes() {
   echo -e "${RED_BOLD}2. 只清理当前用户的进程${RESET}"
 printf "${YELLOW}输入选择 (1 或 2): ${RESET}"
   read -r choice
-
+echo ""
   case $choice in
     1)
       if pkill -kill -u "$USERNAME"; then
