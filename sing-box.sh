@@ -24,44 +24,73 @@ WORKDIR="$HOME/sbox"
 # 定义配置文件路径
 password_file="$HOME/beiyong_ip/.panel_password"
 panel_number_file="$HOME/beiyong_ip/.panel_number"
+username_file="$HOME/beiyong_ip/.username"
 
-# 动态设置 login_url，基于当前服务器的 panel 号
-get_login_url() {
-    if [[ -f "$panel_number_file" ]]; then
-        panel_number=$(cat "$panel_number_file")
-    else
-        echo -ne "\033[1;3;33m请输入panel面板编号 (必须输入panel后面的数字...): \033[0m"  # 黄色斜体加粗，不换行
-        read panel_number
-        echo "$panel_number" > "$panel_number_file"
-        chmod 600 "$panel_number_file"
-    fi
-    login_url="https://panel${panel_number}.serv00.com/login"
-    target_url="https://panel${panel_number}.serv00.com/ssl/www"
-}
 # 定义函数来检查密码是否存在
 get_password() {
     # 如果密码文件存在，读取密码
     if [[ -f "$password_file" ]]; then
         password=$(cat "$password_file")
-    else
-        # 如果密码文件不存在，提示用户输入密码并保存
+        [[ -z "$password" ]] && unset password
+    fi
+
+    if [[ -z "$password" ]]; then
+        # 如果密码文件不存在或内容为空，提示用户输入密码并保存
         echo -ne "\033[1;3;33m请输入登录panel面板的密码(填不填谁便你,直接按Enter键): \033[0m"  # 黄色斜体加粗，不换行
-        read password  # 不隐藏输入
+        read -r password  # 不隐藏输入
         # 将密码保存到文件中
         echo "$password" > "$password_file"
         chmod 600 "$password_file"  # 确保只有用户自己能读写这个文件
     fi
 }
+
+# 动态设置 login_url，基于当前服务器的 panel 号
+get_login_url() {
+    if [[ -f "$panel_number_file" ]]; then
+        panel_number=$(cat "$panel_number_file")
+        [[ -z "$panel_number" ]] && unset panel_number
+    fi
+
+    echo -ne "\033[1;3;33m请选择面板域名:\n1) serv00.com\n2) ct8.pl\n请输入选择 (1/2): \033[0m"  # 黄色斜体加粗，不换行
+    read -r choice
+
+    case "$choice" in
+        1)
+            if [[ -z "$panel_number" ]]; then
+                echo -ne "\033[1;3;33m请输入panel面板编号 (必须输入panel后面的数字...): \033[0m"  # 黄色斜体加粗，不换行
+                read -r panel_number
+                echo "$panel_number" > "$panel_number_file"
+                chmod 600 "$panel_number_file"
+            fi
+            login_url="https://panel${panel_number}.serv00.com/login"
+            target_url="https://panel${panel_number}.serv00.com/ssl/www"
+            ;;
+
+        2)
+            login_url="https://panel.ct8.pl/login/"
+            target_url="https://panel.ct8.pl/ssl/www"
+            # 这里不保存 panel_number，因为域名固定
+            rm -f "$panel_number_file"
+            ;;
+
+        *)
+            echo -e "\033[1;3;31m无效选择，请重新运行脚本。\033[0m"  # 红色斜体加粗
+            exit 1
+            ;;
+    esac
+
+    echo -e "\033[1;3;33m当前登录 URL: ${login_url}\033[0m"  # 调试输出
+}
+
 # 定义主函数
 process_ip() {
     RED_BOLD_ITALIC='\033[1;3;31m'  # 红色加粗斜体
-    ZREEN_BOLD_ITALIC='\033[1;3;35m' 
+    GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色加粗斜体
     RESET='\033[0m'  # 重置颜色
-    
+
     local base_dir="$HOME/beiyong_ip"
     local log_file="$base_dir/wget_log.txt"
     local cookies_file="$base_dir/cookies.txt"
-    local username=$(whoami)
     local ip_address=""
     local ip_file="$base_dir/saved_ip.txt"
 
@@ -70,77 +99,75 @@ process_ip() {
         mkdir -p "$base_dir"
     fi
 
-    # 检查是否存在 panel_password 和 panel_number 文件
-    if [[ -f "$base_dir/.panel_password" && -f "$base_dir/.panel_number" ]]; then
-        # 从文件中读取数据
-        password=$(cat "$base_dir/.panel_password")
-        login_url=$(cat "$base_dir/.panel_number")  # 假设 .panel_number 存储的是登录 URL
-    else
-        # 重新获取登录信息
-        get_login_url
-        get_password
-        # 保存密码和登录 URL
-        echo "$password" > "$base_dir/.panel_password"
-        echo "$login_url" > "$base_dir/.panel_number"
-    fi
-
     # 检查是否已有保存的 IP 地址
-    if [[ -f "$ip_file" ]]; then
+    if [[ -f "$ip_file" && -s "$ip_file" ]]; then
         ip_address=$(cat "$ip_file")
-        echo -e "${ZREEN_BOLD_ITALIC}当前服务器备用 IP 地址: ${ip_address}${RESET}"
+        echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址: ${ip_address}${RESET}"
         return  # 已有 IP 地址则直接返回
     fi
 
+    # 自动获取当前用户名
+    username=$(whoami)
+
+    # 获取登录 URL
+    get_login_url
+
+    # 获取密码
+    get_password
+
     # 登录循环，直到登录成功或用户选择不再尝试
     while true; do
-        # 发送登录请求并检查是否成功
+        # 执行登录请求并记录日志，错误输出重定向到文件
         wget -S --save-cookies "$cookies_file" --keep-session-cookies --post-data "username=$username&password=$password" "$login_url" -O /dev/null 2> "$log_file"
         
-        # 检查登录是否成功（通过判断 log 文件中是否包含 HTTP 状态码 200 或 302）
+        # 检查是否登录成功
         if grep -q "HTTP/.* 200 OK" "$log_file" || grep -q "HTTP/.* 302 Found" "$log_file"; then
+            # 如果成功，进行后续操作
             wget -S --load-cookies "$cookies_file" -O /dev/null "$target_url" 2>> "$log_file"
             
-            # 提取第一个 IP 地址
+            # 提取 IP 地址并保存
             ip_address=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq | head -n 1)
             
             if [[ -n "$ip_address" ]]; then
                 echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip_address}${RESET}"
-                # 保存 IP 地址到文件
                 echo "$ip_address" > "$ip_file"
-                break  # 登录成功并提取到 IP 后，退出循环和函数
+                break
             else
                 echo "没有提取到 IP 地址"
                 rm -f "$cookies_file"
-                rm -f "$log_file"
-                return  # 没有 IP 地址时退出
+                return
             fi
         else
-           echo -e "\e[1;3;31m登录失败，请检查用户名或密码！\e[0m"
-            # 清理旧的密码和编号文件
-            rm -f "$base_dir/.panel_password" "$base_dir/.panel_number"
-            # 清理临时文件
-            rm -f "$cookies_file"
-            rm -f "$log_file"
-            
-            # 提示用户是否重新尝试登录
-         echo -n -e "\e[1;3;33m是否重新登录？（y/n）:\e[0m" 
-         read -r choice
-             if [[ "$choice" =~ ^[Nn]$ ]]; then
-           echo -e "\e[1;3;31m退出登录流程。\e[0m"
-                return  # 用户选择不再登录时退出
+            if [[ "$login_url" == *"ct8.pl"* ]]; then
+                # 仅在 ct8.pl 时，不显示任何错误信息，只尝试提取 IP
+                # 提取 IP 地址并保存
+                ip_address=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq | head -n 1)
+                
+                if [[ -n "$ip_address" ]]; then
+                    echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip_address}${RESET}"
+                    echo "$ip_address" > "$ip_file"
+                else
+                    echo "没有提取到 IP 地址"
+                fi
+                return
+            else
+                # 显示错误信息并提示是否重新登录
+                echo -e "${RED_BOLD_ITALIC}登录失败，请检查用户名或密码！${RESET}"
+                echo "登录失败，保留日志文件和其他数据进行调试"
+
+                # 提示用户是否重新尝试登录
+                echo -n -e "\033[1;3;33m是否重新登录？（y/n）:\033[0m"
+                read -r choice
+                if [[ "$choice" =~ ^[Nn]$ ]]; then
+                    exit 1
+                else
+                    get_login_url
+                    get_password
+                fi
             fi
-            
-            # 重新获取登录信息
-         #   echo "重新获取登录信息..."
-            get_login_url
-            get_password
-            echo "$password" > "$base_dir/.panel_password"
-            echo "$login_url" > "$base_dir/.panel_number"
         fi
     done
 }
-
-
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
