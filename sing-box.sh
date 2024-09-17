@@ -167,6 +167,8 @@ process_ip() {
         fi
     done
 }
+# 后续代码
+echo -e "${GREEN_BOLD_ITALIC}脚本执行完毕，继续运行后续代码...${RESET}"
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
