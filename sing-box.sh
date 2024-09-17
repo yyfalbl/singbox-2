@@ -167,8 +167,7 @@ process_ip() {
         fi
     done
 }
-# 后续代码
-echo -e "${GREEN_BOLD_ITALIC}脚本执行完毕，继续运行后续代码...${RESET}"
+
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
@@ -201,10 +200,22 @@ cleanup_and_delete() {
 }
 
 get_server_info() {
-          user=$(whoami)  # 获取当前用户名
-  SERV_DOMAIN="$user.serv00.net"  # 使用本机域名格式
- CYAN="\033[1;3;33m"
-  RESET="\033[0m"
+    # 颜色变量
+    CYAN="\033[1;36m"
+    GREEN_BOLD_ITALIC="\033[1;3;32m"  # 绿色加粗斜体
+      YELLOW_BOLD_ITALIC="\033[1;3;33m" # 黄色加粗斜体
+    RESET="\033[0m"
+
+    # 获取当前用户名
+    user=$(whoami)
+
+    # 根据面板选择设置 SERV_DOMAIN
+    if [[ "$panel_number" == "1" ]]; then
+        SERV_DOMAIN="$user.serv00.net"
+    else
+        SERV_DOMAIN="$user.ct8.pl"
+    fi
+
     # 尝试获取 IPv4 地址，如果失败则尝试获取 IPv6 地址
     IP=$(curl -s --max-time 3 ipv4.ip.sb)
     if [[ -z "$IP" ]]; then
@@ -213,26 +224,29 @@ get_server_info() {
         if [[ -n "$IP" ]]; then
             IP="[$IP]"  # 将 IPv6 地址用方括号包裹
         else
-            echo "无法获取 IP 地址，请检查网络连接或 API 服务是否正常。"
+            echo -e "${CYAN}无法获取 IP 地址，请检查网络连接或 API 服务是否正常。${RESET}"
             return 1  # 退出函数并返回错误状态
         fi
     fi
 
     # 输出获取到的 IP 地址
     echo -e "${GREEN_BOLD_ITALIC}当前服务器的 IP 地址是：$IP${RESET}"
-              
+
     # 获取当前服务器的完整域名（FQDN）
     current_fqdn=$(hostname -f)
 
-    # 检查域名是否以 serv00.com 结尾
+    # 根据域名判断并输出相应的信息
     if [[ "$current_fqdn" == *.serv00.com ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
-        echo -e "${CYAN}本机域名是: ${SERV_DOMAIN}${RESET}"
+        echo -e "${CYAN}本机域名是: $user.serv00.net${RESET}"
+        process_ip
+    elif [[ "$current_fqdn" == *.ct8.pl ]]; then
+        echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
+     echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.s1.ct8.pl${RESET}"
         process_ip
     else
-        echo "当前域名不属于 serv00.com 域。"
+        echo -e "${CYAN}当前域名不属于 serv00.com 或 ct8.pl 域。${RESET}"
     fi
- 
 }
 
 # Function to check if sing-box is installed
