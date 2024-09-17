@@ -238,7 +238,7 @@ get_server_info() {
     # 根据域名判断并输出相应的信息
     if [[ "$current_fqdn" == *.serv00.com ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
-        echo -e "${CYAN}本机域名是: $user.serv00.net${RESET}"
+         echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.serv00.net${RESET}"
         process_ip
     elif [[ "$current_fqdn" == *.ct8.pl ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
