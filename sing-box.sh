@@ -24,7 +24,6 @@ WORKDIR="$HOME/sbox"
 # 定义配置文件路径
 password_file="$HOME/beiyong_ip/.panel_password"
 panel_number_file="$HOME/beiyong_ip/.panel_number"
-username_file="$HOME/beiyong_ip/.username"
 
 # 定义函数来检查密码是否存在
 get_password() {
