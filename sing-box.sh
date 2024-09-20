@@ -436,55 +436,221 @@ if [ ! -d "$WORKDIR" ]; then
     mkdir -p "$WORKDIR"
     chmod 777 "$WORKDIR"
 fi
+  
+# 绿色文本输出函数
+green() {
+  echo -e "\e[1;3;32m\e[1m\e[3m$1\e[0m"
+}
 
-read_vmess_port() {
-    while true; do
-        reading "**_请输入vmess端口 (面板开放的tcp端口): _**" vmess_port
-        if [[ "$vmess_port" =~ ^[0-9]+$ ]] && [ "$vmess_port" -ge 1 ] && [ "$vmess_port" -le 65535 ]; then
-            bold_italic_green "**_你的vmess端口为: $vmess_port_**"
-            break
+# 黄色斜体加粗输出函数
+yellow_bold_italic() {
+  echo -e "\e[1;3;33m$1\e[0m"
+}
+
+# 自定义带颜色的读取函数
+colored_read() {
+  local prompt="$1"
+  echo -ne "\e[1;3;33m${prompt}\e[0m"  # 输出提示信息
+  builtin read input  # 使用原生 read
+}
+
+# 读取函数
+reading() {
+  colored_read "$1"
+  eval "$2=\$input"
+}
+
+# 加粗绿色输出函数
+bold_italic_green() {
+  echo -e "\e[1;3;32m$1\e[0m"
+}
+
+
+declare -A port_array  # 确保声明关联数组
+# 加粗黄色输出函数
+bold_italic_yellow() {
+  echo -e "\e[1;3;33m$1\e[0m"
+}
+
+# 获取端口
+getPort() {
+  local type=$1
+  local opts=$2
+
+  local key="$type|$opts"
+  if [[ -n "${port_array["$key"]}" ]]; then
+    echo "${port_array["$key"]}"
+  else
+    rt=$(devil port add $type random $opts)
+    if [[ "$rt" =~ .*succesfully.*$ ]]; then
+      loadPort
+      if [[ $? -ne 0 ]]; then
+        return 1  # 如果 loadPort 返回未分配状态
+      fi
+      if [[ -n "${port_array["$key"]}" ]]; then
+        echo "${port_array["$key"]}"
+      else
+        return 1  # 仍然失败
+      fi
+    else
+      return 1  # 添加失败
+    fi    
+  fi
+}
+
+#随机分配端口
+randomPort() {
+    local type=$1
+    local opts=$2
+    local port=""
+
+    read -p "是否自动分配${opts}端口($type)？[y/n] [y]:" input
+    input=${input:-y}
+    if [[ "$input" == "y" ]]; then
+        port=$(getPort $type $opts)
+        if [[ "$port" == "failed" ]]; then
+            green "自动分配端口失败，使用默认端口：默认端口为 12345"
+            port=12345  # 设置一个默认端口
         else
-            bold_italic_yellow "**_输入错误，请重新输入面板开放的TCP端口_**"
+            green "自动分配${opts}端口为:${port}"
         fi
-    done
+    else
+       read -p "请输入${opts}端口($type):" port
+    fi
+
+    echo "$port"  # 返回端口
+}
+# 检查端口分配情况
+loadPort() {
+  output=$(devil port list)
+
+  port_array=()
+  local no_port_flag=false  # 添加标志变量
+  while read -r port typ opis; do
+      if [[ "$typ" == "Type" ]]; then
+          continue
+      fi
+      if [[ "$port" == "Brak" || "$port" == "No" ]]; then
+          if ! $no_port_flag; then
+              echo -e "\e[1;3;31m面板里没有开放的端口，正在随机分配.....\e[0m"  # 红色斜体加粗输出
+              sleep 1
+              no_port_flag=true  # 设置标志为 true
+          fi
+          return 0
+      fi
+      if [[ -n "$typ" ]]; then
+          opis=${opis:-""}
+          combined="${typ}|${opis}"
+          port_array["$combined"]="$port"
+      fi
+  done <<< "$output"
+
+  return 0
+}
+
+
+cleanPort() {
+  output=$(devil port list)
+  while read -r port typ opis; do
+      if [[ "$typ" == "Type" ]]; then
+          continue
+      fi
+      if [[ "$port" == "Brak" || "$port" == "No"  ]]; then
+          return 0
+      fi
+      if [[ -n "$typ" ]]; then
+         devil port del $typ $port  > /dev/null 2>&1
+      fi
+  done <<< "$output"
+  return 0
+}
+
+# 检查并处理端口分配和删除
+check_and_allocate_port() {
+    local protocol_name=$1
+    local protocol_type=$2
+    local port_var_name=$3  # 存储端口的变量名
+
+    loadPort  # 确保获取最新的端口信息
+    local existing_port=$(getPort "$protocol_type" "$protocol_name")
+    local new_port=""
+
+    if [[ "$existing_port" != "failed" ]]; then
+        bold_italic_yellow "已分配的 $protocol_name 端口 : $existing_port"
+        
+        # 提示是否删除已有的端口
+        read -p "$(echo -e '\e[1;33;3m是否删除该 '$protocol_name' 端口('$existing_port')？[y/n 默认: n]:\e[0m')" delete_input
+        delete_input=${delete_input:-n}
+
+   if [[ "$delete_input" == "y" ]]; then
+    # 尝试删除端口并判断是否成功
+    rt=$(devil port del "$protocol_type" "$existing_port" 2>&1)
+    if [[ "$rt" =~ "successfully" ]]; then
+        green "已成功删除 $protocol_name 端口: $existing_port"
+
+        # 加载最新的端口信息
+        loadPort
+
+        # 重新随机分配新端口
+        new_port=$(getPort "$protocol_type" "$protocol_name")
+        if [[ "$new_port" == "failed" ]]; then
+            new_port=12345  # 设置一个默认值
+        else
+            green "重新分配的 $protocol_name 端口为: $new_port"
+        fi
+    else
+        if ! devil port list | grep -q "$existing_port"; then
+            green "已成功删除 $protocol_name 端口: $existing_port (确认无反馈)"
+            loadPort  # 加载最新的端口信息
+            new_port=$(getPort "$protocol_type" "$protocol_name")
+            if [[ "$new_port" == "failed" ]]; then
+                new_port=12345  # 设置一个默认值
+            else
+                green "重新分配的 $protocol_name 端口为: $new_port"
+            fi
+        else
+            red "删除 $protocol_name 端口失败: $existing_port"
+            new_port="$existing_port"  # 保留现有端口
+        fi
+    fi
+
+        else
+            new_port="$existing_port"
+        fi
+    else
+        # 如果没有分配的端口，随机分配一个
+        new_port=$(randomPort "$protocol_type" "$protocol_name")
+    fi
+
+    # 更新全局变量
+    eval "$port_var_name=\"$new_port\""
 }
 
 read_vless_port() {
-    while true; do
-        reading "**_请输入vless-reality端口 (面板开放的tcp端口): _**" vless_port
-        if [[ "$vless_port" =~ ^[0-9]+$ ]] && [ "$vless_port" -ge 1 ] && [ "$vless_port" -le 65535 ]; then
-            bold_italic_green "**_你的vless-reality端口为: $vless_port_**"
-            break
-        else
-            bold_italic_yellow "**_输入错误，请重新输入面板开放的TCP端口_**"
-        fi
-    done
+    loadPort
+    check_and_allocate_port "vless-reality端口" "tcp" "vless_port"
+    bold_italic_green "你的vless-reality TCP 端口为: $vless_port"
+}
+
+read_vmess_port() {
+    loadPort
+    check_and_allocate_port "vmess端口" "tcp" "vmess_port"
+    bold_italic_green "你的vmess TCP 端口为: $vmess_port"
 }
 
 read_hy2_port() {
-    while true; do
-        reading "**_请输入hysteria2端口 (面板开放的UDP端口): _**" hy2_port
-        if [[ "$hy2_port" =~ ^[0-9]+$ ]] && [ "$hy2_port" -ge 1 ] && [ "$hy2_port" -le 65535 ]; then
-            bold_italic_green "**_你的hysteria2端口为: $hy2_port_**"
-            break
-        else
-            bold_italic_yellow "**_输入错误，请重新输入面板开放的UDP端口_**"
-        fi
-    done
+    loadPort
+    check_and_allocate_port "hysteria2端口" "udp" "hy2_port"
+    bold_italic_green "你的hysteria2 UDP 端口为: $hy2_port"
 }
 
 read_tuic_port() {
-    while true; do
-        reading "**_请输入Tuic端口 (面板开放的UDP端口): _**" tuic_port
-        if [[ "$tuic_port" =~ ^[0-9]+$ ]] && [ "$tuic_port" -ge 1 ] && [ "$tuic_port" -le 65535 ]; then
-            bold_italic_green "**_你的tuic端口为: $tuic_port_**"
-            break
-        else
-            bold_italic_yellow "**_输入错误，请重新输入面板开放的UDP端口_**"
-        fi
-    done
+    loadPort
+    check_and_allocate_port "Tuic端口" "udp" "tuic_port"
+    bold_italic_green "你的Tuic UDP 端口为: $tuic_port"
 }
 
+   
 read_nz_variables() {
   if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
       bold_italic_green "**_使用自定义变量哪吒运行哪吒探针_**"
@@ -614,6 +780,25 @@ bold_italic_purple="\033[1;3;35m"
   bold_italic_purple1="\033[1;3;32m"
 RESET="\033[0m"
   
+  # 删除所有端口
+  clear_all_ports() {
+    # 获取所有已分配的端口列表，包含端口号和类型
+    local port_list=$(devil port list | awk '{print $1, $2}')
+
+    # 检查是否有分配的端口
+    if [[ -z "$port_list" ]]; then
+        return  # 没有端口则直接返回
+    fi
+
+    # 遍历每一个端口并删除
+    echo "$port_list" | while read -r port type; do
+        if [[ -n "$port" && -n "$type" ]]; then
+            # 删除端口并静默处理所有输出
+            devil port del "$type" "$port" >/dev/null 2>&1
+        fi
+    done
+}
+  
 #安装sing-box
 install_singbox() {
 bold_italic_red='\033[1;3;31m'
@@ -629,6 +814,7 @@ while true; do
     choice=${choice:-y}  # 如果没有输入，默认值为 y
 
     if [[ "$choice" =~ ^[Yy]$ ]]; then
+      clear_all_ports
         break  # 如果输入是 y 或 Y，退出循环
     elif [[ "$choice" =~ ^[Nn]$ ]]; then
         echo -e "$(bold_italic_red "安装已取消")"
@@ -726,11 +912,11 @@ done
     }
 
     if [ "$INSTALL_VLESS" = "true" ]; then
-        prompt_port "请输入vless-reality端口 (面板开放的tcp端口)" vless_port
+             read_vless_port
     fi
 
     if [ "$INSTALL_VMESS" = "true" ]; then
-        prompt_port "请输入vmess端口 (面板开放的tcp端口)" vmess_port
+            read_vmess_port
 
         echo -e "${bold_italic_yellow}是否使用Argo功能?<ENTER默认开启>【y/n】${RESET}:\c"
         read -p "" argo_choice
@@ -745,11 +931,11 @@ done
     fi
 
     if [ "$INSTALL_HYSTERIA2" = "true" ]; then
-        prompt_port "请输入hysteria2端口 (面板开放的udp端口)" hy2_port
+            read_hy2_port
     fi
 
     if [ "$INSTALL_TUIC" = "true" ]; then
-        prompt_port "请输入tuic端口 (面板开放的udp端口)" tuic_port
+           read_tuic_port
     fi
 
     download_singbox && wait
@@ -1178,6 +1364,11 @@ run_sb() {
 }
   
 get_links() {
+  
+     purple() {
+        echo -e "\\033[1;3;35m$*\\033[0m"
+    }
+  
   get_argodomain() {
     if [[ -n $ARGO_AUTH ]]; then
       echo "$ARGO_DOMAIN"
@@ -1256,17 +1447,19 @@ fi)
 $(if [ "$INSTALL_TUIC" = "true" ]; then
     printf "${YELLOW}\033[1mtuic://$UUID:admin123@$IP:$tuic_port?sni=www.bing.com&congestion_control=bbr&udp_relay_mode=native&alpn=h3&allow_insecure=1#${USERNAME}-${subdomain}${RESET}\n"
 fi)
+  
 EOF
-
+  echo ""
 # 显示生成的 list.txt 内容
 cat "$WORKDIR/list.txt"
-purple "list.txt saved successfully"
-purple "Running done!"
+green "节点信息已保存"
+green "Running done!"
 
 # 清理临时文件
 sleep 3
 rm -rf "$WORKDIR/npm" "$WORKDIR/boot.log" "$WORKDIR/sb.log" "$WORKDIR/core"
 }
+    
 # 定义颜色函数
 green() { echo -e "\e[1;32m$1\033[0m"; }
 red() { echo -e "\e[1;91m$1\033[0m"; }
