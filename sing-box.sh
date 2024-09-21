@@ -1045,6 +1045,9 @@ FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-
       echo "Unsupported architecture: $ARCH"
       exit 1
   fi
+  
+echo -e "\e[1;3;32m正在下载所需配置文件，请稍后......\e[0m"
+  sleep 2
 
     for entry in "${FILE_INFO[@]}"; do
         URL=$(echo "$entry" | cut -d ' ' -f 1)
@@ -1052,10 +1055,11 @@ FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-
         FILENAME="$DOWNLOAD_DIR/$NEW_FILENAME"
         
         if [ -e "$FILENAME" ]; then
-            echo -e "$(bold_italic_green "$FILENAME already exists, Skipping download")"
+            echo -e "所需配置文件已存在，无需下载！"
         else
             wget -q -O "$FILENAME" "$URL"
-            echo -e "$(bold_italic_green "Downloading $FILENAME")"
+           echo -e "$(bold_italic_green "下载成功，配置文件已保存在:$WORKDIR")"
+           echo ""
         fi
         
         chmod +x $FILENAME
