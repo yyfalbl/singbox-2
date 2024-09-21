@@ -573,7 +573,7 @@ check_and_allocate_port() {
     local protocol_name=$1
     local protocol_type=$2
     local port_var_name=$3  # 存储端口的变量名
-    loadPort  # 确保获取最新的端口信息
+   # loadPort  # 确保获取最新的端口信息
     local existing_port=$(getPort "$protocol_type" "$protocol_name")
     local new_port=""
 
