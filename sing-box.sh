@@ -803,14 +803,21 @@ RESET="\033[0m"
         fi
     done
 }
-  
+start_service() {
+  devil binexec on
+  if [ $? -eq 0 ]; then
+    echo -e "\e[32;1;3mEnabled已开启.\e[0m"    # 绿色输出
+  else
+    echo -e "\e[31m\e[3m\e[1mEnabled未开启.\e[0m"  # 红色斜体加粗输出
+  fi
+}  
 #安装sing-box
 install_singbox() {
 bold_italic_red='\033[1;3;31m'
 reset='\033[0m'
     echo -e "${bold_italic_yellow}本脚本可以选择性安装四种协议 ${bold_italic_purple}(vless-reality | vmess | hysteria2 | tuic  )${RESET}"
     echo -e "${bold_italic_yellow}开始运行前，请确保面板中 ${bold_italic_purple}已开放3个端口，一个TCP端口，两个UDP端口${RESET}"
-    echo -e "${bold_italic_yellow}面板中 ${bold_italic_purple}Additional services中的Run your own applications${bold_italic_yellow}选项已开启为 ${bold_italic_purple1}Enabled${bold_italic_yellow} 状态${RESET}"
+start_service
 
   # 提示用户输入
 while true; do
