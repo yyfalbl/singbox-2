@@ -629,25 +629,25 @@ check_and_allocate_port() {
 
 read_vless_port() {
     loadPort
-    check_and_allocate_port "vless-reality 端口" "tcp" "vless_port"
+    check_and_allocate_port "vless-reality端口" "tcp" "vless_port"
     bold_italic_green "你的vless-reality TCP 端口为: $vless_port"
 }
 
 read_vmess_port() {
     loadPort
-    check_and_allocate_port "vmess 端口" "tcp" "vmess_port"
+    check_and_allocate_port "vmess端口" "tcp" "vmess_port"
     bold_italic_green "你的vmess TCP 端口为: $vmess_port"
 }
 
 read_hy2_port() {
     loadPort
-    check_and_allocate_port "hysteria2 端口" "udp" "hy2_port"
+    check_and_allocate_port "hysteria2端口" "udp" "hy2_port"
     bold_italic_green "你的hysteria2 UDP 端口为: $hy2_port"
 }
 
 read_tuic_port() {
     loadPort
-    check_and_allocate_port "Tuic 端口" "udp" "tuic_port"
+    check_and_allocate_port "Tuic端口" "udp" "tuic_port"
     bold_italic_green "你的Tuic UDP 端口为: $tuic_port"
 }
 
