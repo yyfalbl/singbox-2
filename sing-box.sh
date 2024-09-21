@@ -532,7 +532,7 @@ loadPort() {
       fi
       if [[ "$port" == "Brak" || "$port" == "No" ]]; then
           if ! $no_port_flag; then
-              echo -e "\e[1;3;31m面板里没有开放的端口，正在随机分配.....\e[0m"  # 红色斜体加粗输出
+              echo -e "\e[1;3;31m正在检测面板开放的端口，并重新分配.....\e[0m"  # 红色斜体加粗输出
               sleep 1
               no_port_flag=true  # 设置标志为 true
           fi
