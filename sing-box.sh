@@ -567,27 +567,28 @@ cleanPort() {
 
 # 检查并处理端口分配和删除
 check_and_allocate_port() {
+     green() {
+         echo -e "\e[1;3;32m\e[1m\e[3m$1\e[0m"
+}
     local protocol_name=$1
     local protocol_type=$2
     local port_var_name=$3  # 存储端口的变量名
-
     loadPort  # 确保获取最新的端口信息
     local existing_port=$(getPort "$protocol_type" "$protocol_name")
     local new_port=""
 
     if [[ "$existing_port" != "failed" ]]; then
-        bold_italic_yellow "已分配的 $protocol_name 端口 : $existing_port"
+        bold_italic_yellow "已分配的 $protocol_name 为 : $existing_port"
         
         # 提示是否删除已有的端口
-        read -p "$(echo -e '\e[1;33;3m是否删除该 '$protocol_name' 端口('$existing_port')？[y/n 默认: n]:\e[0m')" delete_input
+        read -p "$(echo -e '\e[1;33;3m是否删除该 '$protocol_name'('$existing_port')？[y/n 默认: n]:\e[0m')" delete_input
         delete_input=${delete_input:-n}
 
    if [[ "$delete_input" == "y" ]]; then
     # 尝试删除端口并判断是否成功
     rt=$(devil port del "$protocol_type" "$existing_port" 2>&1)
     if [[ "$rt" =~ "successfully" ]]; then
-        green "已成功删除 $protocol_name 端口: $existing_port"
-
+        echo -e "\e[1;32m\e[3m已成功删除 $protocol_name : $existing_port\e[0m"
         # 加载最新的端口信息
         loadPort
 
@@ -596,20 +597,20 @@ check_and_allocate_port() {
         if [[ "$new_port" == "failed" ]]; then
             new_port=12345  # 设置一个默认值
         else
-            green "重新分配的 $protocol_name 端口为: $new_port"
+            green "重新分配的 $protocol_name为: $new_port"
         fi
     else
         if ! devil port list | grep -q "$existing_port"; then
-            green "已成功删除 $protocol_name 端口: $existing_port (确认无反馈)"
+            green "已成功删除 $protocol_name : $existing_port "
             loadPort  # 加载最新的端口信息
             new_port=$(getPort "$protocol_type" "$protocol_name")
             if [[ "$new_port" == "failed" ]]; then
                 new_port=12345  # 设置一个默认值
             else
-                green "重新分配的 $protocol_name 端口为: $new_port"
+                green "重新分配的 $protocol_name 为: $new_port"
             fi
         else
-            red "删除 $protocol_name 端口失败: $existing_port"
+            red "删除 $protocol_name 失败: $existing_port"
             new_port="$existing_port"  # 保留现有端口
         fi
     fi
@@ -628,25 +629,25 @@ check_and_allocate_port() {
 
 read_vless_port() {
     loadPort
-    check_and_allocate_port "vless-reality端口" "tcp" "vless_port"
+    check_and_allocate_port "vless-reality 端口" "tcp" "vless_port"
     bold_italic_green "你的vless-reality TCP 端口为: $vless_port"
 }
 
 read_vmess_port() {
     loadPort
-    check_and_allocate_port "vmess端口" "tcp" "vmess_port"
+    check_and_allocate_port "vmess 端口" "tcp" "vmess_port"
     bold_italic_green "你的vmess TCP 端口为: $vmess_port"
 }
 
 read_hy2_port() {
     loadPort
-    check_and_allocate_port "hysteria2端口" "udp" "hy2_port"
+    check_and_allocate_port "hysteria2 端口" "udp" "hy2_port"
     bold_italic_green "你的hysteria2 UDP 端口为: $hy2_port"
 }
 
 read_tuic_port() {
     loadPort
-    check_and_allocate_port "Tuic端口" "udp" "tuic_port"
+    check_and_allocate_port "Tuic 端口" "udp" "tuic_port"
     bold_italic_green "你的Tuic UDP 端口为: $tuic_port"
 }
 
