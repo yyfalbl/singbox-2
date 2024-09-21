@@ -858,7 +858,7 @@ while true; do
     # 显示选项并读取用户选择
     display_options
     read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " choices
-
+sleep 2
     # 检查用户输入是否在有效范围内
     if [[ -z "$choices" || ! "$choices" =~ ^[0-6]$ ]]; then
         echo -e "${RED}\033[1m\033[1;3;31m输入错误，请输入有效的序号（范围为1-6）!${RESET}"
@@ -866,7 +866,7 @@ while true; do
     fi
 # 处理退出选项
     if [[ "$choices" == "0" ]]; then
-        echo "退出安装。"
+        echo -e "\033[1;31;3m已退出安装！\033[0m"
         exit 0
     fi
     # 处理用户选择
