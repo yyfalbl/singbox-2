@@ -844,6 +844,7 @@ display_options() {
     echo -e "${bold_italic_yellow}4: tuic${RESET}"
     echo -e "${bold_italic_yellow}5: 安装两个协议${RESET}"
     echo -e "${bold_italic_yellow}6: 安装三个协议${RESET}"
+    echo -e "${bold_italic_yellow}0: 退出安装${RESET}"
 }
 
 # 初始化安装选项
@@ -863,7 +864,11 @@ while true; do
         echo -e "${RED}\033[1m\033[1;3;31m输入错误，请输入有效的序号（范围为1-6）!${RESET}"
         continue
     fi
-
+# 处理退出选项
+    if [[ "$choices" == "0" ]]; then
+        echo "退出安装。"
+        exit 0
+    fi
     # 处理用户选择
     if [[ "$choices" == "5" ]]; then
         echo -e "${bold_italic_yellow}请选择要安装的两个协议（请输入对应的序号，用空格分隔）${RESET}"
