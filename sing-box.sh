@@ -860,7 +860,7 @@ while true; do
     read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " choices
 
     # 检查用户输入是否在有效范围内
-    if [[ -z "$choices" || ! "$choices" =~ ^[1-6]$ ]]; then
+    if [[ -z "$choices" || ! "$choices" =~ ^[0-6]$ ]]; then
         echo -e "${RED}\033[1m\033[1;3;31m输入错误，请输入有效的序号（范围为1-6）!${RESET}"
         continue
     fi
