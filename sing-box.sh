@@ -814,10 +814,9 @@ start_service() {
     echo -e "\e[32;1;3m=== Enabled 已为你自动已开启===  \e[33;1;3m注意：第一次开启Enabled后，请重启服务器后生效，切记！！！\e[0m"
     touch "$HOME/.enabled_flag"  # 创建标志文件
   else
-    echo -e "\e[31m\e[3m\e[1mEnabled未开启.\e[0m"  # 红色斜体加粗输出
+    echo -e "\e[31m\e[3m\e[1mEnabled未开启，请尝试手动开启.\e[0m"  # 红色斜体加粗输出
   fi
-}
- 
+} 
 #安装sing-box
 install_singbox() {
 bold_italic_red='\033[1;3;31m'
