@@ -942,8 +942,9 @@ done
     if [ "$INSTALL_TUIC" = "true" ]; then
            read_tuic_port
     fi
-
+echo ""
     download_singbox && wait
+  echo ""  
     generate_config
 
     if [ "$INSTALL_VLESS" = "true" ]; then
@@ -1047,6 +1048,7 @@ FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-
   fi
   
 echo -e "\e[1;3;32m正在下载所需配置文件，请稍后......\e[0m"
+echo ""
   sleep 2
 
     for entry in "${FILE_INFO[@]}"; do
@@ -1055,11 +1057,10 @@ echo -e "\e[1;3;32m正在下载所需配置文件，请稍后......\e[0m"
         FILENAME="$DOWNLOAD_DIR/$NEW_FILENAME"
         
         if [ -e "$FILENAME" ]; then
-            echo -e "所需配置文件已存在，无需下载！"
+             echo -e "\e[1;3;33m所需配置文件已存在，无需下载！\e[0m" 
         else
             wget -q -O "$FILENAME" "$URL"
-           echo -e "$(bold_italic_green "下载成功，配置文件已保存在:$WORKDIR")"
-           echo ""
+           echo -e "$(bold_italic_yellow "下载成功，配置文件已保存在:$WORKDIR")"        
         fi
         
         chmod +x $FILENAME
