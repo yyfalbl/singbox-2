@@ -581,14 +581,14 @@ check_and_allocate_port() {
         bold_italic_yellow "已分配的 $protocol_name 端口为 : $existing_port"
         
         # 提示是否删除已有的端口
-        read -p "$(echo -e '\e[1;33;3m是否删除该 '$protocol_name' 端口('$existing_port')？[y/n 默认: n]:\e[0m')" delete_input
+        read -p "$(echo -e '\e[1;33;3m是否重新分配 '$protocol_name' 端口('$existing_port')？[y/n Enter默认: n]:\e[0m')" delete_input
         delete_input=${delete_input:-n}
 
    if [[ "$delete_input" == "y" ]]; then
     # 尝试删除端口并判断是否成功
     rt=$(devil port del "$protocol_type" "$existing_port" 2>&1)
     if [[ "$rt" =~ "successfully" ]]; then
-        echo -e "\e[1;32m\e[3m已成功删除 $protocol_name 端口: $existing_port\e[0m"
+        echo -e "\e[1;33m\e[3m已成功删除 $protocol_name 端口: $existing_port\e[0m"
         # 加载最新的端口信息
         loadPort
 
