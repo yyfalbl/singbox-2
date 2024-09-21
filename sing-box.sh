@@ -858,38 +858,58 @@ while true; do
     display_options
     read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " choices
 
+    # 检查用户输入是否在有效范围内
+    if [[ -z "$choices" || ! "$choices" =~ ^[1-6]$ ]]; then
+        echo -e "${RED}\033[1m\033[1;3;31m输入错误，请输入有效的序号（范围为1-6）!${RESET}"
+        continue
+    fi
+
     # 处理用户选择
     if [[ "$choices" == "5" ]]; then
         echo -e "${bold_italic_yellow}请选择要安装的两个协议（请输入对应的序号，用空格分隔）${RESET}"
         read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " choices
+        # 检查选择是否有效
+        if [[ -z "$choices" || ! "$choices" =~ ^[1-4\ ]+$ ]]; then
+            echo -e "${RED}\033[1m\033[1;3;31m输入错误，请输入有效的序号（范围为1-4）!${RESET}"
+            continue
+        fi
     elif [[ "$choices" == "6" ]]; then
         echo -e "${bold_italic_yellow}请选择要安装的三个协议（请输入对应的序号，用空格分隔）${RESET}"
         read -p "$(echo -e ${bold_italic_yellow}请输入你的选择${RESET}): " choices
+        # 检查选择是否有效
+        if [[ -z "$choices" || ! "$choices" =~ ^[1-4\ ]+$ ]]; then
+            echo -e "${RED}\033[1m\033[1;3;31m输入错误，请输入有效的序号（范围为1-4）!${RESET}"
+            continue
+        fi
     fi
-
-    # 设置安装选项
-    valid_choice=true
+# 设置安装选项
+valid_choice=true
+# 检查用户是否输入内容
+if [[ -z "$choices" ]]; then
+    valid_choice=false
+else
     for choice in $choices; do
-        case "$choice" in
-            1) INSTALL_VLESS="true" ;;
-            2) INSTALL_VMESS="true" ;;
-            3) INSTALL_HYSTERIA2="true" ;;
-            4) INSTALL_TUIC="true" ;;
-            *)
-             # echo -e "${RED}\033[1m\033[1;3;31m无效的选择,请重新输入正确的序号!${RESET}"
-                valid_choice=false
-                break
-                ;;
-        esac
+        if [[ "$choice" =~ ^[1-4]$ ]]; then
+            case "$choice" in
+                1) INSTALL_VLESS="true" ;;
+                2) INSTALL_VMESS="true" ;;
+                3) INSTALL_HYSTERIA2="true" ;;
+                4) INSTALL_TUIC="true" ;;
+            esac
+        else
+            valid_choice=false
+            break
+        fi
     done
+fi
 
-    # 如果所有选择都是有效的，则退出循环
-    if $valid_choice; then
-        break
-    else
-      echo -e "${RED}\033[1m\033[1;3;31m输入错误，请重新输入!!!${RESET}"
-       
-    fi
+# 如果所有选择都是有效的，则退出循环
+if $valid_choice; then
+    break
+else
+    echo -e "${RED}\033[1m\033[1;3;31m输入错误，请重新输入有效的序号（范围为1-4）!${RESET}"
+fi
+
 done
 
     validate_port() {
