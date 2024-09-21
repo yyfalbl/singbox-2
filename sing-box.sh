@@ -50,7 +50,9 @@ get_login_url() {
         [[ -z "$panel_number" ]] && unset panel_number
     fi
 
-    echo -ne "\033[1;3;33m请选择面板域名:\n1) serv00.com\n2) ct8.pl\n请输入选择 (1/2): \033[0m"  # 黄色斜体加粗，不换行
+    echo -ne "\033[1;3;33m请选择面板域名(注:此提示只会显示一次,获取备用IP):\n
+    1) serv00.com\n
+    2) ct8.pl\n请输入选择 (1/2): \033[0m"  # 黄色斜体加粗，不换行
     read -r choice
 
     case "$choice" in
