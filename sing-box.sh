@@ -89,7 +89,7 @@ process_ip() {
     GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色加粗斜体
     RESET='\033[0m'  # 重置颜色
 
-    local base_dir="$HOME/beiyong_ip"
+    local base_dir="$HOME/.beiyong_ip"
     local log_file="$base_dir/wget_log.txt"
     local cookies_file="$base_dir/cookies.txt"
     local ip_address=""
@@ -173,7 +173,7 @@ process_ip() {
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
-    local exclude_dirs=("backups" "beiyong_ip")  # 要排除的目录名称数组
+    local exclude_dirs=("backups" ".beiyong_ip")  # 要排除的目录名称数组
 
     # 检查目录是否存在
     if [ -d "$target_dir" ]; then
