@@ -806,7 +806,8 @@ RESET="\033[0m"
 start_service() {
   devil binexec on > /dev/null 2>&1 
   if [ $? -eq 0 ]; then
-    echo -e "\e[32;1;3mEnabled 已为你自动已开启\e[0m"    # 绿色输出
+    echo -e "\e[32;1;3m=== Enabled 已为你自动已开启===  \e[33;1;3m注意：第一次开启Enabled后，请重启服务器后生效，切记！！！\e[0m"
+  # 绿色输出
   else
     echo -e "\e[31m\e[3m\e[1mEnabled未开启.\e[0m"  # 红色斜体加粗输出
   fi
