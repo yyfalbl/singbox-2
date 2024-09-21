@@ -806,7 +806,7 @@ RESET="\033[0m"
 start_service() {
   devil binexec on > /dev/null 2>&1 
   if [ $? -eq 0 ]; then
-    echo -e "\e[32;1;3mEnabled已为你自动已开启\e[0m"    # 绿色输出
+    echo -e "\e[32;1;3mEnabled 已为你自动已开启\e[0m"    # 绿色输出
   else
     echo -e "\e[31m\e[3m\e[1mEnabled未开启.\e[0m"  # 红色斜体加粗输出
   fi
@@ -815,8 +815,8 @@ start_service() {
 install_singbox() {
 bold_italic_red='\033[1;3;31m'
 reset='\033[0m'
-    echo -e "${bold_italic_yellow}本脚本可以选择性安装五种协议 ${bold_italic_purple}(vless-reality||vmess||hysteria2||tuic)${RESET}"
-    echo -e "${bold_italic_yellow}脚本全自动化,无需登陆面板 ${bold_italic_purple}端口根据用户选择的协议来进行自动分配${RESET}"
+    echo -e "${bold_italic_yellow}本脚本可以选择性安装四种协议 ${bold_italic_purple}(vless-reality||vmess||hysteria2||tuic)${RESET}"
+    echo -e "${bold_italic_yellow}注意：脚本全自动化交互安装,无需登陆面板 ${bold_italic_purple}<<端口会根据用户选择的协议来进行自动分配>>${RESET}"
 start_service
 
   # 提示用户输入
