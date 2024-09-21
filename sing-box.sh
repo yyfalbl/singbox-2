@@ -815,8 +815,8 @@ start_service() {
 install_singbox() {
 bold_italic_red='\033[1;3;31m'
 reset='\033[0m'
-    echo -e "${bold_italic_yellow}本脚本可以选择性安装四种协议 ${bold_italic_purple}(vless-reality | vmess | hysteria2 | tuic  )${RESET}"
-    echo -e "${bold_italic_yellow}开始运行前，请确保面板中 ${bold_italic_purple}已开放3个端口，一个TCP端口，两个UDP端口${RESET}"
+    echo -e "${bold_italic_yellow}本脚本可以选择性安装五种协议 ${bold_italic_purple}(vless-reality||vmess||hysteria2||tuic)${RESET}"
+    echo -e "${bold_italic_yellow}脚本全自动化,无需登陆面板 ${bold_italic_purple}端口根据用户选择的协议来进行自动分配${RESET}"
 start_service
 
   # 提示用户输入
