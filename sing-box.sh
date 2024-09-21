@@ -631,24 +631,28 @@ read_vless_port() {
     loadPort
     check_and_allocate_port "vless-reality" "tcp" "vless_port"
     bold_italic_green "你的vless-reality TCP 端口为: $vless_port"
+    sleep 2
 }
 
 read_vmess_port() {
     loadPort
     check_and_allocate_port "vmess" "tcp" "vmess_port"
     bold_italic_green "你的vmess TCP 端口为: $vmess_port"
+       sleep 2
 }
 
 read_hy2_port() {
     loadPort
     check_and_allocate_port "hysteria2" "udp" "hy2_port"
     bold_italic_green "你的hysteria2 UDP 端口为: $hy2_port"
+     sleep 2
 }
 
 read_tuic_port() {
     loadPort
     check_and_allocate_port "Tuic" "udp" "tuic_port"
     bold_italic_green "你的Tuic UDP 端口为: $tuic_port"
+     sleep 2
 }
 
    
