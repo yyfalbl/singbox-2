@@ -1297,16 +1297,7 @@ sleep 1
 
  # 如果用户输入 y，则调用备用IP处理函数
   if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
-   if [[ -f "$HOME/.beiyong_ip/saved_ip.txt" ]]; then
-        process_ip
-        IP=$(cat "$HOME/.beiyong_ip/saved_ip.txt")  # 从文件中读取备用 IP 地址
-       # echo -e "${CYAN}\033[1;3;32m用户选择备用IP地址: $IP${RESET}"
-    else
-            echo -e "${RED_BOLD_ITALIC}备用 IP 文件不存在，自动获取 IP 地址...${RESET}"
-            # 自动获取 IP 地址 (首先检测IPv4，如果失败，则尝试IPv6)
-            IP=$(curl -s ifconfig.me || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
-            echo -e "${CYAN}\033[1;3;32m自动获取的设备IP地址是: $IP${RESET}"
-        fi
+        beiyong_ip
     else
         # 自动检测IP地址 (首先检测IPv4，如果失败，则尝试IPv6)
         IP=$(curl -s ifconfig.me || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
