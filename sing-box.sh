@@ -217,7 +217,8 @@ get_server_info() {
     fi
 
     # 尝试获取 IPv4 地址，如果失败则尝试获取 IPv6 地址
-    IP=$(curl -s --max-time 3 ipv4.ip.sb)
+    IP=$(curl -s --max-time 3 ipv4.ip.sb || curl -s --max-time 3 ifconfig.me)
+
     if [[ -z "$IP" ]]; then
         # 如果没有获取到 IPv4 地址，尝试获取 IPv6 地址
         IP=$(curl -s --max-time 3 ipv6.ip.sb)
@@ -1440,12 +1441,12 @@ sleep 1
     else
             echo -e "${RED_BOLD_ITALIC}备用 IP 文件不存在，自动获取 IP 地址...${RESET}"
             # 自动获取 IP 地址 (首先检测IPv4，如果失败，则尝试IPv6)
-            IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
+            IP=$(curl -s ifconfig.me || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
             echo -e "${CYAN}\033[1;3;32m自动获取的设备IP地址是: $IP${RESET}"
         fi
     else
         # 自动检测IP地址 (首先检测IPv4，如果失败，则尝试IPv6)
-        IP=$(curl -s ipv4.ip.sb || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
+        IP=$(curl -s ifconfig.me || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
         echo -e "${CYAN}\033[1;3;32m自动检测的设备IP地址是: $IP${RESET}"
     fi
     
