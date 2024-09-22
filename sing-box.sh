@@ -103,7 +103,7 @@ get_server_info() {
     if [[ "$current_fqdn" == *.serv00.com ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
          echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.serv00.net${RESET}"
-        process_ip
+       beiyong_ip
     elif [[ "$current_fqdn" == *.ct8.pl ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
      echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.s1.ct8.pl${RESET}"
