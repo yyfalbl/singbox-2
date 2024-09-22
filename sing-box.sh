@@ -25,9 +25,8 @@ WORKDIR="$HOME/sbox"
 beiyong_ip() {
 # 获取 netstat -i 输出并提取以 mail 开头的 IP 地址
 ip_addresses=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
-
 # 输出提取的 IP 地址
-echo "当前服务器备用 IP 地址: $ip_addresses"
+echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip_addresses\033[0m"
 
 }
 
