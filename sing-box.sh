@@ -1297,7 +1297,7 @@ sleep 1
 
  # 如果用户输入 y，则调用备用IP处理函数
   if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
-        beiyong_ip
+      IP=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
     else
         # 自动检测IP地址 (首先检测IPv4，如果失败，则尝试IPv6)
         IP=$(curl -s ifconfig.me || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
