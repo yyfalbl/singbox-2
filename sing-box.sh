@@ -33,34 +33,35 @@ echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip_addresses\033[0m"
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
-    local exclude_dirs=("backups" ".beiyong_ip")  # 要排除的目录名称数组
+    local exclude_dir="backups"  # 要排除的目录名称
 
     # 检查目录是否存在
     if [ -d "$target_dir" ]; then
-        echo -n -e "\033[1;3;31m准备删除所有文件...\033[0m\n"
-       sleep 3
-        # 构建排除条件
-        local exclude_pattern=""
-        for dir in "${exclude_dirs[@]}"; do
-            exclude_pattern+="! -name $dir "
-        done
+        echo -n -e "\033[1;3;31m准备删除所有文件，保留 $exclude_dir 目录...\033[0m\n"
+        sleep 3
+
+        # 交互确认
+        read -p "您确定要删除目录 $target_dir 中的所有文件吗？(y/n): " confirmation
+        if [[ "$confirmation" != "y" ]]; then
+            echo "操作已取消。"
+            return
+        fi
 
         # 删除除排除目录以外的所有内容
-        eval "find \"$target_dir\" -mindepth 1 -maxdepth 1 $exclude_pattern-exec rm -rf {} + 2>/dev/null"
+        find "$target_dir" -mindepth 1 -maxdepth 1 ! -name "$exclude_dir" -exec rm -rf {} +
 
         # 检查删除是否成功
-        local remaining_items=$(find "$target_dir" -mindepth 1 -maxdepth 1 | grep -v "${exclude_dirs[0]}" | grep -v "${exclude_dirs[1]}")
-        if [ -d "$target_dir/${exclude_dirs[0]}" ] && [ -d "$target_dir/${exclude_dirs[1]}" ] && [ -z "$remaining_items" ]; then
-            echo -n -e "\033[1;3;31m所有文件已成功删除!\033[0m\n"
+        local remaining_items=$(find "$target_dir" -mindepth 1 -maxdepth 1 | grep -v "$exclude_dir")
+        if [ -d "$target_dir/$exclude_dir" ] && [ -z "$remaining_items" ]; then
+            echo -n -e "\033[1;3;31m所有文件已成功删除，保留 $exclude_dir 目录!\033[0m\n"
             echo ""
         else
-            echo "目录 $target_dir 删除时出现问题，请检查是否有权限问题或其他错误。"
+            echo "删除操作出现问题，请检查是否有权限问题或其他错误。"
         fi
     else
         echo "目录 $target_dir 不存在。"
     fi
 }
-
 get_server_info() {
     # 颜色变量
     CYAN="\033[1;36m"
