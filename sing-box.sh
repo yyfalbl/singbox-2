@@ -217,7 +217,7 @@ get_server_info() {
     fi
 
     # 尝试获取 IPv4 地址，如果失败则尝试获取 IPv6 地址
-    IP=$(curl -s --max-time 3 ipv4.ip.sb || curl -s --max-time 3 ifconfig.me)
+    IP=$(curl -s --max-time 3 ifconfig.me)
 
     if [[ -z "$IP" ]]; then
         # 如果没有获取到 IPv4 地址，尝试获取 IPv6 地址
