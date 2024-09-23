@@ -258,7 +258,7 @@ get_server_info() {
 # 检查sing-box运行
 check_singbox_installed() {
     if [ -e "$HOME/sbox/web" ]; then
-        echo -e "$(bold_italic_green "欢迎使用sing-box!")"
+        echo -e "$(bold_italic_green "欢迎使用 sing-box!")"
     else
         echo -e "$(bold_italic_red "sing-box当前未安装!")"
     fi
@@ -1746,13 +1746,16 @@ size=8
 content1=$(check_singbox_installed)  # 调用第一个函数获取内容
 content2=$(check_web_status)  # 调用第二个函数获取内容
 
+# 固定宽度
+max_width=30
+
 for ((i=0; i<size; i++)); do
     if [[ $i -eq 0 || $i -eq $((size-1)) ]]; then
-      echo -e "\033[1;33m=============================\033[0m"
+        echo -e "\033[1;33m=============================\033[0m"
     elif [[ $i -eq 3 ]]; then
-        printf "||   %s   ||\n" "$content1"  # 第一行内容手动居中
+        printf "||   %-34s   ||\n" "$content1"  # 第一行内容左对齐，固定宽度
     elif [[ $i -eq 5 ]]; then
-        printf "||   %s    ||\n" "$content2"  # 第二行内容手动居中
+        printf "||   %-28s    ||\n" "$content2"  # 第二行内容左对齐，固定宽度
     else
         echo -e "\033[1;33m||                         ||\033[0m"  # 中间部分
     fi
