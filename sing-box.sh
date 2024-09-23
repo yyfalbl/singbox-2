@@ -260,7 +260,7 @@ check_singbox_installed() {
     if [ -e "$HOME/sbox/web" ]; then
         echo -e "$(bold_italic_green "欢迎使用sing-box!")"
     else
-        echo -e "$(bold_italic_red "sing-box未安装!")"
+        echo -e "$(bold_italic_red "sing-box当前未安装!")"
     fi
 }
 
