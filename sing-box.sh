@@ -26,7 +26,7 @@ password_file="$HOME/.beiyong_ip/.panel_password"
 base_dir="$HOME/.beiyong_ip"
 log_file="$base_dir/wget_log.txt"
 ip_file="$base_dir/saved_ip.txt"
-saved_ip=$(cat "$HOME/.serv00_ip")
+saveda_ip=$(cat "$HOME/.serv00_ip")
 ip_address=""
 
 
@@ -154,8 +154,8 @@ beiyong_ip() {
             echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip_addresses\033[0m"  # 绿色输出
             
             # 立即读取保存的 IP 地址
-            saved_ip=$(cat "$HOME/.serv00_ip")
-            echo -e "\033[1;34m已读取的备用 IP 地址: $saved_ip\033[0m"  # 蓝色输出
+            saveda_ip=$(cat "$HOME/.serv00_ip")
+            echo -e "\033[1;34m已读取的备用 IP 地址: $saveda_ip\033[0m"  # 蓝色输出
         fi
     fi
 }
@@ -238,7 +238,7 @@ get_server_info() {
     if [[ "$current_fqdn" == *.serv00.com ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
          echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.serv00.net${RESET}"
-      echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址：$saved_ip${RESET}"
+      echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址：$saveda_ip${RESET}"
     elif [[ "$current_fqdn" == *.ct8.pl ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
      echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.s1.ct8.pl${RESET}"
