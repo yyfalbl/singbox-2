@@ -25,10 +25,8 @@ WORKDIR="$HOME/sbox"
 password_file="$HOME/.beiyong_ip/.panel_password"
 base_dir="$HOME/.beiyong_ip"
 log_file="$base_dir/wget_log.txt"
-ip1_file="$base_dir/saved_ip.txt"
-ip_file=$(cat "$HOME/.serv00_ip")
-ip1_address=""
 ip_address=""
+ip_file="$base_dir/saved_ip.txt"
 
 # 定义函数来检查密码是否存在
 get_password() {
@@ -66,9 +64,9 @@ process_ct8() {
     fi
 
     # 检查是否已有保存的 IP 地址
-    if [[ -f "$ip1_file" ]]; then
-        ip1_address=$(cat "$ip1_file")
-        echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址: ${ip1_address}${RESET}"
+    if [[ -f "$ip_file" && -s "$ip_file" ]]; then
+        ip_address=$(cat "$ip_file")
+        echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址: ${ip_address}${RESET}"
         return  # 已有 IP 地址则直接返回
     fi
 
@@ -94,9 +92,9 @@ process_ct8() {
             # 提取 IP 地址并保存
             ip_address=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq | head -n 1)
             
-            if [[ -n "$ip1_address" ]]; then
-                echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip1_address}${RESET}"
-                echo "$ip1_address" > "$ip1_file"
+            if [[ -n "$ip_address" ]]; then
+                echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip_address}${RESET}"
+                echo "$ip_address" > "$ip_file"
                 break
             else
                 echo "没有提取到 IP 地址"
@@ -107,11 +105,11 @@ process_ct8() {
             if [[ "$login_url" == *"ct8.pl"* ]]; then
                 # 仅在 ct8.pl 时，不显示任何错误信息，只尝试提取 IP
                 # 提取 IP 地址并保存
-                ip1_address=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq | head -n 1)
+                ip_address=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq | head -n 1)
                 
-                if [[ -n "$ip1_address" ]]; then
-                    echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip1_address}${RESET}"
-                    echo "$ip1_address" > "$ip1_file"
+                if [[ -n "$ip_address" ]]; then
+                    echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip_address}${RESET}"
+                    echo "$ip_address" > "$ip_file"
                 else
                     echo "没有提取到 IP 地址"
                 fi
@@ -134,56 +132,22 @@ process_ct8() {
         fi
     done
 }
-   if [[  ! -f "$HOME/.beiyong_ip" ]]; then
-    process_ct8  # 调用函数
-else
-    echo ""
-fi 
 # 备用ip获取函数
 beiyong_ip() {
-    # 检查文件是否存在
-    if [[ -f "$HOME/.serv00_ip" || -f "$HOME/.beiyong_ip" ]]; then
-        return
-    fi
+    # 获取 netstat -i 输出并提取以 mail 开头的 IP 地址
+    ip_addresses=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
 
-    # 检查服务器类型
-    if [[ "$(hostname -d)" == "serv00.com" ]]; then
-        # 获取 netstat -i 输出并提取以 mail 开头的 IP 地址
-        ip_addresses=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
-
-        # 检查是否提取到 IP 地址
-        if [[ -n "$ip_addresses" ]]; then
-            # 保存提取的 IP 地址到文件
-            echo "$ip_addresses" > "$HOME/.serv00_ip"
-            echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip_addresses\033[0m"  # 绿色输出
-        else
-            echo -e "\033[1;31m没有找到备用 IP 地址。\033[0m"  # 红色输出
-        fi
-    elif [[ "$(hostname -d)" == "ct8.pl" ]]; then
-        # 定义 ip1_file 的路径
-        ip1_file="$HOME/.ip1_file"  # 确保该文件路径正确
-        if [[ -f "$ip1_file" ]]; then
-            ip1_addresses=$(cat "$ip1_file")
-            if [[ -n "$ip1_addresses" ]]; then
-                echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip1_addresses\033[0m"
-            else
-                echo -e "\033[1;31m没有找到备用 IP 地址。\033[0m"  # 红色输出
-            fi
-        else
-            echo -e "\033[1;31m未找到 ip1_file 文件，请检查该文件是否存在。\033[0m"  # 红色输出
-        fi
+    # 检查是否提取到 IP 地址
+    if [[ -z "$ip_addresses" ]]; then
+      #  echo -e "\033[1;31m没有找到备用 IP 地址，正在调用 process_ct8 函数...\033[0m"  # 红色输出
+        process_ct8  # 调用 process_ct8 函数
     else
-        echo -e "\033[1;33m未知服务器类型，无法处理。\033[0m"  # 黄色输出
+        # 输出提取的 IP 地址
+        echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip_addresses\033[0m"  # 绿色输出
     fi
 }
 
-# 检查文件是否存在
-if [[ ! -f "$HOME/.serv00_ip" ]]; then
-    beiyong_ip  # 调用函数
-else
-    echo ""
-fi
-    
+
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
@@ -262,11 +226,11 @@ get_server_info() {
     if [[ "$current_fqdn" == *.serv00.com ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
          echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.serv00.net${RESET}"
-       echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址：$ip_file${RESET}"
+       beiyong_ip
     elif [[ "$current_fqdn" == *.ct8.pl ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
      echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.s1.ct8.pl${RESET}"
-          echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址：$ip1_address${RESET}"
+        beiyong_ip
     else
         echo -e "${CYAN}当前域名不属于 serv00.com 或 ct8.pl 域。${RESET}"
     fi
@@ -832,14 +796,14 @@ start_service() {
     return
   fi
 
-  devil binexec on > /dev/null 2>&1
+  devil binexec on > /dev/null 2>&1 
   if [ $? -eq 0 ]; then
     echo -e "\e[32;1;3m=== Enabled 已为你自动已开启===  \e[33;1;3m注意：第一次开启Enabled后，请重启服务器后生效，切记！！！\e[0m"
     touch "$HOME/.enabled_flag"  # 创建标志文件
   else
     echo -e "\e[31m\e[3m\e[1mEnabled未开启，请尝试手动开启.\e[0m"  # 红色斜体加粗输出
   fi
-}
+} 
 #安装sing-box
 install_singbox() {
 bold_italic_red='\033[1;3;31m'
@@ -1118,7 +1082,7 @@ echo ""
         FILENAME="$DOWNLOAD_DIR/$NEW_FILENAME"
         
         if [ -e "$FILENAME" ]; then
-             echo -e "\e[1;3;33m所需配置文件已存在，无需下载！\e[0m"
+             echo -e "\e[1;3;33m所需配置文件已存在，无需下载！\e[0m" 
         else
             wget -q -O "$FILENAME" "$URL"
            echo -e "$(bold_italic_yellow "下载成功，配置文件已保存在:$WORKDIR")"        
@@ -1451,47 +1415,29 @@ argodomain=$(get_argodomain)
 echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
 sleep 1
   
- # 提示用户是否使用备用IP地址
-read -p "$(echo -e "${CYAN}\033[1;3;33m是否启用备用IP地址（输入y确认，否则按Enter键自动检测）: ${RESET}") " choice
+  # 提示用户是否使用备用IP地址
+  read -p "$(echo -e "${CYAN}\033[1;3;33m是否启用备用IP地址（输入y确认，否则按Enter键自动检测）: ${RESET}") " choice
 
-# 如果用户输入 y，则调用备用IP处理函数
+ # 如果用户输入 y，则调用备用IP处理函数
 if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
-    # 检查服务器类型
-    if [[ "$(hostname -d)" == "serv00.com" ]]; then
-        # 获取 IP 地址
-        IP=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
-
-        if [[ -z "$IP" ]]; then
-            echo -e "${RED}\033[1;31m未找到备用 IP 地址，尝试从 .serv00_ip 提取...\033[0m"
-            # 尝试从 .serv00_ip 中提取 IP 地址
-            if [[ -f "$HOME/.serv00_ip" ]]; then
-                IP=$(cat "$HOME/.serv00_ip")
-                if [[ -z "$IP" ]]; then
-                    echo -e "${RED}\033[1;31m从 .serv00_ip 中未找到 IP 地址。\033[0m"
-                else
-                    echo -e "${GREEN}\033[1;32m服务器备用 IP 地址是: $IP${RESET}"
-                fi
-            else
-                echo -e "${RED}\033[1;31m.srv00_ip 文件不存在。\033[0m"
-            fi
-        else
-            echo -e "${GREEN}\033[1;32m找到的备用 IP 地址是: $IP${RESET}"
-        fi
-    elif [[ "$(hostname -d)" == "ct8.pl" ]]; then
-        # 从 ip1_file 中读取 IP 地址
-        ip1_file="$HOME/.ip1_file"  # 确保该文件路径正确
-        if [[ -f "$ip1_file" ]]; then
-            IP=$(cat "$ip1_file")
+    # 获取 IP 地址
+    IP=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
+    
+    if [[ -z "$IP" ]]; then
+      #  echo -e "${RED}\033[1;31m未找到备用 IP 地址，尝试从 saved_ip.txt 提取...\033[0m"
+        # 尝试从 saved_ip.txt 中提取 IP 地址
+        if [[ -f "$ip_file" ]]; then
+            IP=$(cat "$ip_file")
             if [[ -z "$IP" ]]; then
-                echo -e "${RED}\033[1;31m从 .ip1_file 中未找到 IP 地址。\033[0m"
+                echo -e "${RED}\033[1;31m从 saved_ip.txt 中未找到 IP 地址。\033[0m"
             else
                 echo -e "${GREEN}\033[1;32m服务器备用 IP 地址是: $IP${RESET}"
             fi
         else
-            echo -e "${RED}\033[1;31m.ip1_file 文件不存在。\033[0m"
+            echo -e "${RED}\033[1;31msaved_ip.txt 文件不存在。\033[0m"
         fi
     else
-        echo -e "${RED}\033[1;31m未知服务器类型，无法处理。\033[0m"
+        echo -e "${GREEN}\033[1;32m找到的备用 IP 地址是: $IP${RESET}"
     fi
 else
     # 自动检测 IP 地址 (首先检测 IPv4，如果失败，则尝试 IPv6)
@@ -1765,20 +1711,22 @@ menu() {
      while true; do
         clear
    echo ""
-   magenta "=== 欢迎使用SERV00和CT8|SING-BOX一键安装脚本 ===\n"
-  bold_italic_orange "\033[1;3m=== 脚本支持:VLESS VMESS HY2 TUIC socks5 协议！ ===\033[0m"
-    magenta "=== 支持安装：单，双，三个协议(面板最多只能开放3个端口)，自由选择 ==="
-  bold_italic_light_blue "=== 固定argo隧道 可以优选ip或优选域名！  ==="
-    bold_italic_light_blue "=== argo隧道配置文件生成网址  https://fscarmen.cloudflare.now.cc/ ==="
-  echo -e "${green}\033[1;3;33m脚本地址：\033[0m${re}\033[1;3;33mhttps://github.com/yyfalbl/singbox-2\033[0m${re}"
-   purple "\033[1;3m*****转载请著名出处，请勿滥用*****\033[0m\n"
-  
+   magenta "=== SERV00和CT8|SING-BOX一键安装脚本 ==="
+   echo ""
+    bold_italic_orange "\033[1;3m=== 脚本支持:VLESS VMESS HY2 TUIC socks5 协议，UUID自动生成 ===\033[0m\n"
+    magenta "=== 支持安装：单，双，三个协议(面板最多只能开放3个端口)，自由选择 ===\n"
+    bold_italic_light_blue "=== 固定argo隧道 可以优选ip或优选域名！  ===\n"
+    bold_italic_light_blue "=== argo隧道配置文件生成网址  https://fscarmen.cloudflare.now.cc/ ===\n"
+    echo -e "${green}\033[1;3;33m脚本地址：\033[0m${re}\033[1;3;33mhttps://github.com/yyfalbl/singbox-2\033[0m${re}\n"
+    purple "\033[1;3m*****转载请著名出处，请勿滥用*****\033[0m\n"
+    echo ""  
     get_server_info
-    echo ""
+  echo ""
    # Example usage
-   check_singbox_installed
+    check_singbox_installed
    echo ""
    # 显示 web 进程状态（仅在 sing-box 已安装时显示）
+   echo ""  # 添加空行
    check_web_status
    echo ""  # 添加空行
 
