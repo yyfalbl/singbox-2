@@ -255,7 +255,7 @@ get_server_info() {
     fi
 }
 
-# Function to check if sing-box is installed
+# 检查sing-box运行
 check_singbox_installed() {
     if [ -e "$HOME/sbox/web" ]; then
         echo -e "$(bold_italic_green "欢迎使用sing-box !!!")"
@@ -269,7 +269,7 @@ check_web_status() {
     if pgrep -x "web" > /dev/null; then
         echo -e "$(bold_italic_green "sing-box Running！")"
     else
-        echo -e "$(bold_italic_red "sing-box Not running")"
+        echo -e "$(bold_italic_red "sing-boxNotRunning")"
     fi
 }
 
@@ -1741,15 +1741,23 @@ menu() {
     echo ""  
     get_server_info
   echo ""
-   # Example usage
-    check_singbox_installed
-   echo ""
-   # 显示 web 进程状态（仅在 sing-box 已安装时显示）  
-   check_web_status
-   echo ""  # 添加空行
+# 设置正方形大小
+size=8
+content1=$(check_singbox_installed)  # 调用第一个函数获取内容
+content2=$(check_web_status)  # 调用第二个函数获取内容
 
+for ((i=0; i<size; i++)); do
+    if [[ $i -eq 0 || $i -eq $((size-1)) ]]; then
+      echo -e "\033[1;33m=============================\033[0m"
+    elif [[ $i -eq 3 ]]; then
+        printf "||    %s   ||\n" "$content1"  # 第一行内容手动居中
+    elif [[ $i -eq 5 ]]; then
+        printf "||   %s    ||\n" "$content2"  # 第二行内容手动居中
+    else
+        echo -e "\033[1;33m||                         ||\033[0m"  # 中间部分
+    fi
+done
    echo ""
-
    green "\033[1;3m1. 安装sing-box\033[0m"
    echo "==============="
    echo -e "\033[1;3;32m2. 安装Socks5\033[0m\033[1;3;33m(谨慎安装!)\033[0m"
