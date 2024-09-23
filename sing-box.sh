@@ -161,7 +161,7 @@ cleanup_and_delete() {
         # 交互确认
         read -p "$(echo -e "\033[1;3;33m您确定要删除所有文件吗？(y/n): \033[0m")" confirmation
           confirmation=${confirmation:-y}  # 如果没有输入，默认值为 'y'
-        if [[ "$confirmation" != "y" ] && [ "$confirmation" != "Y" ]]; then
+        if [[ "$confirmation" != "y"  &&  "$confirmation" != "Y" ]]; then
          sleep 2
             echo -e "\033[1;3;32m操作已取消。\033[0m"
             return
