@@ -1749,7 +1749,6 @@ menu() {
    check_singbox_installed
    echo ""
    # 显示 web 进程状态（仅在 sing-box 已安装时显示）
-   echo ""  # 添加空行
    check_web_status
    echo ""  # 添加空行
 
