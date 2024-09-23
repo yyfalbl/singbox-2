@@ -27,6 +27,7 @@ base_dir="$HOME/.beiyong_ip"
 log_file="$base_dir/wget_log.txt"
 ip1_file="$base_dir/saved_ip.txt"
 ip_file=$(cat "$HOME/.serv00_ip")
+ip1_address=""
 ip_address=""
 
 # 定义函数来检查密码是否存在
@@ -65,9 +66,9 @@ process_ct8() {
     fi
 
     # 检查是否已有保存的 IP 地址
-    if [[ -f "$ip_file" && -s "$ip_file" ]]; then
-        ip_address=$(cat "$ip_file")
-        echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址: ${ip_address}${RESET}"
+    if [[ -f "$ip1_file" ]]; then
+        ip1_address=$(cat "$ip1_file")
+        echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址: ${ip1_address}${RESET}"
         return  # 已有 IP 地址则直接返回
     fi
 
@@ -93,9 +94,9 @@ process_ct8() {
             # 提取 IP 地址并保存
             ip_address=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq | head -n 1)
             
-            if [[ -n "$ip_address" ]]; then
-                echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip_address}${RESET}"
-                echo "$ip_address" > "$ip_file"
+            if [[ -n "$ip1_address" ]]; then
+                echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip1_address}${RESET}"
+                echo "$ip1_address" > "$ip1_file"
                 break
             else
                 echo "没有提取到 IP 地址"
@@ -106,11 +107,11 @@ process_ct8() {
             if [[ "$login_url" == *"ct8.pl"* ]]; then
                 # 仅在 ct8.pl 时，不显示任何错误信息，只尝试提取 IP
                 # 提取 IP 地址并保存
-                ip_address=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq | head -n 1)
+                ip1_address=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq | head -n 1)
                 
-                if [[ -n "$ip_address" ]]; then
-                    echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip_address}${RESET}"
-                    echo "$ip_address" > "$ip_file"
+                if [[ -n "$ip1_address" ]]; then
+                    echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip1_address}${RESET}"
+                    echo "$ip1_address" > "$ip1_file"
                 else
                     echo "没有提取到 IP 地址"
                 fi
@@ -254,7 +255,7 @@ get_server_info() {
     elif [[ "$current_fqdn" == *.ct8.pl ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
      echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.s1.ct8.pl${RESET}"
-          echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址：$ip1_file${RESET}"
+          echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址：$ip_address${RESET}"
     else
         echo -e "${CYAN}当前域名不属于 serv00.com 或 ct8.pl 域。${RESET}"
     fi
@@ -1450,8 +1451,8 @@ if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
     if [[ -z "$IP" ]]; then
       #  echo -e "${RED}\033[1;31m未找到备用 IP 地址，尝试从 saved_ip.txt 提取...\033[0m"
         # 尝试从 saved_ip.txt 中提取 IP 地址
-        if [[ -f "$ip_file" || -f "$ip1_file"  ]]; then
-            IP=$(cat "$ip_file")
+        if [[ -f "$ip_file" || -f "$ip_address"  ]]; then
+           IP=$(cat "$ip_file" 2>/dev/null || cat "$ip1_file" 2>/dev/null)
             if [[ -z "$IP" ]]; then
                 echo -e "${RED}\033[1;31m从 saved_ip.txt 中未找到 IP 地址。\033[0m"
             else
