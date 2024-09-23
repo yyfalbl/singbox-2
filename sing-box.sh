@@ -151,15 +151,19 @@ beiyong_ip() {
         # 获取 netstat -i 输出并提取以 mail 开头的 IP 地址
         ip_addresses=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
 
+        # 检查是否提取到 IP 地址
+        if [[ -n "$ip_addresses" ]]; then
             # 保存提取的 IP 地址到文件
             echo "$ip_addresses" > "$HOME/.serv00_ip"
-            #echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip_addresses\033[0m"  # 绿色输出
+            echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip_addresses\033[0m"  # 绿色输出
             
             # 立即从文件读取 IP 地址
             ip_file=$(cat "$HOME/.serv00_ip")
+        else
+            echo -e "\033[1;31m没有找到备用 IP 地址。\033[0m"  # 红色输出
         fi
     elif [[ "$(hostname -d)" == "ct8.pl" ]]; then
-        echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip1_addresses\033[0m"  
+        echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip1_addresses\033[0m"
     else
         echo -e "\033[1;33m未知服务器类型，无法处理。\033[0m"  # 黄色输出
     fi
