@@ -25,8 +25,9 @@ WORKDIR="$HOME/sbox"
 password_file="$HOME/.beiyong_ip/.panel_password"
 base_dir="$HOME/.beiyong_ip"
 log_file="$base_dir/wget_log.txt"
+ip1_file="$base_dir/saved_ip.txt"
+ip_file=$(cat "$HOME/.serv00_ip")
 ip_address=""
-ip_file="$base_dir/saved_ip.txt"
 
 # 定义函数来检查密码是否存在
 get_password() {
@@ -132,22 +133,45 @@ process_ct8() {
         fi
     done
 }
+    
 # 备用ip获取函数
 beiyong_ip() {
-    # 获取 netstat -i 输出并提取以 mail 开头的 IP 地址
-    ip_addresses=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
+    # 检查文件是否存在
+    if [[ -f "$HOME/.serv00_ip" || -f "$HOME/.beiyong_ip" ]]; then
+        return
+    fi
 
-    # 检查是否提取到 IP 地址
-    if [[ -z "$ip_addresses" ]]; then
-      #  echo -e "\033[1;31m没有找到备用 IP 地址，正在调用 process_ct8 函数...\033[0m"  # 红色输出
-        process_ct8  # 调用 process_ct8 函数
+    # 检查服务器类型
+    if [[ "$(hostname -d)" == "serv00.com" ]]; then
+        # 获取 netstat -i 输出并提取以 mail 开头的 IP 地址
+        ip_addresses=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
+
+        # 检查是否提取到 IP 地址
+        if [[ -z "$ip_addresses" ]]; then
+            echo -e "\033[1;31m没有找到备用 IP 地址，正在调用 process_ct8 函数...\033[0m"  # 红色输出
+            process_ct8  # 调用 process_ct8 函数
+        else
+            # 保存提取的 IP 地址到文件
+            echo "$ip_addresses" > "$HOME/.serv00_ip"
+            echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip_addresses\033[0m"  # 绿色输出
+            
+            # 立即从文件读取 IP 地址
+            ip_file=$(cat "$HOME/.serv00_ip")
+        fi
+    elif [[ "$(hostname -d)" == "ct8.pl" ]]; then
+        process_ct8  # 直接调用 process_ct8 函数
     else
-        # 输出提取的 IP 地址
-        echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip_addresses\033[0m"  # 绿色输出
+        echo -e "\033[1;33m未知服务器类型，无法处理。\033[0m"  # 黄色输出
     fi
 }
 
-
+# 检查文件是否存在
+if [[ ! -f "$HOME/.serv00_ip" && ! -f "$HOME/.beiyong_ip" ]]; then
+    beiyong_ip  # 调用函数
+else
+    echo ""
+fi
+    
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
@@ -226,11 +250,11 @@ get_server_info() {
     if [[ "$current_fqdn" == *.serv00.com ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
          echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.serv00.net${RESET}"
-       beiyong_ip
+       echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址：$ip_file${RESET}"
     elif [[ "$current_fqdn" == *.ct8.pl ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
      echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.s1.ct8.pl${RESET}"
-        beiyong_ip
+          echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址：$ip1_file${RESET}"
     else
         echo -e "${CYAN}当前域名不属于 serv00.com 或 ct8.pl 域。${RESET}"
     fi
@@ -796,14 +820,14 @@ start_service() {
     return
   fi
 
-  devil binexec on > /dev/null 2>&1 
+  devil binexec on > /dev/null 2>&1
   if [ $? -eq 0 ]; then
     echo -e "\e[32;1;3m=== Enabled 已为你自动已开启===  \e[33;1;3m注意：第一次开启Enabled后，请重启服务器后生效，切记！！！\e[0m"
     touch "$HOME/.enabled_flag"  # 创建标志文件
   else
     echo -e "\e[31m\e[3m\e[1mEnabled未开启，请尝试手动开启.\e[0m"  # 红色斜体加粗输出
   fi
-} 
+}
 #安装sing-box
 install_singbox() {
 bold_italic_red='\033[1;3;31m'
@@ -1082,7 +1106,7 @@ echo ""
         FILENAME="$DOWNLOAD_DIR/$NEW_FILENAME"
         
         if [ -e "$FILENAME" ]; then
-             echo -e "\e[1;3;33m所需配置文件已存在，无需下载！\e[0m" 
+             echo -e "\e[1;3;33m所需配置文件已存在，无需下载！\e[0m"
         else
             wget -q -O "$FILENAME" "$URL"
            echo -e "$(bold_italic_yellow "下载成功，配置文件已保存在:$WORKDIR")"        
@@ -1426,7 +1450,7 @@ if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
     if [[ -z "$IP" ]]; then
       #  echo -e "${RED}\033[1;31m未找到备用 IP 地址，尝试从 saved_ip.txt 提取...\033[0m"
         # 尝试从 saved_ip.txt 中提取 IP 地址
-        if [[ -f "$ip_file" ]]; then
+        if [[ -f "$ip_file" || -f "$ip1_file"  ]]; then
             IP=$(cat "$ip_file")
             if [[ -z "$IP" ]]; then
                 echo -e "${RED}\033[1;31m从 saved_ip.txt 中未找到 IP 地址。\033[0m"
@@ -1711,15 +1735,14 @@ menu() {
      while true; do
         clear
    echo ""
-   magenta "=== SERV00和CT8|SING-BOX一键安装脚本 ==="
-   echo ""
-  bold_italic_orange "\033[1;3m=== 脚本支持:VLESS VMESS HY2 TUIC socks5 协议，UUID自动生成 ===\033[0m\n"
-    magenta "=== 支持安装：单，双，三个协议(面板最多只能开放3个端口)，自由选择 ===\n"
-  bold_italic_light_blue "=== 固定argo隧道 可以优选ip或优选域名！  ===\n"
-    bold_italic_light_blue "=== argo隧道配置文件生成网址  https://fscarmen.cloudflare.now.cc/ ===\n"
-  echo -e "${green}\033[1;3;33m脚本地址：\033[0m${re}\033[1;3;33mhttps://github.com/yyfalbl/singbox-2\033[0m${re}\n"
+   magenta "=== 欢迎使用SERV00和CT8|SING-BOX一键安装脚本 ===\n"
+  bold_italic_orange "\033[1;3m=== 脚本支持:VLESS VMESS HY2 TUIC socks5 协议！ ===\033[0m"
+    magenta "=== 支持安装：单，双，三个协议(面板最多只能开放3个端口)，自由选择 ==="
+  bold_italic_light_blue "=== 固定argo隧道 可以优选ip或优选域名！  ==="
+    bold_italic_light_blue "=== argo隧道配置文件生成网址  https://fscarmen.cloudflare.now.cc/ ==="
+  echo -e "${green}\033[1;3;33m脚本地址：\033[0m${re}\033[1;3;33mhttps://github.com/yyfalbl/singbox-2\033[0m${re}"
    purple "\033[1;3m*****转载请著名出处，请勿滥用*****\033[0m\n"
-   echo ""  
+  
     get_server_info
     echo ""
    # Example usage
