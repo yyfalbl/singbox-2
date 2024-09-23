@@ -134,7 +134,11 @@ process_ct8() {
         fi
     done
 }
-    
+   if [[  ! -f "$HOME/.beiyong_ip" ]]; then
+    process_ct8  # 调用函数
+else
+    echo ""
+fi 
 # 备用ip获取函数
 beiyong_ip() {
     # 检查文件是否存在
@@ -167,7 +171,7 @@ beiyong_ip() {
 }
 
 # 检查文件是否存在
-if [[ ! -f "$HOME/.serv00_ip" && ! -f "$HOME/.beiyong_ip" ]]; then
+if [[ ! -f "$HOME/.serv00_ip" ]]; then
     beiyong_ip  # 调用函数
 else
     echo ""
