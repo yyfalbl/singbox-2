@@ -155,11 +155,11 @@ cleanup_and_delete() {
 
     # 检查目录是否存在
     if [ -d "$target_dir" ]; then
-        echo -n -e "\033[1;3;31m准备删除所有文件，保留 $exclude_dir 目录...\033[0m\n"
+      echo -n -e "\033[1;3;33m准备删除所有文件，请稍后...\033[0m\n"
         sleep 3
 
         # 交互确认
-        read -p "您确定要删除目录 $target_dir 中的所有文件吗？(y/n): " confirmation
+        read -p "您确定要删除所有文件吗？(y/n): " confirmation
         if [[ "$confirmation" != "y" ]]; then
             echo "操作已取消。"
             return
@@ -171,7 +171,7 @@ cleanup_and_delete() {
         # 检查删除是否成功
         local remaining_items=$(find "$target_dir" -mindepth 1 -maxdepth 1 | grep -v "$exclude_dir")
         if [ -d "$target_dir/$exclude_dir" ] && [ -z "$remaining_items" ]; then
-            echo -n -e "\033[1;3;31m所有文件已成功删除，保留 $exclude_dir 目录!\033[0m\n"
+           echo -n -e "\033[1;3;31m所有文件已成功删除!\033[0m\n"
             echo ""
         else
             echo "删除操作出现问题，请检查是否有权限问题或其他错误。"
@@ -1419,14 +1419,14 @@ if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
     IP=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
     
     if [[ -z "$IP" ]]; then
-        echo -e "${RED}\033[1;31m未找到备用 IP 地址，尝试从 saved_ip.txt 提取...\033[0m"
+      #  echo -e "${RED}\033[1;31m未找到备用 IP 地址，尝试从 saved_ip.txt 提取...\033[0m"
         # 尝试从 saved_ip.txt 中提取 IP 地址
         if [[ -f "$ip_file" ]]; then
             IP=$(cat "$ip_file")
             if [[ -z "$IP" ]]; then
                 echo -e "${RED}\033[1;31m从 saved_ip.txt 中未找到 IP 地址。\033[0m"
             else
-                echo -e "${GREEN}\033[1;32m从 saved_ip.txt 中找到的 IP 地址是: $IP${RESET}"
+                echo -e "${GREEN}\033[1;32m服务器备用 IP 地址是: $IP${RESET}"
             fi
         else
             echo -e "${RED}\033[1;31msaved_ip.txt 文件不存在。\033[0m"
