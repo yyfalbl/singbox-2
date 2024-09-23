@@ -142,7 +142,7 @@ beiyong_ip() {
 
     # 检查是否提取到 IP 地址
     if [[ -z "$ip_addresses" ]]; then
-        echo -e "\033[1;31m没有找到备用 IP 地址，正在调用 process_ct8 函数...\033[0m"  # 红色输出
+      #  echo -e "\033[1;31m没有找到备用 IP 地址，正在调用 process_ct8 函数...\033[0m"  # 红色输出
         process_ct8  # 调用 process_ct8 函数
     else
         # 输出提取的 IP 地址
@@ -1417,13 +1417,32 @@ sleep 1
   read -p "$(echo -e "${CYAN}\033[1;3;33m是否启用备用IP地址（输入y确认，否则按Enter键自动检测）: ${RESET}") " choice
 
  # 如果用户输入 y，则调用备用IP处理函数
-  if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
-      IP=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
+if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
+    # 获取 IP 地址
+    IP=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
+    
+    if [[ -z "$IP" ]]; then
+        echo -e "${RED}\033[1;31m未找到备用 IP 地址，尝试从 saved_ip.txt 提取...\033[0m"
+        # 尝试从 saved_ip.txt 中提取 IP 地址
+        if [[ -f "$ip_file" ]]; then
+            IP=$(cat "$ip_file")
+            if [[ -z "$IP" ]]; then
+                echo -e "${RED}\033[1;31m从 saved_ip.txt 中未找到 IP 地址。\033[0m"
+            else
+                echo -e "${GREEN}\033[1;32m从 saved_ip.txt 中找到的 IP 地址是: $IP${RESET}"
+            fi
+        else
+            echo -e "${RED}\033[1;31msaved_ip.txt 文件不存在。\033[0m"
+        fi
     else
-        # 自动检测IP地址 (首先检测IPv4，如果失败，则尝试IPv6)
-        IP=$(curl -s ifconfig.me || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
-        echo -e "${CYAN}\033[1;3;32m自动检测的设备IP地址是: $IP${RESET}"
+        echo -e "${GREEN}\033[1;32m找到的备用 IP 地址是: $IP${RESET}"
     fi
+else
+    # 自动检测 IP 地址 (首先检测 IPv4，如果失败，则尝试 IPv6)
+    IP=$(curl -s ifconfig.me || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
+    echo -e "${CYAN}\033[1;3;32m自动检测的设备 IP 地址是: $IP${RESET}"
+fi
+
     
 current_fqdn=$(hostname -f)
 
