@@ -20,15 +20,136 @@ bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
 
 # 设置工作目录
 WORKDIR="$HOME/sbox"
+password_file="$HOME/.beiyong_ip/.panel_password"
 
+
+# 定义函数来检查密码是否存在
+get_password() {
+    # 如果密码文件存在，读取密码
+    if [[ -f "$password_file" ]]; then
+        password=$(cat "$password_file")
+        [[ -z "$password" ]] && unset password
+    fi
+
+    if [[ -z "$password" ]]; then
+        # 如果密码文件不存在或内容为空，提示用户输入密码并保存
+        echo -ne "\033[1;3;33m请输入登录panel面板的密码(填不填谁便你,直接按Enter键): \033[0m"  # 黄色斜体加粗，不换行
+        read -r password  # 不隐藏输入
+        # 将密码保存到文件中
+        echo "$password" > "$password_file"
+        chmod 600 "$password_file"  # 确保只有用户自己能读写这个文件
+    fi
+}
+
+# 动态设置 login_url，基于当前服务器的 panel 号
+get_login_url() {
+    # 直接设置面板地址
+    login_url="https://panel.ct8.pl/login/"
+    target_url="https://panel.ct8.pl/ssl/www"
+
+    echo -e "\033[1;3;33m当前登录 URL: ${login_url}\033[0m"  # 调试输出
+}
+
+# 定义主函数
+process_ct8() {
+    RED_BOLD_ITALIC='\033[1;3;31m'  # 红色加粗斜体
+    GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色加粗斜体
+    RESET='\033[0m'  # 重置颜色
+
+    local base_dir="$HOME/.beiyong_ip"
+    local log_file="$base_dir/wget_log.txt"
+    local ip_address=""
+    local ip_file="$base_dir/saved_ip.txt"
+
+    # 确保 base_dir 目录存在
+    if [[ ! -d "$base_dir" ]]; then
+        mkdir -p "$base_dir"
+    fi
+
+    # 检查是否已有保存的 IP 地址
+    if [[ -f "$ip_file" && -s "$ip_file" ]]; then
+        ip_address=$(cat "$ip_file")
+        echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址: ${ip_address}${RESET}"
+        return  # 已有 IP 地址则直接返回
+    fi
+
+    # 自动获取当前用户名
+    username=$(whoami)
+
+    # 获取登录 URL
+    get_login_url
+
+    # 获取密码
+    get_password
+
+    # 登录循环，直到登录成功或用户选择不再尝试
+    while true; do
+        # 执行登录请求并记录日志，错误输出重定向到文件
+        wget -S --save-cookies "$cookies_file" --keep-session-cookies --post-data "username=$username&password=$password" "$login_url" -O /dev/null 2> "$log_file"
+        
+        # 检查是否登录成功
+        if grep -q "HTTP/.* 200 OK" "$log_file" || grep -q "HTTP/.* 302 Found" "$log_file"; then
+            # 如果成功，进行后续操作
+            wget -S --load-cookies "$cookies_file" -O /dev/null "$target_url" 2>> "$log_file"
+            
+            # 提取 IP 地址并保存
+            ip_address=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq | head -n 1)
+            
+            if [[ -n "$ip_address" ]]; then
+                echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip_address}${RESET}"
+                echo "$ip_address" > "$ip_file"
+                break
+            else
+                echo "没有提取到 IP 地址"
+                rm -f "$cookies_file"
+                return
+            fi
+        else
+            if [[ "$login_url" == *"ct8.pl"* ]]; then
+                # 仅在 ct8.pl 时，不显示任何错误信息，只尝试提取 IP
+                # 提取 IP 地址并保存
+                ip_address=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq | head -n 1)
+                
+                if [[ -n "$ip_address" ]]; then
+                    echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip_address}${RESET}"
+                    echo "$ip_address" > "$ip_file"
+                else
+                    echo "没有提取到 IP 地址"
+                fi
+                return
+            else
+                # 显示错误信息并提示是否重新登录
+                echo -e "${RED_BOLD_ITALIC}登录失败，请检查用户名或密码！${RESET}"
+                echo "登录失败，保留日志文件和其他数据进行调试"
+
+                # 提示用户是否重新尝试登录
+                echo -n -e "\033[1;3;33m是否重新登录？（y/n）:\033[0m"
+                read -r choice
+                if [[ "$choice" =~ ^[Nn]$ ]]; then
+                    exit 1
+                else
+                    get_login_url
+                    get_password
+                fi
+            fi
+        fi
+    done
+}
 # 备用ip获取函数
 beiyong_ip() {
-# 获取 netstat -i 输出并提取以 mail 开头的 IP 地址
-ip_addresses=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
-# 输出提取的 IP 地址
-echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip_addresses\033[0m"
+    # 获取 netstat -i 输出并提取以 mail 开头的 IP 地址
+    ip_addresses=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
 
+    # 检查是否提取到 IP 地址
+    if [[ -z "$ip_addresses" ]]; then
+        echo -e "\033[1;31m没有找到备用 IP 地址，正在调用 process_ct8 函数...\033[0m"  # 红色输出
+        process_ct8  # 调用 process_ct8 函数
+    else
+        # 输出提取的 IP 地址
+        echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip_addresses\033[0m"  # 绿色输出
+    fi
 }
+
 
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
