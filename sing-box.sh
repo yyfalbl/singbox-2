@@ -17,11 +17,16 @@ bold_italic_red() { echo -e "${bold_red}\033[3m$1${reset}"; }
 bold_italic_green() { echo -e "${bold_green}\033[3m$1${reset}"; }
 bold_italic_yellow() { echo -e "${bold_yellow}\033[3m$1${reset}"; }
 bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
-
+ RED_BOLD_ITALIC='\033[1;3;31m'  # 红色加粗斜体
+    GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色加粗斜体
+    RESET='\033[0m'  # 重置颜色
 # 设置工作目录
 WORKDIR="$HOME/sbox"
 password_file="$HOME/.beiyong_ip/.panel_password"
-
+base_dir="$HOME/.beiyong_ip"
+log_file="$base_dir/wget_log.txt"
+ip_address=""
+ip_file="$base_dir/saved_ip.txt"
 
 # 定义函数来检查密码是否存在
 get_password() {
@@ -52,15 +57,7 @@ get_login_url() {
 
 # 定义主函数
 process_ct8() {
-    RED_BOLD_ITALIC='\033[1;3;31m'  # 红色加粗斜体
-    GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色加粗斜体
-    RESET='\033[0m'  # 重置颜色
-
-    local base_dir="$HOME/.beiyong_ip"
-    local log_file="$base_dir/wget_log.txt"
-    local ip_address=""
-    local ip_file="$base_dir/saved_ip.txt"
-
+   
     # 确保 base_dir 目录存在
     if [[ ! -d "$base_dir" ]]; then
         mkdir -p "$base_dir"
