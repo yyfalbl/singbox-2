@@ -151,22 +151,23 @@ beiyong_ip() {
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
-    local exclude_dir="backups"  # 要排除的目录名称
+    local exclude_dir="backups"
 
-    # 检查目录是否存在
     if [ -d "$target_dir" ]; then
-      echo -n -e "\033[1;3;33m准备删除所有文件，请稍后...\033[0m\n"
+        echo -n -e "\033[1;3;33m准备删除所有文件并清理进程，请稍后...\033[0m\n"
         sleep 2
 
-        # 交互确认
-       read -p "$(echo -e "\033[1;3;33m您确定要删除所有文件吗？(y/n Enter默认y): \033[0m")" confirmation
-confirmation=${confirmation:-y}  # 如果没有输入，默认值为 'y'
-  sleep 2
-if [[ "$confirmation" != "y" && "$confirmation" != "Y" ]]; then
-  
-    echo -e "\033[1;3;32m操作已取消。\033[0m"
-    return
-fi
+        read -p "$(echo -e "\033[1;3;33m您确定要删除所有文件并终止当前用户的所有进程吗？(y/n Enter默认y): \033[0m")" confirmation
+        confirmation=${confirmation:-y}
+        sleep 2
+        
+        if [[ "$confirmation" != "y" && "$confirmation" != "Y" ]]; then
+            echo -e "\033[1;3;32m操作已取消。\033[0m"
+            return
+        fi
+
+        # 终止当前用户的所有进程
+        pkill -u $(whoami)
 
         # 删除除排除目录以外的所有内容
         find "$target_dir" -mindepth 1 -maxdepth 1 ! -name "$exclude_dir" -exec rm -rf {} +
@@ -174,8 +175,7 @@ fi
         # 检查删除是否成功
         local remaining_items=$(find "$target_dir" -mindepth 1 -maxdepth 1 | grep -v "$exclude_dir")
         if [ -d "$target_dir/$exclude_dir" ] && [ -z "$remaining_items" ]; then
-           echo -n -e "\033[1;3;31m所有文件已成功删除!\033[0m\n"
-            echo ""
+            echo -n -e "\033[1;3;31m所有文件已成功删除!\033[0m\n"
             exit 0
         else
             echo "删除操作出现问题，请检查是否有权限问题或其他错误。"
@@ -184,6 +184,7 @@ fi
         echo "目录 $target_dir 不存在。"
     fi
 }
+
 get_server_info() {
     # 颜色变量
     CYAN="\033[1;36m"
