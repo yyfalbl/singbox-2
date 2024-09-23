@@ -160,7 +160,7 @@ beiyong_ip() {
             ip_file=$(cat "$HOME/.serv00_ip")
         fi
     elif [[ "$(hostname -d)" == "ct8.pl" ]]; then
-        process_ct8  # 直接调用 process_ct8 函数
+        echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip1_addresses\033[0m"  
     else
         echo -e "\033[1;33m未知服务器类型，无法处理。\033[0m"  # 黄色输出
     fi
