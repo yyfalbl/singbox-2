@@ -25,8 +25,10 @@ WORKDIR="$HOME/sbox"
 password_file="$HOME/.beiyong_ip/.panel_password"
 base_dir="$HOME/.beiyong_ip"
 log_file="$base_dir/wget_log.txt"
-ip_address=""
 ip_file="$base_dir/saved_ip.txt"
+saved_ip=$(cat "$HOME/.serv00_ip")
+ip_address=""
+
 
 # 定义函数来检查密码是否存在
 get_password() {
@@ -134,19 +136,29 @@ process_ct8() {
 }
 # 备用ip获取函数
 beiyong_ip() {
-    # 获取 netstat -i 输出并提取以 mail 开头的 IP 地址
-    ip_addresses=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
-
-    # 检查是否提取到 IP 地址
-    if [[ -z "$ip_addresses" ]]; then
-      #  echo -e "\033[1;31m没有找到备用 IP 地址，正在调用 process_ct8 函数...\033[0m"  # 红色输出
+    # 检查服务器类型
+    if [[ "$(hostname -d)" == "ct8.pl" ]]; then
+        echo -e "\033[1;33m检测到 ct8.pl 服务器，正在调用 process_ct8 函数...\033[0m"  # 黄色输出
         process_ct8  # 调用 process_ct8 函数
     else
-        # 输出提取的 IP 地址
-        echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip_addresses\033[0m"  # 绿色输出
+        # 获取 netstat -i 输出并提取以 mail 开头的 IP 地址
+        ip_addresses=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
+
+        # 检查是否提取到 IP 地址
+        if [[ -z "$ip_addresses" ]]; then
+            echo -e "\033[1;31m没有找到备用 IP 地址，正在调用 process_ct8 函数...\033[0m"  # 红色输出
+            process_ct8  # 调用 process_ct8 函数
+        else
+            # 保存提取的 IP 地址到文件
+            echo "$ip_addresses" > "$HOME/.serv00_ip"
+            echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip_addresses\033[0m"  # 绿色输出
+            
+            # 立即读取保存的 IP 地址
+            saved_ip=$(cat "$HOME/.serv00_ip")
+            echo -e "\033[1;34m已读取的备用 IP 地址: $saved_ip\033[0m"  # 蓝色输出
+        fi
     fi
 }
-
 
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
@@ -226,11 +238,11 @@ get_server_info() {
     if [[ "$current_fqdn" == *.serv00.com ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
          echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.serv00.net${RESET}"
-       beiyong_ip
+      echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址：$saved_ip${RESET}"
     elif [[ "$current_fqdn" == *.ct8.pl ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
      echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.s1.ct8.pl${RESET}"
-        beiyong_ip
+        process_ct8
     else
         echo -e "${CYAN}当前域名不属于 serv00.com 或 ct8.pl 域。${RESET}"
     fi
