@@ -156,14 +156,19 @@ beiyong_ip() {
             # 保存提取的 IP 地址到文件
             echo "$ip_addresses" > "$HOME/.serv00_ip"
             echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip_addresses\033[0m"  # 绿色输出
-            
-            # 立即从文件读取 IP 地址
-            ip_file=$(cat "$HOME/.serv00_ip")
         else
             echo -e "\033[1;31m没有找到备用 IP 地址。\033[0m"  # 红色输出
         fi
     elif [[ "$(hostname -d)" == "ct8.pl" ]]; then
-        echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip1_addresses\033[0m"
+        # 从 ip1_file 中读取 IP 地址
+        ip1_file="$HOME/.ip1_file"  # 假设你已定义 ip1_file 的路径
+        ip1_addresses=$(cat "$ip1_file" 2>/dev/null)
+
+        if [[ -n "$ip1_addresses" ]]; then
+            echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip1_addresses\033[0m"
+        else
+            echo -e "\033[1;31m没有找到备用 IP 地址。\033[0m"  # 红色输出
+        fi
     else
         echo -e "\033[1;33m未知服务器类型，无法处理。\033[0m"  # 黄色输出
     fi
