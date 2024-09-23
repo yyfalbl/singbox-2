@@ -176,6 +176,7 @@ fi
         if [ -d "$target_dir/$exclude_dir" ] && [ -z "$remaining_items" ]; then
            echo -n -e "\033[1;3;31m所有文件已成功删除!\033[0m\n"
             echo ""
+            exit 0
         else
             echo "删除操作出现问题，请检查是否有权限问题或其他错误。"
         fi
