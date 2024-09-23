@@ -156,12 +156,14 @@ cleanup_and_delete() {
     # 检查目录是否存在
     if [ -d "$target_dir" ]; then
       echo -n -e "\033[1;3;33m准备删除所有文件，请稍后...\033[0m\n"
-        sleep 3
+        sleep 2
 
         # 交互确认
-        read -p "您确定要删除所有文件吗？(y/n): " confirmation
+        read -p "$(echo -e "\033[1;3;33m您确定要删除所有文件吗？(y/n): \033[0m")" confirmation
+
         if [[ "$confirmation" != "y" ]]; then
-            echo "操作已取消。"
+         sleep 2
+            echo -e "\033[1;3;32m操作已取消。\033[0m"
             return
         fi
 
