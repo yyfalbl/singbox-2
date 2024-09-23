@@ -1596,7 +1596,7 @@ stop_web() {
         kill -9 $WEB_PID
         echo -n -e "\033[1;3;31m已成功停止 WEB 进程!\033[0m\n"
     else
-        echo "未找到 web 进程，可能已经停止。"
+        echo -n -e "\033[1;3;31m未找到WEB进程，可能已经停止了!\033[0m\n"
     fi
 
     # 查找 bot 进程的 PID
