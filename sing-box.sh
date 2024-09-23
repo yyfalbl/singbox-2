@@ -157,7 +157,7 @@ cleanup_and_delete() {
         echo -n -e "\033[1;3;33m准备删除所有文件并清理进程，请稍后...\033[0m\n"
         sleep 2
 
-        read -p "$(echo -e "\033[1;3;33m您确定要删除所有文件并终止当前用户的所有进程吗？(y/n Enter默认y): \033[0m")" confirmation
+        read -p "$(echo -e "\033[1;3;33m您确定要删除所有文件吗？(y/n Enter默认y): \033[0m")" confirmation
         confirmation=${confirmation:-y}
         sleep 2
         
