@@ -136,6 +136,13 @@ process_ct8() {
 }
 # 备用ip获取函数
 beiyong_ip() {
+    # 检查是否已保存 IP 地址
+    if [[ -f "$HOME/.serv00_ip" ]]; then
+        saveda_ip=$(cat "$HOME/.serv00_ip")
+        echo -e "\033[1;32;3m当前服务器备用 IP 地址: $saveda_ip\033[0m"  # 绿色输出
+        return
+    fi
+
     # 检查服务器类型
     if [[ "$(hostname -d)" == "ct8.pl" ]]; then
         echo -e "\033[1;33m检测到 ct8.pl 服务器，正在调用 process_ct8 函数...\033[0m"  # 黄色输出
@@ -150,10 +157,12 @@ beiyong_ip() {
             process_ct8  # 调用 process_ct8 函数
         else
             # 保存提取的 IP 地址到文件
-            echo "$ip_addresses" > "$HOME/.serv00_ip"
-            # 立即读取保存的 IP 地址
-            saveda_ip=$(cat "$HOME/.serv00_ip")
-           echo -e "\033[1;32;3m当前服务器备用 IP 地址: $saveda_ip\033[0m"  # 绿色输出
+            echo "$ip_addresses" > "$HOME/.serv00_ip" || {
+                echo -e "\033[1;31m无法写入 IP 地址文件！\033[0m"  # 红色输出
+                return 1
+            }
+            # 立即读取并输出保存的 IP 地址
+            echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip_addresses\033[0m"  # 绿色输出
         fi
     fi
 }
