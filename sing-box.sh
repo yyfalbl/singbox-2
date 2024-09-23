@@ -26,7 +26,7 @@ password_file="$HOME/.beiyong_ip/.panel_password"
 base_dir="$HOME/.beiyong_ip"
 log_file="$base_dir/wget_log.txt"
 ip_file="$base_dir/saved_ip.txt"
-saveda_ip=$(cat "$HOME/.serv00_ip")
+saved_ip=$(cat "$HOME/.serv00_ip" 2>/dev/null)
 ip_address=""
 
 
