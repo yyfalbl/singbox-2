@@ -151,11 +151,9 @@ beiyong_ip() {
         else
             # 保存提取的 IP 地址到文件
             echo "$ip_addresses" > "$HOME/.serv00_ip"
-            
-            
             # 立即读取保存的 IP 地址
             saveda_ip=$(cat "$HOME/.serv00_ip")
-           echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip_addresses\033[0m"  # 绿色输出
+           echo -e "\033[1;32;3m当前服务器备用 IP 地址: $saveda_ip\033[0m"  # 绿色输出
         fi
     fi
 }
