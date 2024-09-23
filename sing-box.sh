@@ -255,7 +255,7 @@ get_server_info() {
     elif [[ "$current_fqdn" == *.ct8.pl ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
      echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.s1.ct8.pl${RESET}"
-          echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址：$ip_address${RESET}"
+          echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址：$ip1_address${RESET}"
     else
         echo -e "${CYAN}当前域名不属于 serv00.com 或 ct8.pl 域。${RESET}"
     fi
