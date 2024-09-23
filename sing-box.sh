@@ -1750,7 +1750,7 @@ for ((i=0; i<size; i++)); do
     if [[ $i -eq 0 || $i -eq $((size-1)) ]]; then
       echo -e "\033[1;33m=============================\033[0m"
     elif [[ $i -eq 3 ]]; then
-        printf "||    %s   ||\n" "$content1"  # 第一行内容手动居中
+        printf "||   %s    ||\n" "$content1"  # 第一行内容手动居中
     elif [[ $i -eq 5 ]]; then
         printf "||   %s    ||\n" "$content2"  # 第二行内容手动居中
     else
