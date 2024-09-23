@@ -1451,29 +1451,47 @@ argodomain=$(get_argodomain)
 echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
 sleep 1
   
-  # 提示用户是否使用备用IP地址
-  read -p "$(echo -e "${CYAN}\033[1;3;33m是否启用备用IP地址（输入y确认，否则按Enter键自动检测）: ${RESET}") " choice
+ # 提示用户是否使用备用IP地址
+read -p "$(echo -e "${CYAN}\033[1;3;33m是否启用备用IP地址（输入y确认，否则按Enter键自动检测）: ${RESET}") " choice
 
- # 如果用户输入 y，则调用备用IP处理函数
+# 如果用户输入 y，则调用备用IP处理函数
 if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
-    # 获取 IP 地址
-    IP=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
-    
-    if [[ -z "$IP" ]]; then
-      #  echo -e "${RED}\033[1;31m未找到备用 IP 地址，尝试从 saved_ip.txt 提取...\033[0m"
-        # 尝试从 saved_ip.txt 中提取 IP 地址
-        if [[ -f "$ip_file" || -f "$ip_address"  ]]; then
-           IP=$(cat "$ip_file" 2>/dev/null || cat "$ip1_file" 2>/dev/null)
+    # 检查服务器类型
+    if [[ "$(hostname -d)" == "serv00.com" ]]; then
+        # 获取 IP 地址
+        IP=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
+
+        if [[ -z "$IP" ]]; then
+            echo -e "${RED}\033[1;31m未找到备用 IP 地址，尝试从 .serv00_ip 提取...\033[0m"
+            # 尝试从 .serv00_ip 中提取 IP 地址
+            if [[ -f "$HOME/.serv00_ip" ]]; then
+                IP=$(cat "$HOME/.serv00_ip")
+                if [[ -z "$IP" ]]; then
+                    echo -e "${RED}\033[1;31m从 .serv00_ip 中未找到 IP 地址。\033[0m"
+                else
+                    echo -e "${GREEN}\033[1;32m服务器备用 IP 地址是: $IP${RESET}"
+                fi
+            else
+                echo -e "${RED}\033[1;31m.srv00_ip 文件不存在。\033[0m"
+            fi
+        else
+            echo -e "${GREEN}\033[1;32m找到的备用 IP 地址是: $IP${RESET}"
+        fi
+    elif [[ "$(hostname -d)" == "ct8.pl" ]]; then
+        # 从 ip1_file 中读取 IP 地址
+        ip1_file="$HOME/.ip1_file"  # 确保该文件路径正确
+        if [[ -f "$ip1_file" ]]; then
+            IP=$(cat "$ip1_file")
             if [[ -z "$IP" ]]; then
-                echo -e "${RED}\033[1;31m从 saved_ip.txt 中未找到 IP 地址。\033[0m"
+                echo -e "${RED}\033[1;31m从 .ip1_file 中未找到 IP 地址。\033[0m"
             else
                 echo -e "${GREEN}\033[1;32m服务器备用 IP 地址是: $IP${RESET}"
             fi
         else
-            echo -e "${RED}\033[1;31msaved_ip.txt 文件不存在。\033[0m"
+            echo -e "${RED}\033[1;31m.ip1_file 文件不存在。\033[0m"
         fi
     else
-        echo -e "${GREEN}\033[1;32m找到的备用 IP 地址是: $IP${RESET}"
+        echo -e "${RED}\033[1;31m未知服务器类型，无法处理。\033[0m"
     fi
 else
     # 自动检测 IP 地址 (首先检测 IPv4，如果失败，则尝试 IPv6)
