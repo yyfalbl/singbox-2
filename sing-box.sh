@@ -1240,7 +1240,7 @@ EOF
     {
       "tag": "hysteria-in",
       "type": "hysteria2",
-      "listen": "::",
+      "listen": "$IP",
       "listen_port": $hy2_port,
       "users": [
         {
@@ -1266,7 +1266,7 @@ EOF
     {
       "tag": "tuic-in",
       "type": "tuic",
-      "listen": "::",
+      "listen": "$IP",
       "listen_port": $tuic_port,
       "users": [
         {
