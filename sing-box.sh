@@ -992,19 +992,19 @@ echo ""
     generate_config
 
     if [ "$INSTALL_VLESS" = "true" ]; then
-        echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 VLESS...${RESET}")"
+        echo -e "$(echo -e "${GREEN}\033[1m\033[3m正在配置 VLESS...${RESET}")"
     fi
 
     if [ "$INSTALL_VMESS" = "true" ]; then
-        echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 VMESS...${RESET}")"
+        echo -e "$(echo -e "${GREEN}\033[1m\033[3m正在配置 VMESS...${RESET}")"
     fi
 
     if [ "$INSTALL_HYSTERIA2" = "true" ]; then
-        echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 Hysteria2...${RESET}")"
+        echo -e "$(echo -e "${GREEN}\033[1m\033[3m正在配置 Hysteria2...${RESET}")"
     fi
 
     if [ "$INSTALL_TUIC" = "true" ]; then
-        echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 TUIC...${RESET}")"
+        echo -e "$(echo -e "${GREEN}\033[1m\033[3m正在配置 TUIC...${RESET}")"
     fi
 
   # 运行 sing-box和相关配置
