@@ -1073,6 +1073,12 @@ uninstall_singbox() {
             ;;
     esac
 }
+if [[ -f boot.log ]]; then
+    grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' boot.log | sed 's@https://@@'
+else
+    # 处理文件不存在的情况
+    echo " "
+fi
 
 # Download Dependency Files
 download_singbox() {
