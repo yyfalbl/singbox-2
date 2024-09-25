@@ -1183,7 +1183,7 @@ EOF
     {
       "tag": "vless-reality-version",
       "type": "vless",
-      "listen": "::",
+      "listen": "$IP",
       "listen_port": $vless_port,
       "users": [
         {
@@ -1216,7 +1216,7 @@ EOF
     {
       "tag": "vmess-ws-in",
       "type": "vmess",
-      "listen": "::",
+      "listen": "$IP",
       "listen_port": $vmess_port,
       "users": [
         {
