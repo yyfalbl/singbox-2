@@ -1007,12 +1007,10 @@ echo ""
         echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 TUIC...${RESET}")"
     fi
 
-    # 运行 sing-box
-    run_sb && sleep 3
-
-    # 获取链接
+  # 运行 sing-box和相关配置
     get_links
-    
+    generate_config
+    run_sb && sleep 3
     # 仅在 Argo 配置存在时显示 ArgoDomain 信息
     if [[ -n $ARGO_DOMAIN ]]; then
         echo -e "ArgoDomain:${ARGO_DOMAIN}"
