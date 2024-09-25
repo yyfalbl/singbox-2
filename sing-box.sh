@@ -1008,9 +1008,10 @@ echo ""
     fi
 
   # 运行 sing-box和相关配置
+    run_sb && sleep 3
     get_links
     generate_config
-    run_sb && sleep 3
+   
     # 仅在 Argo 配置存在时显示 ArgoDomain 信息
     if [[ -n $ARGO_DOMAIN ]]; then
         echo -e "ArgoDomain:${ARGO_DOMAIN}"
