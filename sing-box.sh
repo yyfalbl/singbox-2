@@ -1428,20 +1428,16 @@ get_ip() {
 
         # 尝试从两个文件获取 IP
         if [[ -z "$IP" ]]; then
-            for file in "$HOME/.serv00_ip" "$ip_file"; do
-                if [[ -f "$file" ]]; then
-                    IP=$(cat "$file")
-                    if [[ -n "$IP" ]]; then
-                        echo -e "${GREEN}\033[1;32m服务器备用 IP 地址是: $IP${RESET}"
-                        break
-                    else
-                        echo -e "${RED}\033[1;31m从 $file 中未找到 IP 地址。\033[0m"
-                    fi
-                else
-                    echo -e "${RED}\033[1;31m$file 文件不存在。\033[0m"
-                fi
-            done
+    for file in "$HOME/.serv00_ip" "$ip_file"; do
+        if [[ -f "$file" ]]; then
+            IP=$(cat "$file")
+            if [[ -n "$IP" ]]; then
+                echo -e "${GREEN}\033[1;32m服务器备用 IP 地址是: $IP${RESET}"
+                break
+            fi
         fi
+    done
+fi
     else
         # 自动检测 IP 地址
         IP=$(curl -s ifconfig.me || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
