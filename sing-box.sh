@@ -17,9 +17,10 @@ bold_italic_red() { echo -e "${bold_red}\033[3m$1${reset}"; }
 bold_italic_green() { echo -e "${bold_green}\033[3m$1${reset}"; }
 bold_italic_yellow() { echo -e "${bold_yellow}\033[3m$1${reset}"; }
 bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
-RED_BOLD_ITALIC='\033[1;3;31m'  # 红色加粗斜体
-GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色加粗斜体
-RESET='\033[0m'  # 重置颜色
+RED_BOLD_ITALIC='\033[1;3;31m'  
+GREEN_BOLD_ITALIC='\033[1;3;32m'  
+RESET='\033[0m'  
+
 # 设置工作目录
 WORKDIR="$HOME/sbox"
 password_file="$HOME/.beiyong_ip/.panel_password"
