@@ -336,7 +336,7 @@ setup_socks5() {
 
   # 提示用户输入IP地址（或按回车自动检测）
   read -p "$(echo -e "${CYAN}请输入IP地址（或按回车自动检测）: ${RESET}") " user_ip
-
+         get_ip
   # 如果用户输入了IP地址，使用用户提供的IP地址，否则自动检测
   if [ -n "$user_ip" ]; then
       IP="$user_ip"
