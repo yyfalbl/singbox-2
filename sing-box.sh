@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 设置颜色
+# Color definitions
 bold_red='\033[1;3;31m'
 bold_green='\033[1;3;32m'
 bold_yellow='\033[1;3;33m'
@@ -12,60 +12,23 @@ BOLD_ITALIC='\033[1;3m'
 RESET='\033[0m'
 GREEN_BOLD_ITALIC="\033[1;3;32m"
 RESET="\033[0m"
-YELLOW='\033[1;3;33m'
-NC='\033[0m' # No Color
-GREEN='\033[1;3;32m'
-bold_italic_yellow="\033[1;3;33m"
-bold_italic_purple="\033[1;3;35m"
-bold_italic_purple1="\033[1;3;32m"
-RESET="\033[0m"
+# Formatting functions
 bold_italic_red() { echo -e "${bold_red}\033[3m$1${reset}"; }
 bold_italic_green() { echo -e "${bold_green}\033[3m$1${reset}"; }
 bold_italic_yellow() { echo -e "${bold_yellow}\033[3m$1${reset}"; }
 bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
-yellow_bold_italic() { echo -e "\e[1;3;33m$1\e[0m"}
-green(){ echo -e "\e[1;3;32m\e[1m\e[3m$1\e[0m"}
-colored_read() { local prompt="$1" echo -ne "\e[1;3;33m${prompt}\e[0m"   builtin read input }
 RED_BOLD_ITALIC='\033[1;3;31m'  # 红色加粗斜体
 GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色加粗斜体
 RESET='\033[0m'  # 重置颜色
 # 设置工作目录
 WORKDIR="$HOME/sbox"
-UUID_FILE="${HOME}/.singbox_uuid"
-export NEZHA_SERVER=${NEZHA_SERVER:-''}
-export NEZHA_PORT=${NEZHA_PORT:-'5555'}     
-export NEZHA_KEY=${NEZHA_KEY:-''}
 password_file="$HOME/.beiyong_ip/.panel_password"
 base_dir="$HOME/.beiyong_ip"
 log_file="$base_dir/wget_log.txt"
 ip_file="$base_dir/saved_ip.txt"
 saved_ip=$(cat "$HOME/.serv00_ip" 2>/dev/null)
-mkdir -p "$WORKDIR"
 ip_address=""
 FINAL_IP=""
-# 读取函数
-reading() {
-  colored_read "$1"
-  eval "$2=\$input"
-}
-
-# 加粗绿色输出函数
-bold_italic_green() {
-  echo -e "\e[1;3;32m$1\e[0m"
-}
-
-
-declare -A port_array  # 确保声明关联数组
-# 加粗黄色输出函数
-bold_italic_yellow() {
-  echo -e "\e[1;3;33m$1\e[0m"
-}
-
-
-if [ ! -d "$WORKDIR" ]; then
-    mkdir -p "$WORKDIR"
-    chmod 777 "$WORKDIR"
-fi
     
 # 定义函数来检查密码是否存在
 get_password() {
@@ -310,6 +273,10 @@ check_web_status() {
     fi
 }
 
+
+
+# Socks5 安装和配置的主函数
+
 generate_random_string() {
   local length=$1
   openssl rand -base64 "$length" | tr -dc 'a-zA-Z0-9'
@@ -336,7 +303,8 @@ setup_socks5() {
 
   # 提示用户输入IP地址（或按回车自动检测）
   read -p "$(echo -e "${CYAN}请输入IP地址（或按回车自动检测）: ${RESET}") " user_ip
-         get_ip
+  get_ip
+
   # 如果用户输入了IP地址，使用用户提供的IP地址，否则自动检测
   if [ -n "$user_ip" ]; then
       IP="$user_ip"
@@ -450,6 +418,9 @@ EOF
   fi
 }
     
+# 定义存储 UUID 的文件路径
+UUID_FILE="${HOME}/.singbox_uuid"
+
 # Check if UUID file exists
 if [ -f "$UUID_FILE" ]; then
     export UUID=$(cat "$UUID_FILE")  # Read the existing UUID
@@ -457,6 +428,56 @@ else
     export UUID=$(uuidgen)  # Generate a new UUID
     echo "$UUID" > "$UUID_FILE"  # Save the UUID to the file
 fi
+
+export NEZHA_SERVER=${NEZHA_SERVER:-''}
+export NEZHA_PORT=${NEZHA_PORT:-'5555'}     
+export NEZHA_KEY=${NEZHA_KEY:-''}
+
+
+
+# 确保工作目录存在
+mkdir -p "$WORKDIR"
+
+# 创建工作目录并设置权限
+if [ ! -d "$WORKDIR" ]; then
+    mkdir -p "$WORKDIR"
+    chmod 777 "$WORKDIR"
+fi
+  
+# 绿色文本输出函数
+green() {
+  echo -e "\e[1;3;32m\e[1m\e[3m$1\e[0m"
+}
+
+# 黄色斜体加粗输出函数
+yellow_bold_italic() {
+  echo -e "\e[1;3;33m$1\e[0m"
+}
+
+# 自定义带颜色的读取函数
+colored_read() {
+  local prompt="$1"
+  echo -ne "\e[1;3;33m${prompt}\e[0m"  # 输出提示信息
+  builtin read input  # 使用原生 read
+}
+
+# 读取函数
+reading() {
+  colored_read "$1"
+  eval "$2=\$input"
+}
+
+# 加粗绿色输出函数
+bold_italic_green() {
+  echo -e "\e[1;3;32m$1\e[0m"
+}
+
+
+declare -A port_array  # 确保声明关联数组
+# 加粗黄色输出函数
+bold_italic_yellow() {
+  echo -e "\e[1;3;33m$1\e[0m"
+}
 
 # 获取端口
 getPort() {
@@ -759,7 +780,18 @@ EOF
     else
         green "没有选择 vmess 协议，暂停使用 Argo 固定隧道"
     fi
-} 
+}
+
+ 
+# 定义颜色
+YELLOW='\033[1;3;33m'
+NC='\033[0m' # No Color
+  GREEN='\033[1;3;32m'
+  bold_italic_yellow="\033[1;3;33m"
+bold_italic_purple="\033[1;3;35m"
+  bold_italic_purple1="\033[1;3;32m"
+RESET="\033[0m"
+  
   # 删除所有端口
   clear_all_ports() {
     # 获取所有已分配的端口列表，包含端口号和类型
