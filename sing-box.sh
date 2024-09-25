@@ -1172,7 +1172,7 @@ get_links() {
     if [[ -n $ARGO_AUTH ]]; then
       echo "$ARGO_DOMAIN"
     else
-      grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' boot.log | sed 's@https://@@'
+      grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' boot.log 2>/dev/null | sed 's@https://@@'
     fi
   }
 argodomain=$(get_argodomain)
