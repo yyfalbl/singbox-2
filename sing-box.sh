@@ -1260,7 +1260,8 @@ EOF
 # 显示生成的 list.txt 内容
 cat "$WORKDIR/list.txt"
 green "节点信息已保存"
-green "Running done!"
+echo ""
+green "Running successfully!"
 
 # 清理临时文件
 sleep 3
