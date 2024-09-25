@@ -1119,6 +1119,155 @@ RESET="\033[0m"
 CERT_PATH="${HOME}/sbox/cert.pem"
 PRIVATE_KEY_PATH="${HOME}/sbox/private.key"
  
+# running files
+run_sb() {
+  green() {
+    echo -e "\e[32;3;1m$1\e[0m"
+}
+    if [ -e "$WORKDIR/npm" ]; then
+        tlsPorts=("443" "8443" "2096" "2087" "2083" "2053")
+        if [[ "${tlsPorts[*]}" =~ "${NEZHA_PORT}" ]]; then
+            NEZHA_TLS="--tls"
+        else
+            NEZHA_TLS=""
+        fi
+        if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
+            export TMPDIR=$(pwd)
+            nohup "$WORKDIR/npm" -s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY} ${NEZHA_TLS} >/dev/null 2>&1 &
+            sleep 2
+            pgrep -x "npm" > /dev/null && green "npm is running" || { red "npm is not running, restarting..."; pkill -x "npm" && nohup "$WORKDIR/npm" -s "${NEZHA_SERVER}:${NEZHA_PORT}" -p "${NEZHA_KEY}" ${NEZHA_TLS} >/dev/null 2>&1 & sleep 2; purple "npm restarted"; }
+       # else
+        #     purple "NEZHA variable is empty, skipping running"
+        fi
+    fi
+
+    if [ -e "$WORKDIR/web" ]; then
+        nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 &
+        sleep 2
+        pgrep -x "web" > /dev/null && green "WEB is running" || { red "web is not running, restarting..."; pkill -x "web" && nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
+    fi
+    
+      if [ -e $WORKDIR/bot ]; then
+    if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
+      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
+    elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
+      args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
+    else
+      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080"
+    fi
+    nohup $WORKDIR/bot $args >/dev/null 2>&1 &
+    sleep 2
+    pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
+  fi
+}
+  
+get_links() {
+  
+     purple() {
+        echo -e "\\033[1;3;35m$*\\033[0m"
+    }
+  
+  get_argodomain() {
+    if [[ -n $ARGO_AUTH ]]; then
+      echo "$ARGO_DOMAIN"
+    else
+      grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' boot.log | sed 's@https://@@'
+    fi
+  }
+argodomain=$(get_argodomain)
+echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
+sleep 1
+  
+  # 提示用户是否使用备用IP地址
+  read -p "$(echo -e "${CYAN}\033[1;3;33m是否启用备用IP地址（输入y确认，否则按Enter键自动检测）: ${RESET}") " choice
+
+ # 如果用户输入 y，则调用备用IP处理函数
+if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
+    # 获取 IP 地址
+    IP=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
+    
+    if [[ -z "$IP" ]]; then
+      #  echo -e "${RED}\033[1;31m未找到备用 IP 地址，尝试从 saved_ip.txt 提取...\033[0m"
+        # 尝试从 saved_ip.txt 中提取 IP 地址
+        if [[ -f "$ip_file" ]]; then
+            IP=$(cat "$ip_file")
+            if [[ -z "$IP" ]]; then
+                echo -e "${RED}\033[1;31m从 saved_ip.txt 中未找到 IP 地址。\033[0m"
+            else
+                echo -e "${GREEN}\033[1;32m服务器备用 IP 地址是: $IP${RESET}"
+            fi
+        else
+            echo -e "${RED}\033[1;31msaved_ip.txt 文件不存在。\033[0m"
+        fi
+    else
+        echo -e "${GREEN}\033[1;32m找到的备用 IP 地址是: $IP${RESET}"
+    fi
+else
+    # 自动检测 IP 地址 (首先检测 IPv4，如果失败，则尝试 IPv6)
+    IP=$(curl -s ifconfig.me || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
+    echo -e "${CYAN}\033[1;3;32m自动检测的设备 IP 地址是: $IP${RESET}"
+fi
+
+    
+current_fqdn=$(hostname -f)
+
+# 检查域名是否以 serv00.com 结尾
+if [[ "$current_fqdn" == *.serv00.com ]]; then
+echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}"
+   # echo "该服务器属于 serv00.com 域"
+
+    # 提取子域名（假设子域名在主域名前缀的第一部分）
+    subdomain=${current_fqdn%%.*}    
+  fi  
+    
+    # 输出最终使用的IP地址
+    echo -e "${CYAN}\033[1;3;32m最终使用的IP地址是: $IP${RESET}"
+    # 获取用户名信息
+      USERNAME=$(whoami)
+   echo ""
+    sleep 3
+  printf "${RED}${BOLD_ITALIC}注意：v2ray或其他软件的跳过证书验证需设置为true, 否则hy2或tuic节点可能不通${RESET}\n"
+     echo ""
+      sleep 3
+    # 生成并保存配置文件
+cat <<EOF > "$WORKDIR/list.txt"
+$(if [ "$INSTALL_VLESS" = "true" ]; then
+    printf "${YELLOW}\033[1mvless://$UUID@$IP:$vless_port?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.ups.com&fp=chrome&pbk=$public_key&type=tcp&headerType=none#${USERNAME}-${subdomain}${RESET}\n"
+fi)
+
+$(if [ "$INSTALL_VMESS" = "true" ]; then
+    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+fi)
+
+$(if [ "$INSTALL_VMESS" = "true" ] && [ -n "$argodomain" ]; then
+    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"www.visa.com\", \"port\": \"443\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+fi)
+
+$(if [ "$INSTALL_HYSTERIA2" = "true" ]; then
+    printf "${YELLOW}\033[1mhysteria2://$UUID@$IP:$hy2_port/?sni=www.bing.com&alpn=h3&insecure=1#${USERNAME}-${subdomain}${RESET}\n"
+fi)
+
+$(if [ "$INSTALL_SOCKS5" = "true" ]; then
+    printf "${YELLOW}\033[1mSocks5 代理地址： $IP:$SOCKS5_PORT 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS${RESET}\n"
+    printf "${YELLOW}\033[1msocks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${SOCKS5_PORT}${RESET}\n"
+fi)
+
+$(if [ "$INSTALL_TUIC" = "true" ]; then
+    printf "${YELLOW}\033[1mtuic://$UUID:admin123@$IP:$tuic_port?sni=www.bing.com&congestion_control=bbr&udp_relay_mode=native&alpn=h3&allow_insecure=1#${USERNAME}-${subdomain}${RESET}\n"
+fi)
+  
+EOF
+  echo ""
+# 显示生成的 list.txt 内容
+cat "$WORKDIR/list.txt"
+green "节点信息已保存"
+green "Running done!"
+
+# 清理临时文件
+sleep 3
+rm -rf "$WORKDIR/npm" "$WORKDIR/boot.log" "$WORKDIR/sb.log" "$WORKDIR/core"
+}
+
 generate_config() {
     # Generate reality key pair
     output=$(./web generate reality-keypair)
@@ -1372,156 +1521,6 @@ EOF
   }
 }
 EOF
-}
-
-
-# running files
-run_sb() {
-  green() {
-    echo -e "\e[32;3;1m$1\e[0m"
-}
-    if [ -e "$WORKDIR/npm" ]; then
-        tlsPorts=("443" "8443" "2096" "2087" "2083" "2053")
-        if [[ "${tlsPorts[*]}" =~ "${NEZHA_PORT}" ]]; then
-            NEZHA_TLS="--tls"
-        else
-            NEZHA_TLS=""
-        fi
-        if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
-            export TMPDIR=$(pwd)
-            nohup "$WORKDIR/npm" -s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY} ${NEZHA_TLS} >/dev/null 2>&1 &
-            sleep 2
-            pgrep -x "npm" > /dev/null && green "npm is running" || { red "npm is not running, restarting..."; pkill -x "npm" && nohup "$WORKDIR/npm" -s "${NEZHA_SERVER}:${NEZHA_PORT}" -p "${NEZHA_KEY}" ${NEZHA_TLS} >/dev/null 2>&1 & sleep 2; purple "npm restarted"; }
-       # else
-        #     purple "NEZHA variable is empty, skipping running"
-        fi
-    fi
-
-    if [ -e "$WORKDIR/web" ]; then
-        nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 &
-        sleep 2
-        pgrep -x "web" > /dev/null && green "WEB is running" || { red "web is not running, restarting..."; pkill -x "web" && nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
-    fi
-    
-      if [ -e $WORKDIR/bot ]; then
-    if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
-      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
-    elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-      args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
-    else
-      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080"
-    fi
-    nohup $WORKDIR/bot $args >/dev/null 2>&1 &
-    sleep 2
-    pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
-  fi
-}
-  
-get_links() {
-  
-     purple() {
-        echo -e "\\033[1;3;35m$*\\033[0m"
-    }
-  
-  get_argodomain() {
-    if [[ -n $ARGO_AUTH ]]; then
-      echo "$ARGO_DOMAIN"
-    else
-      grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' boot.log | sed 's@https://@@'
-    fi
-  }
-argodomain=$(get_argodomain)
-echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
-sleep 1
-  
-  # 提示用户是否使用备用IP地址
-  read -p "$(echo -e "${CYAN}\033[1;3;33m是否启用备用IP地址（输入y确认，否则按Enter键自动检测）: ${RESET}") " choice
-
- # 如果用户输入 y，则调用备用IP处理函数
-if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
-    # 获取 IP 地址
-    IP=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
-    
-    if [[ -z "$IP" ]]; then
-      #  echo -e "${RED}\033[1;31m未找到备用 IP 地址，尝试从 saved_ip.txt 提取...\033[0m"
-        # 尝试从 saved_ip.txt 中提取 IP 地址
-        if [[ -f "$ip_file" ]]; then
-            IP=$(cat "$ip_file")
-            if [[ -z "$IP" ]]; then
-                echo -e "${RED}\033[1;31m从 saved_ip.txt 中未找到 IP 地址。\033[0m"
-            else
-                echo -e "${GREEN}\033[1;32m服务器备用 IP 地址是: $IP${RESET}"
-            fi
-        else
-            echo -e "${RED}\033[1;31msaved_ip.txt 文件不存在。\033[0m"
-        fi
-    else
-        echo -e "${GREEN}\033[1;32m找到的备用 IP 地址是: $IP${RESET}"
-    fi
-else
-    # 自动检测 IP 地址 (首先检测 IPv4，如果失败，则尝试 IPv6)
-    IP=$(curl -s ifconfig.me || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
-    echo -e "${CYAN}\033[1;3;32m自动检测的设备 IP 地址是: $IP${RESET}"
-fi
-
-    
-current_fqdn=$(hostname -f)
-
-# 检查域名是否以 serv00.com 结尾
-if [[ "$current_fqdn" == *.serv00.com ]]; then
-echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}"
-   # echo "该服务器属于 serv00.com 域"
-
-    # 提取子域名（假设子域名在主域名前缀的第一部分）
-    subdomain=${current_fqdn%%.*}    
-  fi  
-    
-    # 输出最终使用的IP地址
-    echo -e "${CYAN}\033[1;3;32m最终使用的IP地址是: $IP${RESET}"
-    # 获取用户名信息
-      USERNAME=$(whoami)
-   echo ""
-    sleep 3
-  printf "${RED}${BOLD_ITALIC}注意：v2ray或其他软件的跳过证书验证需设置为true, 否则hy2或tuic节点可能不通${RESET}\n"
-     echo ""
-      sleep 3
-    # 生成并保存配置文件
-cat <<EOF > "$WORKDIR/list.txt"
-$(if [ "$INSTALL_VLESS" = "true" ]; then
-    printf "${YELLOW}\033[1mvless://$UUID@$IP:$vless_port?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.ups.com&fp=chrome&pbk=$public_key&type=tcp&headerType=none#${USERNAME}-${subdomain}${RESET}\n"
-fi)
-
-$(if [ "$INSTALL_VMESS" = "true" ]; then
-    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
-fi)
-
-$(if [ "$INSTALL_VMESS" = "true" ] && [ -n "$argodomain" ]; then
-    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"www.visa.com\", \"port\": \"443\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
-fi)
-
-$(if [ "$INSTALL_HYSTERIA2" = "true" ]; then
-    printf "${YELLOW}\033[1mhysteria2://$UUID@$IP:$hy2_port/?sni=www.bing.com&alpn=h3&insecure=1#${USERNAME}-${subdomain}${RESET}\n"
-fi)
-
-$(if [ "$INSTALL_SOCKS5" = "true" ]; then
-    printf "${YELLOW}\033[1mSocks5 代理地址： $IP:$SOCKS5_PORT 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS${RESET}\n"
-    printf "${YELLOW}\033[1msocks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${SOCKS5_PORT}${RESET}\n"
-fi)
-
-$(if [ "$INSTALL_TUIC" = "true" ]; then
-    printf "${YELLOW}\033[1mtuic://$UUID:admin123@$IP:$tuic_port?sni=www.bing.com&congestion_control=bbr&udp_relay_mode=native&alpn=h3&allow_insecure=1#${USERNAME}-${subdomain}${RESET}\n"
-fi)
-  
-EOF
-  echo ""
-# 显示生成的 list.txt 内容
-cat "$WORKDIR/list.txt"
-green "节点信息已保存"
-green "Running done!"
-
-# 清理临时文件
-sleep 3
-rm -rf "$WORKDIR/npm" "$WORKDIR/boot.log" "$WORKDIR/sb.log" "$WORKDIR/core"
 }
     
 # 定义颜色函数
