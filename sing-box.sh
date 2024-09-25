@@ -1334,7 +1334,7 @@ EOF
     {
       "tag": "vless-reality-version",
       "type": "vless",
-      "listen": "$IP",
+      "listen": "::",
       "listen_port": $vless_port,
       "users": [
         {
