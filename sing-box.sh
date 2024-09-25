@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Color definitions
+# 设置颜色
 bold_red='\033[1;3;31m'
 bold_green='\033[1;3;32m'
 bold_yellow='\033[1;3;33m'
@@ -12,16 +12,20 @@ BOLD_ITALIC='\033[1;3m'
 RESET='\033[0m'
 GREEN_BOLD_ITALIC="\033[1;3;32m"
 RESET="\033[0m"
-# Formatting functions
+YELLOW="\033[1;3;33m"
+RESET="\033[0m"
+RED_BOLD_ITALIC='\033[1;3;31m'  # 红色加粗斜体
+GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色加粗斜体
+RESET='\033[0m'  # 重置颜色 
 bold_italic_red() { echo -e "${bold_red}\033[3m$1${reset}"; }
 bold_italic_green() { echo -e "${bold_green}\033[3m$1${reset}"; }
 bold_italic_yellow() { echo -e "${bold_yellow}\033[3m$1${reset}"; }
 bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
- RED_BOLD_ITALIC='\033[1;3;31m'  # 红色加粗斜体
-    GREEN_BOLD_ITALIC='\033[1;3;32m'  # 绿色加粗斜体
-    RESET='\033[0m'  # 重置颜色
+
 # 设置工作目录
 WORKDIR="$HOME/sbox"
+CERT_PATH="${HOME}/sbox/cert.pem"
+PRIVATE_KEY_PATH="${HOME}/sbox/private.key"
 password_file="$HOME/.beiyong_ip/.panel_password"
 base_dir="$HOME/.beiyong_ip"
 log_file="$base_dir/wget_log.txt"
@@ -1115,15 +1119,7 @@ echo ""
         chmod +x $FILENAME
     done
 }
-    
- # Define color codes
-YELLOW="\033[1;3;33m"
-RESET="\033[0m"
- 
- # Define default paths using the current user's home directory
-CERT_PATH="${HOME}/sbox/cert.pem"
-PRIVATE_KEY_PATH="${HOME}/sbox/private.key"
- 
+     
 # running files
 run_sb() {
   green() {
