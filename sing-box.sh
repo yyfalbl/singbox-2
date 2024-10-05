@@ -303,7 +303,9 @@ setup_socks5() {
   fi
 
   # 提示用户输入IP地址（或按回车自动检测）
+  read -p "$(echo -e "${CYAN}请输入IP地址（或按回车自动检测）: ${RESET}") " user_ip
   get_ip
+
   # 如果用户输入了IP地址，使用用户提供的IP地址，否则自动检测
   if [ -n "$user_ip" ]; then
       IP="$user_ip"
@@ -316,8 +318,8 @@ setup_socks5() {
   echo -e "${CYAN}本机域名是: ${SERV_DOMAIN}${RESET}"
 
   # 提示用户输入 socks5 端口号
-  read -p "$(echo -e "${CYAN}请输入 socks5 端口 (面板开放的TCP端口): ${RESET}")" 
-      read_socks_port
+  read -p "$(echo -e "${CYAN}请输入 socks5 端口 (面板开放的TCP端口): ${RESET}")" SOCKS5_PORT
+
   # 提示用户输入用户名和密码，如果按回车则生成随机用户名和密码
   read -p "$(echo -e "${CYAN}请输入 socks5 用户名（按回车生成随机用户名）: ${RESET}")" SOCKS5_USER
   if [ -z "$SOCKS5_USER" ]; then
@@ -348,7 +350,7 @@ setup_socks5() {
   },
   "inbounds": [
     {
-      "port": "$socks_port",
+      "port": "$SOCKS5_PORT",
       "protocol": "socks",
       "tag": "socks",
       "settings": {
@@ -403,14 +405,14 @@ EOF
   # 检查程序是否启动成功
   if pgrep -x "socks5" > /dev/null; then
     echo -e "\033[1;3;32mSocks5 代理程序启动成功\033[0m"
-    echo -e "\033[1;3;33mSocks5 代理地址： $IP:$socks_port 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS\033[0m"   
+    echo -e "\033[1;3;33mSocks5 代理地址： $IP:$SOCKS5_PORT 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS\033[0m"   
     # 显示代理 URL
-    echo -e "\033[1;3;33msocks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${socks_port}\033[0m"
+    echo -e "\033[1;3;33msocks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${SOCKS5_PORT}\033[0m"
       
     # 使用 printf 将内容追加到 list.txt 文件中
-    printf "\033[1;3;33mSocks5 代理地址： %s:%s 用户名：%s 密码：%s\033[0m\n" "$IP" "$socks_port" "$SOCKS5_USER" "$SOCKS5_PASS" >> "$WORKDIR/list.txt"
+    printf "\033[1;3;33mSocks5 代理地址： %s:%s 用户名：%s 密码：%s\033[0m\n" "$IP" "$SOCKS5_PORT" "$SOCKS5_USER" "$SOCKS5_PASS" >> "$WORKDIR/list.txt"
     echo ""
-    printf "\033[1;3;33msocks://%s:%s@%s:%s\033[0m\n" "$SOCKS5_USER" "$SOCKS5_PASS" "$SERV_DOMAIN" "$socks_port" >> "$WORKDIR/list.txt"
+    printf "\033[1;3;33msocks://%s:%s@%s:%s\033[0m\n" "$SOCKS5_USER" "$SOCKS5_PASS" "$SERV_DOMAIN" "$SOCKS5_PORT" >> "$WORKDIR/list.txt"
         echo ""
   else
     echo -e "\033[1;3;31mSocks5 代理程序启动失败\033[0m"
@@ -529,6 +531,7 @@ randomPort() {
 # 检查端口分配情况
 loadPort() {
   output=$(devil port list)
+
   port_array=()
   local no_port_flag=false  # 添加标志变量
   while read -r port typ opis; do
@@ -549,8 +552,10 @@ loadPort() {
           port_array["$combined"]="$port"
       fi
   done <<< "$output"
+
   return 0
 }
+
 
 cleanPort() {
   output=$(devil port list)
@@ -581,10 +586,12 @@ check_and_allocate_port() {
     local new_port=""
 
     if [[ "$existing_port" != "failed" ]]; then
-        bold_italic_yellow "已分配的 $protocol_name 端口为 : $existing_port"      
+        bold_italic_yellow "已分配的 $protocol_name 端口为 : $existing_port"
+        
         # 提示是否删除已有的端口
         read -p "$(echo -e '\e[1;33;3m是否重新分配 '$protocol_name' 端口('$existing_port')？[y/n Enter默认: n]:\e[0m')" delete_input
         delete_input=${delete_input:-n}
+
    if [[ "$delete_input" == "y" ]]; then
     # 尝试删除端口并判断是否成功
     rt=$(devil port del "$protocol_type" "$existing_port" 2>&1)
@@ -592,6 +599,7 @@ check_and_allocate_port() {
         echo -e "\e[1;33m\e[3m已成功删除 $protocol_name 端口: $existing_port\e[0m"
         # 加载最新的端口信息
         loadPort
+
         # 重新随机分配新端口
         new_port=$(getPort "$protocol_type" "$protocol_name")
         if [[ "$new_port" == "failed" ]]; then
@@ -614,6 +622,7 @@ check_and_allocate_port() {
             new_port="$existing_port"  # 保留现有端口
         fi
     fi
+
         else
             new_port="$existing_port"
         fi
@@ -625,42 +634,36 @@ check_and_allocate_port() {
     # 更新全局变量
     eval "$port_var_name=\"$new_port\""
 }
-# socks端口函数
-  read_socks_port() {
-    loadPort
-    check_and_allocate_port "socks5" "tcp" "socks_port"
-    bold_italic_green "你的socks5 TCP 端口为: $socks_port"
-    sleep 2
-}
-# vless端口函数
+
 read_vless_port() {
     loadPort
     check_and_allocate_port "vless-reality" "tcp" "vless_port"
     bold_italic_green "你的vless-reality TCP 端口为: $vless_port"
     sleep 2
 }
-# vmess端口函数
+
 read_vmess_port() {
     loadPort
     check_and_allocate_port "vmess" "tcp" "vmess_port"
     bold_italic_green "你的vmess TCP 端口为: $vmess_port"
        sleep 2
 }
-# hysteria2端口函数
+
 read_hy2_port() {
     loadPort
     check_and_allocate_port "hysteria2" "udp" "hy2_port"
     bold_italic_green "你的hysteria2 UDP 端口为: $hy2_port"
      sleep 2
 }
-# Tuic端口函数
+
 read_tuic_port() {
     loadPort
     check_and_allocate_port "Tuic" "udp" "tuic_port"
     bold_italic_green "你的Tuic UDP 端口为: $tuic_port"
      sleep 2
 }
- ## 安装哪吒面板
+
+   
 read_nz_variables() {
   if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
       bold_italic_green "**_使用自定义变量哪吒运行哪吒探针_**"
@@ -837,7 +840,7 @@ while true; do
     choice=${choice:-y}  # 如果没有输入，默认值为 y
 
     if [[ "$choice" =~ ^[Yy]$ ]]; then
-     clear_all_ports
+      clear_all_ports
         break  # 如果输入是 y 或 Y，退出循环
     elif [[ "$choice" =~ ^[Nn]$ ]]; then
         echo -e "$(bold_italic_red "安装已取消")"
@@ -991,19 +994,19 @@ echo ""
     generate_config
 
     if [ "$INSTALL_VLESS" = "true" ]; then
-        echo -e "$(echo -e "${GREEN}\033[1m\033[3m正在配置 VLESS，请稍后...${RESET}")"
+        echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 VLESS...${RESET}")"
     fi
 
     if [ "$INSTALL_VMESS" = "true" ]; then
-        echo -e "$(echo -e "${GREEN}\033[1m\033[3m正在配置 VMESS，请稍后...${RESET}")"
+        echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 VMESS...${RESET}")"
     fi
 
     if [ "$INSTALL_HYSTERIA2" = "true" ]; then
-        echo -e "$(echo -e "${GREEN}\033[1m\033[3m正在配置 Hysteria2，请稍后...${RESET}")"
+        echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 Hysteria2...${RESET}")"
     fi
 
     if [ "$INSTALL_TUIC" = "true" ]; then
-        echo -e "$(echo -e "${GREEN}\033[1m\033[3m正在配置 TUIC，请稍后...${RESET}")"
+        echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 TUIC...${RESET}")"
     fi
 
     # 运行 sing-box
