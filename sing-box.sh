@@ -875,7 +875,7 @@ while true; do
     choice=${choice:-y}  # 如果没有输入，默认值为 y
 
     if [[ "$choice" =~ ^[Yy]$ ]]; then
-      clear_all_ports
+   
         break  # 如果输入是 y 或 Y，退出循环
     elif [[ "$choice" =~ ^[Nn]$ ]]; then
         echo -e "$(bold_italic_red "安装已取消")"
