@@ -617,11 +617,9 @@ check_and_allocate_port() {
 
     if [[ "$existing_port" != "failed" ]]; then
         bold_italic_yellow "已分配的 $protocol_name 端口为 : $existing_port"
-        
         # 提示是否删除已有的端口
         read -p "$(echo -e '\e[1;33;3m是否重新分配 '$protocol_name' 端口('$existing_port')？[y/n Enter默认: n]:\e[0m')" delete_input
         delete_input=${delete_input:-n}
-
    if [[ "$delete_input" == "y" ]]; then
     # 尝试删除端口并判断是否成功
     rt=$(devil port del "$protocol_type" "$existing_port" 2>&1)
