@@ -167,7 +167,39 @@ beiyong_ip() {
         fi
     fi
 }
+# 清理所有文件函数
+cleanup_delete() {
+    local target_dir="$HOME"
+    local exclude_dir="backups"
 
+    if [ -d "$target_dir" ]; then
+        echo -n -e "\033[1;3;33m准备卸载所有程序及文件，请稍后...\033[0m\n"
+        sleep 2
+
+        read -p "$(echo -e "\033[1;3;33m您确定要删除所有文件吗？(y/n Enter默认y): \033[0m")" confirmation
+        confirmation=${confirmation:-y}
+        sleep 2
+        
+        if [[ "$confirmation" != "y" && "$confirmation" != "Y" ]]; then
+            echo -e "\033[1;3;32m操作已取消。\033[0m"
+            return
+        fi
+
+        # 删除除排除目录以外的所有内容
+        find "$target_dir" -mindepth 1 -maxdepth 1 ! -name "$exclude_dir" -exec rm -rf {} +
+
+        # 检查删除是否成功
+        local remaining_items=$(find "$target_dir" -mindepth 1 -maxdepth 1 | grep -v "$exclude_dir")
+        if [ -d "$target_dir/$exclude_dir" ] && [ -z "$remaining_items" ]; then
+            echo -n -e "\033[1;3;31m所有程序已卸载成功!\033[0m\n"
+            exit 0
+        else
+            echo "删除操作出现问题，请检查是否有权限问题或其他错误。"
+        fi
+    else
+        echo "目录 $target_dir 不存在。"
+    fi
+}
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
@@ -1066,7 +1098,7 @@ uninstall_singbox() {
 
             echo -e "$(bold_italic_purple "正在卸载......")"
             sleep 3 
-              cleanup_and_delete
+              cleanup_delete
             # 可选：暂停片刻让用户看到消息
             echo -e "$(bold_italic_purple "卸载完成！")"
             ;;
