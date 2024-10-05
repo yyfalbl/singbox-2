@@ -529,7 +529,6 @@ randomPort() {
 # 检查端口分配情况
 loadPort() {
   output=$(devil port list)
-
   port_array=()
   local no_port_flag=false  # 添加标志变量
   while read -r port typ opis; do
@@ -550,10 +549,8 @@ loadPort() {
           port_array["$combined"]="$port"
       fi
   done <<< "$output"
-
   return 0
 }
-
 
 cleanPort() {
   output=$(devil port list)
@@ -584,12 +581,10 @@ check_and_allocate_port() {
     local new_port=""
 
     if [[ "$existing_port" != "failed" ]]; then
-        bold_italic_yellow "已分配的 $protocol_name 端口为 : $existing_port"
-        
+        bold_italic_yellow "已分配的 $protocol_name 端口为 : $existing_port"      
         # 提示是否删除已有的端口
         read -p "$(echo -e '\e[1;33;3m是否重新分配 '$protocol_name' 端口('$existing_port')？[y/n Enter默认: n]:\e[0m')" delete_input
         delete_input=${delete_input:-n}
-
    if [[ "$delete_input" == "y" ]]; then
     # 尝试删除端口并判断是否成功
     rt=$(devil port del "$protocol_type" "$existing_port" 2>&1)
@@ -597,7 +592,6 @@ check_and_allocate_port() {
         echo -e "\e[1;33m\e[3m已成功删除 $protocol_name 端口: $existing_port\e[0m"
         # 加载最新的端口信息
         loadPort
-
         # 重新随机分配新端口
         new_port=$(getPort "$protocol_type" "$protocol_name")
         if [[ "$new_port" == "failed" ]]; then
@@ -620,7 +614,6 @@ check_and_allocate_port() {
             new_port="$existing_port"  # 保留现有端口
         fi
     fi
-
         else
             new_port="$existing_port"
         fi
