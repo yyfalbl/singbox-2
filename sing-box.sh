@@ -1035,6 +1035,7 @@ uninstall_singbox() {
 
     case "$choice" in
         [Yy])
+        cleanup_and_delete
             # 终止 sing-box 相关进程
             for process in 'web' 'bot' 'npm'; do
                 pids=$(pgrep -f "$process" 2>/dev/null)
