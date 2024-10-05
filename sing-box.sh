@@ -303,9 +303,7 @@ setup_socks5() {
   fi
 
   # 提示用户输入IP地址（或按回车自动检测）
-  read -p "$(echo -e "${CYAN}请输入IP地址（或按回车自动检测）: ${RESET}") " user_ip
   get_ip
-
   # 如果用户输入了IP地址，使用用户提供的IP地址，否则自动检测
   if [ -n "$user_ip" ]; then
       IP="$user_ip"
@@ -318,8 +316,8 @@ setup_socks5() {
   echo -e "${CYAN}本机域名是: ${SERV_DOMAIN}${RESET}"
 
   # 提示用户输入 socks5 端口号
-  read -p "$(echo -e "${CYAN}请输入 socks5 端口 (面板开放的TCP端口): ${RESET}")" SOCKS5_PORT
-
+  read -p "$(echo -e "${CYAN}请输入 socks5 端口,按下ENTER自动检测 (面板开放的TCP端口): ${RESET}")" SOCKS5_PORT
+    read_socks5_port
   # 提示用户输入用户名和密码，如果按回车则生成随机用户名和密码
   read -p "$(echo -e "${CYAN}请输入 socks5 用户名（按回车生成随机用户名）: ${RESET}")" SOCKS5_USER
   if [ -z "$SOCKS5_USER" ]; then
@@ -350,7 +348,7 @@ setup_socks5() {
   },
   "inbounds": [
     {
-      "port": "$SOCKS5_PORT",
+      "port": "$socks5_port",
       "protocol": "socks",
       "tag": "socks",
       "settings": {
@@ -405,14 +403,14 @@ EOF
   # 检查程序是否启动成功
   if pgrep -x "socks5" > /dev/null; then
     echo -e "\033[1;3;32mSocks5 代理程序启动成功\033[0m"
-    echo -e "\033[1;3;33mSocks5 代理地址： $IP:$SOCKS5_PORT 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS\033[0m"   
+    echo -e "\033[1;3;33mSocks5 代理地址： $IP:$socks5_port 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS\033[0m"   
     # 显示代理 URL
-    echo -e "\033[1;3;33msocks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${SOCKS5_PORT}\033[0m"
+    echo -e "\033[1;3;33msocks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${socks5_port}\033[0m"
       
     # 使用 printf 将内容追加到 list.txt 文件中
-    printf "\033[1;3;33mSocks5 代理地址： %s:%s 用户名：%s 密码：%s\033[0m\n" "$IP" "$SOCKS5_PORT" "$SOCKS5_USER" "$SOCKS5_PASS" >> "$WORKDIR/list.txt"
+    printf "\033[1;3;33mSocks5 代理地址： %s:%s 用户名：%s 密码：%s\033[0m\n" "$IP" "$socks5_port" "$SOCKS5_USER" "$SOCKS5_PASS" >> "$WORKDIR/list.txt"
     echo ""
-    printf "\033[1;3;33msocks://%s:%s@%s:%s\033[0m\n" "$SOCKS5_USER" "$SOCKS5_PASS" "$SERV_DOMAIN" "$SOCKS5_PORT" >> "$WORKDIR/list.txt"
+    printf "\033[1;3;33msocks://%s:%s@%s:%s\033[0m\n" "$SOCKS5_USER" "$SOCKS5_PASS" "$SERV_DOMAIN" "$socks5_port" >> "$WORKDIR/list.txt"
         echo ""
   else
     echo -e "\033[1;3;31mSocks5 代理程序启动失败\033[0m"
@@ -634,7 +632,12 @@ check_and_allocate_port() {
     # 更新全局变量
     eval "$port_var_name=\"$new_port\""
 }
-
+read_socks5_port() {
+    loadPort
+    check_and_allocate_port "socks5" "tcp" "socks5_port"
+    bold_italic_green "你的socks5 TCP 端口为: $socks5_port"
+    sleep 2
+}
 read_vless_port() {
     loadPort
     check_and_allocate_port "vless-reality" "tcp" "vless_port"
