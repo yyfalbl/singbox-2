@@ -509,7 +509,101 @@ declare -A port_array  # 确保声明关联数组
 bold_italic_yellow() {
   echo -e "\e[1;3;33m$1\e[0m"
 }
+check_port_in_use() {
+    local port=$1
+    if sockstat -4 | grep -q ":$port"; then
+        return 0  # 端口被占用
+    else
+        return 1  # 端口未被占用
+    fi
+}
+delete_unused_port() {
+    local port_list=$(devil port list | awk 'NR>1')  # 跳过标题行
+    if [[ -z "$port_list" ]]; then
+        echo "没有找到已分配的端口。"
+        return
+    fi
 
+    local port_count=$(echo "$port_list" | wc -l)
+
+    if [[ "$port_count" -ge 3 ]]; then
+        echo -e "\e[1;3;31m以下是可删除的端口(黄色代表占用该端口,不可删除!)：\e[0m"
+        while read -r line; do
+            local port=$(echo "$line" | awk '{print $1}')
+            local type=$(echo "$line" | awk '{print $2}')
+            if check_port_in_use "$port"; then
+                echo -e "\e[1;3;33m$line【已被占用】\e[0m"
+            else
+                echo -e "\e[1;3;32m$line【未被占用】\e[0m"
+            fi
+        done <<< "$port_list"
+
+        local valid_input=false
+        while [[ "$valid_input" == false ]]; do
+            read -p "$(echo -e '\e[1;3;33m请输入要删除的端口号（直接按Enter删除一个未占用的端口）: \e[0m')" port_to_delete
+
+            if [[ -z "$port_to_delete" ]]; then
+                port_to_delete=$(echo "$port_list" | awk '{print $1}' | while read -r p; do
+                    if ! check_port_in_use "$p"; then
+                        echo "$p"
+                        break  # 找到一个未占用的端口，退出循环
+                    fi
+                done | head -n 1)
+                
+                if [[ -z "$port_to_delete" ]]; then
+                    echo -e "\e[1;3;31m没有可删除的未占用端口。\e[0m"
+                    return
+                fi
+                echo -e "\e[1;3;32m自动选择删除端口: $port_to_delete\e[0m"
+            fi
+
+            if echo "$port_list" | grep -q "^$port_to_delete "; then
+                local type=$(echo "$port_list" | grep "^$port_to_delete " | awk '{print $2}')
+                if ! check_port_in_use "$port_to_delete"; then
+                    local rt=$(devil port del "$type" "$port_to_delete" 2>&1)
+                    if [[ "$rt" =~ "successfully" ]]; then
+                        echo -e "\e[1;3;31m已成功删除端口: $port_to_delete\e[0m"
+                    else
+                        echo -e "\e[1;3;31m正在检测面板开放的端口，并重新分配.....\e[0m"
+                    fi
+                else
+                    echo -e "\e[1;3;33m端口 $port_to_delete 被占用，无法删除。\e[0m"
+                fi
+                valid_input=true
+            else
+                echo -e "\e[1;3;31m输入的端口号无效或不在可删除的列表中，请重新输入。\e[0m"
+            fi
+        done
+        return
+    fi
+    
+    while read -r line; do
+        [[ -z "$line" ]] && continue
+        local port=$(echo "$line" | awk '{print $1}')
+        local type=$(echo "$line" | awk '{print $2}')
+
+        if [[ -n "$type" && -n "$port" ]]; then
+            echo "检查端口: $port"
+            echo "端口类型: $type"
+
+            if ! check_port_in_use "$port"; then
+                local rt=$(devil port del "$type" "$port" 2>&1)
+                echo -e "\e[1;32;3m已成功删除未占用的端口: $port\e[0m"
+
+                if [[ "$rt" =~ "successfully" ]]; then
+                    echo -e "\e[1;32;3m已成功删除未占用的端口: $port\e[0m"
+                else
+                    echo -e "\e[1;3;31m正在检测面板开放的端口，并重新分配.....\e[0m"
+                fi
+            else
+                echo "端口 $port 被占用，跳过删除。"
+            fi
+        else
+            echo "无效的端口或类型: $line"
+        fi
+    done <<< "$port_list"
+}
+    
 # 获取端口
 getPort() {
   local type=$1
@@ -611,12 +705,11 @@ check_and_allocate_port() {
     local protocol_name=$1
     local protocol_type=$2
     local port_var_name=$3  # 存储端口的变量名
-   # loadPort  # 确保获取最新的端口信息
     local existing_port=$(getPort "$protocol_type" "$protocol_name")
     local new_port=""
 
     if [[ "$existing_port" != "failed" ]]; then
-        bold_italic_yellow "已分配的 $protocol_name 端口为 : $existing_port"
+        bold_italic_yellow "已分配的 $protocol_name $protocol_type 端口为 : $existing_port"
         # 提示是否删除已有的端口
         read -p "$(echo -e '\e[1;33;3m是否重新分配 '$protocol_name' 端口('$existing_port')？[y/n Enter默认: n]:\e[0m')" delete_input
         delete_input=${delete_input:-n}
@@ -625,15 +718,13 @@ check_and_allocate_port() {
     rt=$(devil port del "$protocol_type" "$existing_port" 2>&1)
     if [[ "$rt" =~ "successfully" ]]; then
         echo -e "\e[1;33m\e[3m已成功删除 $protocol_name 端口: $existing_port\e[0m"
-        # 加载最新的端口信息
-        loadPort
-
+  
         # 重新随机分配新端口
         new_port=$(getPort "$protocol_type" "$protocol_name")
         if [[ "$new_port" == "failed" ]]; then
             new_port=12345  # 设置一个默认值
         else
-            green "重新分配的 $protocol_name 端口为: $new_port"
+            green "重新分配的 $protocol_name  $protocol_type端口为: $new_port"
         fi
     else
         if ! devil port list | grep -q "$existing_port"; then
@@ -643,7 +734,7 @@ check_and_allocate_port() {
             if [[ "$new_port" == "failed" ]]; then
                 new_port=12345  # 设置一个默认值
             else
-                green "重新分配的 $protocol_name 端口为: $new_port"
+                green "重新分配的 $protocol_name $protocol_type端口为: $new_port"
             fi
         else
             red "删除 $protocol_name 端口失败: $existing_port"
@@ -663,12 +754,28 @@ check_and_allocate_port() {
     eval "$port_var_name=\"$new_port\""
 }
 read_socks5_port() {
+       # 检查当前已分配的端口数量
+             local port_count=$(devil port list | awk 'NR>1 && NF' | wc -l)
+        # 如果已分配端口数量达到三个，调用删除未使用的端口函数
+       if devil port list | grep -q "socks5"; then
+       echo -e "\e[1;3;32m当前已存在未被使用 socks5 的端口\e[0m"
+    elif [[ "$port_count" -ge 3 ]]; then
+        delete_unused_port
+    fi
     loadPort
     check_and_allocate_port "socks5" "tcp" "socks5_port"
     bold_italic_green "你的socks5 TCP 端口为: $socks5_port"
     sleep 2
 }
 read_vless_port() {
+       # 检查当前已分配的端口数量
+            local port_count=$(devil port list | awk 'NR>1 && NF' | wc -l)
+        # 如果已分配端口数量达到三个，调用删除未使用的端口函数
+      if devil port list | grep -q "vless-reality"; then
+         echo -e "\e[1;3;32m当前已存在未被使用 vless-reality 的端口\e[0m"
+    elif [[ "$port_count" -ge 3 ]]; then
+        delete_unused_port
+    fi
     loadPort
     check_and_allocate_port "vless-reality" "tcp" "vless_port"
     bold_italic_green "你的vless-reality TCP 端口为: $vless_port"
@@ -676,6 +783,14 @@ read_vless_port() {
 }
 
 read_vmess_port() {
+       # 检查当前已分配的端口数量
+          local port_count=$(devil port list | awk 'NR>1 && NF' | wc -l)
+        # 如果已分配端口数量达到三个，调用删除未使用的端口函数
+     if devil port list | grep -q "vmess"; then
+       echo -e "\e[1;3;32m当前已存在未被使用 vmess 的端口\e[0m"
+    elif [[ "$port_count" -ge 3 ]]; then
+        delete_unused_port
+    fi
     loadPort
     check_and_allocate_port "vmess" "tcp" "vmess_port"
     bold_italic_green "你的vmess TCP 端口为: $vmess_port"
@@ -683,6 +798,14 @@ read_vmess_port() {
 }
 
 read_hy2_port() {
+          # 检查当前已分配的端口数量
+         local port_count=$(devil port list | awk 'NR>1 && NF' | wc -l)
+        # 如果已分配端口数量达到三个，调用删除未使用的端口函数
+    if devil port list | grep -q "hysteria2"; then
+         echo -e "\e[1;3;32m当前已存在未被使用 hysteria2 的端口\e[0m"
+    elif [[ "$port_count" -ge 3 ]]; then
+        delete_unused_port
+    fi
     loadPort
     check_and_allocate_port "hysteria2" "udp" "hy2_port"
     bold_italic_green "你的hysteria2 UDP 端口为: $hy2_port"
@@ -690,6 +813,14 @@ read_hy2_port() {
 }
 
 read_tuic_port() {
+        # 检查当前已分配的端口数量
+       local port_count=$(devil port list | awk 'NR>1 && NF' | wc -l)
+        # 如果已分配端口数量达到三个，调用删除未使用的端口函数
+    if devil port list | grep -q "Tuic"; then
+         echo -e "\e[1;3;32m当前已存在未被使用 Tuic 的端口\e[0m"
+    elif [[ "$port_count" -ge 3 ]]; then
+        delete_unused_port
+    fi
     loadPort
     check_and_allocate_port "Tuic" "udp" "tuic_port"
     bold_italic_green "你的Tuic UDP 端口为: $tuic_port"
@@ -858,6 +989,7 @@ start_service() {
     echo -e "\e[31m\e[3m\e[1mEnabled未开启，请尝试手动开启.\e[0m"  # 红色斜体加粗输出
   fi
 }
+
 #安装sing-box
 install_singbox() {
 bold_italic_red='\033[1;3;31m'
@@ -1095,7 +1227,7 @@ uninstall_singbox() {
             fi
 
             echo -e "$(bold_italic_purple "正在卸载......")"
-            sleep 3 
+            sleep 3
               cleanup_delete
             # 可选：暂停片刻让用户看到消息
             echo -e "$(bold_italic_purple "卸载完成！")"
@@ -1869,3 +2001,7 @@ done
    
 }
 menu
+
+
+
+
