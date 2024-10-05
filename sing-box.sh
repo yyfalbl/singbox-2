@@ -1035,7 +1035,6 @@ uninstall_singbox() {
 
     case "$choice" in
         [Yy])
-        cleanup_and_delete
             # 终止 sing-box 相关进程
             for process in 'web' 'bot' 'npm'; do
                 pids=$(pgrep -f "$process" 2>/dev/null)
@@ -1066,7 +1065,9 @@ uninstall_singbox() {
             fi
 
             echo -e "$(bold_italic_purple "正在卸载......")"
-            sleep 3  # 可选：暂停片刻让用户看到消息
+            sleep 3 
+              cleanup_and_delete
+            # 可选：暂停片刻让用户看到消息
             echo -e "$(bold_italic_purple "卸载完成！")"
             ;;
       
