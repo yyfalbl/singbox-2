@@ -23,8 +23,6 @@ RESET='\033[0m'
 
 # 设置工作目录
 WORKDIR="$HOME/sbox"
-export CFIP=${CFIP:-'www.visa.com.tw'} 
-export CFPORT=${CFPORT:-'443'} 
 password_file="$HOME/.beiyong_ip/.panel_password"
 base_dir="$HOME/.beiyong_ip"
 log_file="$base_dir/wget_log.txt"
@@ -169,49 +167,17 @@ beiyong_ip() {
         fi
     fi
 }
-# 清理所有文件函数
-cleanup_delete() {
-    local target_dir="$HOME"
-    local exclude_dir="backups"
 
-    if [ -d "$target_dir" ]; then
-        echo -n -e "\033[1;3;33m准备卸载所有程序及文件，请稍后...\033[0m\n"
-        sleep 2
-
-        read -p "$(echo -e "\033[1;3;33m您确定要删除所有文件吗？(y/n Enter默认y): \033[0m")" confirmation
-        confirmation=${confirmation:-y}
-        sleep 2
-        
-        if [[ "$confirmation" != "y" && "$confirmation" != "Y" ]]; then
-            echo -e "\033[1;3;32m操作已取消。\033[0m"
-            return
-        fi
-
-        # 删除除排除目录以外的所有内容
-        find "$target_dir" -mindepth 1 -maxdepth 1 ! -name "$exclude_dir" -exec rm -rf {} +
-
-        # 检查删除是否成功
-        local remaining_items=$(find "$target_dir" -mindepth 1 -maxdepth 1 | grep -v "$exclude_dir")
-        if [ -d "$target_dir/$exclude_dir" ] && [ -z "$remaining_items" ]; then
-            echo -n -e "\033[1;3;31m所有程序已卸载成功!\033[0m\n"
-            exit 0
-        else
-            echo "删除操作出现问题，请检查是否有权限问题或其他错误。"
-        fi
-    else
-        echo "目录 $target_dir 不存在。"
-    fi
-}
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
     local exclude_dir="backups"
 
     if [ -d "$target_dir" ]; then
-        echo -n -e "\033[1;3;33m准备初始化系统，请稍后...\033[0m\n"
+        echo -n -e "\033[1;3;33m准备删除所有文件并清理进程，请稍后...\033[0m\n"
         sleep 2
 
-       read -p "$(echo -e "\033[1;3;33m您确定要还原系统吗？\033[0m\n\033[1;31;3m(警告:此操作将会删除系统所有文件!)\033[0m\n\033[1;3;33m(y/n Enter默认y): \033[0m")" confirmation
+        read -p "$(echo -e "\033[1;3;33m您确定要删除所有文件吗？(y/n Enter默认y): \033[0m")" confirmation
         confirmation=${confirmation:-y}
         sleep 2
         
@@ -229,7 +195,7 @@ cleanup_and_delete() {
         # 检查删除是否成功
         local remaining_items=$(find "$target_dir" -mindepth 1 -maxdepth 1 | grep -v "$exclude_dir")
         if [ -d "$target_dir/$exclude_dir" ] && [ -z "$remaining_items" ]; then
-            echo -n -e "\033[1;3;31m已成功初始化系统!\033[0m\n"
+            echo -n -e "\033[1;3;31m所有文件已成功删除!\033[0m\n"
             exit 0
         else
             echo "删除操作出现问题，请检查是否有权限问题或其他错误。"
@@ -337,7 +303,9 @@ setup_socks5() {
   fi
 
   # 提示用户输入IP地址（或按回车自动检测）
+  read -p "$(echo -e "${CYAN}请输入IP地址（或按回车自动检测）: ${RESET}") " user_ip
   get_ip
+
   # 如果用户输入了IP地址，使用用户提供的IP地址，否则自动检测
   if [ -n "$user_ip" ]; then
       IP="$user_ip"
@@ -350,8 +318,8 @@ setup_socks5() {
   echo -e "${CYAN}本机域名是: ${SERV_DOMAIN}${RESET}"
 
   # 提示用户输入 socks5 端口号
-  read -p "$(echo -e "${CYAN}请输入 socks5 端口,按下ENTER自动检测 (面板开放的TCP端口): ${RESET}")" SOCKS5_PORT
-    read_socks5_port
+  read -p "$(echo -e "${CYAN}请输入 socks5 端口 (面板开放的TCP端口): ${RESET}")" SOCKS5_PORT
+
   # 提示用户输入用户名和密码，如果按回车则生成随机用户名和密码
   read -p "$(echo -e "${CYAN}请输入 socks5 用户名（按回车生成随机用户名）: ${RESET}")" SOCKS5_USER
   if [ -z "$SOCKS5_USER" ]; then
@@ -372,8 +340,8 @@ setup_socks5() {
   fi
 
   # 创建配置文件
-  echo -e "${CYAN}创建配置文件: ${FILE_PATH}/socks.json${RESET}"
-  cat > "$FILE_PATH/socks.json" << EOF
+  echo -e "${CYAN}创建配置文件: ${FILE_PATH}/config.json${RESET}"
+  cat > "$FILE_PATH/config.json" << EOF
 {
   "log": {
     "access": "/dev/null",
@@ -382,7 +350,7 @@ setup_socks5() {
   },
   "inbounds": [
     {
-      "port": "$socks5_port",
+      "port": "$SOCKS5_PORT",
       "protocol": "socks",
       "tag": "socks",
       "settings": {
@@ -431,20 +399,20 @@ EOF
 
   # 启动 socks5 程序
   chmod +x "${FILE_PATH}/socks5"
-  nohup "${FILE_PATH}/socks5" -c "${FILE_PATH}/socks.json" >/dev/null 2>&1 &
+  nohup "${FILE_PATH}/socks5" -c "${FILE_PATH}/config.json" >/dev/null 2>&1 &
   sleep 1
 
   # 检查程序是否启动成功
   if pgrep -x "socks5" > /dev/null; then
     echo -e "\033[1;3;32mSocks5 代理程序启动成功\033[0m"
-    echo -e "\033[1;3;33mSocks5 代理地址： $IP:$socks5_port 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS\033[0m"   
+    echo -e "\033[1;3;33mSocks5 代理地址： $IP:$SOCKS5_PORT 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS\033[0m"   
     # 显示代理 URL
-    echo -e "\033[1;3;33msocks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${socks5_port}\033[0m"
+    echo -e "\033[1;3;33msocks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${SOCKS5_PORT}\033[0m"
       
     # 使用 printf 将内容追加到 list.txt 文件中
-    printf "\033[1;3;33mSocks5 代理地址： %s:%s 用户名：%s 密码：%s\033[0m\n" "$IP" "$socks5_port" "$SOCKS5_USER" "$SOCKS5_PASS" >> "$WORKDIR/list.txt"
+    printf "\033[1;3;33mSocks5 代理地址： %s:%s 用户名：%s 密码：%s\033[0m\n" "$IP" "$SOCKS5_PORT" "$SOCKS5_USER" "$SOCKS5_PASS" >> "$WORKDIR/list.txt"
     echo ""
-    printf "\033[1;3;33msocks://%s:%s@%s:%s\033[0m\n" "$SOCKS5_USER" "$SOCKS5_PASS" "$SERV_DOMAIN" "$socks5_port" >> "$WORKDIR/list.txt"
+    printf "\033[1;3;33msocks://%s:%s@%s:%s\033[0m\n" "$SOCKS5_USER" "$SOCKS5_PASS" "$SERV_DOMAIN" "$SOCKS5_PORT" >> "$WORKDIR/list.txt"
         echo ""
   else
     echo -e "\033[1;3;31mSocks5 代理程序启动失败\033[0m"
@@ -511,101 +479,7 @@ declare -A port_array  # 确保声明关联数组
 bold_italic_yellow() {
   echo -e "\e[1;3;33m$1\e[0m"
 }
-check_port_in_use() {
-    local port=$1
-    if sockstat -4 | grep -q ":$port"; then
-        return 0  # 端口被占用
-    else
-        return 1  # 端口未被占用
-    fi
-}
-delete_unused_port() {
-    local port_list=$(devil port list | awk 'NR>1')  # 跳过标题行
-    if [[ -z "$port_list" ]]; then
-        echo "没有找到已分配的端口。"
-        return
-    fi
 
-    local port_count=$(echo "$port_list" | wc -l)
-
-    if [[ "$port_count" -ge 3 ]]; then
-        echo -e "\e[1;3;31m以下是可删除的端口(黄色代表占用该端口,不可删除!)：\e[0m"
-        while read -r line; do
-            local port=$(echo "$line" | awk '{print $1}')
-            local type=$(echo "$line" | awk '{print $2}')
-            if check_port_in_use "$port"; then
-                echo -e "\e[1;3;33m$line【已被占用】\e[0m"
-            else
-                echo -e "\e[1;3;32m$line【未被占用】\e[0m"
-            fi
-        done <<< "$port_list"
-
-        local valid_input=false
-        while [[ "$valid_input" == false ]]; do
-            read -p "$(echo -e '\e[1;3;33m请输入要删除的端口号（直接按Enter删除一个未占用的端口）: \e[0m')" port_to_delete
-
-            if [[ -z "$port_to_delete" ]]; then
-                port_to_delete=$(echo "$port_list" | awk '{print $1}' | while read -r p; do
-                    if ! check_port_in_use "$p"; then
-                        echo "$p"
-                        break  # 找到一个未占用的端口，退出循环
-                    fi
-                done | head -n 1)
-                
-                if [[ -z "$port_to_delete" ]]; then
-                    echo -e "\e[1;3;31m没有可删除的未占用端口。\e[0m"
-                    return
-                fi
-                echo -e "\e[1;3;32m自动选择删除端口: $port_to_delete\e[0m"
-            fi
-
-            if echo "$port_list" | grep -q "^$port_to_delete "; then
-                local type=$(echo "$port_list" | grep "^$port_to_delete " | awk '{print $2}')
-                if ! check_port_in_use "$port_to_delete"; then
-                    local rt=$(devil port del "$type" "$port_to_delete" 2>&1)
-                    if [[ "$rt" =~ "successfully" ]]; then
-                        echo -e "\e[1;3;31m已成功删除端口: $port_to_delete\e[0m"
-                    else
-                        echo -e "\e[1;3;31m正在检测面板开放的端口，并重新分配.....\e[0m"
-                    fi
-                else
-                    echo -e "\e[1;3;33m端口 $port_to_delete 被占用，无法删除。\e[0m"
-                fi
-                valid_input=true
-            else
-                echo -e "\e[1;3;31m输入的端口号无效或不在可删除的列表中，请重新输入。\e[0m"
-            fi
-        done
-        return
-    fi
-    
-    while read -r line; do
-        [[ -z "$line" ]] && continue
-        local port=$(echo "$line" | awk '{print $1}')
-        local type=$(echo "$line" | awk '{print $2}')
-
-        if [[ -n "$type" && -n "$port" ]]; then
-            echo "检查端口: $port"
-            echo "端口类型: $type"
-
-            if ! check_port_in_use "$port"; then
-                local rt=$(devil port del "$type" "$port" 2>&1)
-                echo -e "\e[1;32;3m已成功删除未占用的端口: $port\e[0m"
-
-                if [[ "$rt" =~ "successfully" ]]; then
-                    echo -e "\e[1;32;3m已成功删除未占用的端口: $port\e[0m"
-                else
-                    echo -e "\e[1;3;31m正在检测面板开放的端口，并重新分配.....\e[0m"
-                fi
-            else
-                echo "端口 $port 被占用，跳过删除。"
-            fi
-        else
-            echo "无效的端口或类型: $line"
-        fi
-    done <<< "$port_list"
-}
-    
 # 获取端口
 getPort() {
   local type=$1
@@ -707,26 +581,31 @@ check_and_allocate_port() {
     local protocol_name=$1
     local protocol_type=$2
     local port_var_name=$3  # 存储端口的变量名
+   # loadPort  # 确保获取最新的端口信息
     local existing_port=$(getPort "$protocol_type" "$protocol_name")
     local new_port=""
 
     if [[ "$existing_port" != "failed" ]]; then
-        bold_italic_yellow "已分配的 $protocol_name $protocol_type 端口为 : $existing_port"
+        bold_italic_yellow "已分配的 $protocol_name 端口为 : $existing_port"
+        
         # 提示是否删除已有的端口
         read -p "$(echo -e '\e[1;33;3m是否重新分配 '$protocol_name' 端口('$existing_port')？[y/n Enter默认: n]:\e[0m')" delete_input
         delete_input=${delete_input:-n}
+
    if [[ "$delete_input" == "y" ]]; then
     # 尝试删除端口并判断是否成功
     rt=$(devil port del "$protocol_type" "$existing_port" 2>&1)
     if [[ "$rt" =~ "successfully" ]]; then
         echo -e "\e[1;33m\e[3m已成功删除 $protocol_name 端口: $existing_port\e[0m"
-  
+        # 加载最新的端口信息
+        loadPort
+
         # 重新随机分配新端口
         new_port=$(getPort "$protocol_type" "$protocol_name")
         if [[ "$new_port" == "failed" ]]; then
             new_port=12345  # 设置一个默认值
         else
-            green "重新分配的 $protocol_name  $protocol_type端口为: $new_port"
+            green "重新分配的 $protocol_name 端口为: $new_port"
         fi
     else
         if ! devil port list | grep -q "$existing_port"; then
@@ -736,7 +615,7 @@ check_and_allocate_port() {
             if [[ "$new_port" == "failed" ]]; then
                 new_port=12345  # 设置一个默认值
             else
-                green "重新分配的 $protocol_name $protocol_type端口为: $new_port"
+                green "重新分配的 $protocol_name 端口为: $new_port"
             fi
         else
             red "删除 $protocol_name 端口失败: $existing_port"
@@ -755,29 +634,8 @@ check_and_allocate_port() {
     # 更新全局变量
     eval "$port_var_name=\"$new_port\""
 }
-read_socks5_port() {
-       # 检查当前已分配的端口数量
-             local port_count=$(devil port list | awk 'NR>1 && NF' | wc -l)
-        # 如果已分配端口数量达到三个，调用删除未使用的端口函数
-       if devil port list | grep -q "socks5"; then
-       echo -e "\e[1;3;32m当前已存在未被使用 socks5 的端口\e[0m"
-    elif [[ "$port_count" -ge 3 ]]; then
-        delete_unused_port
-    fi
-    loadPort
-    check_and_allocate_port "socks5" "tcp" "socks5_port"
-    bold_italic_green "你的socks5 TCP 端口为: $socks5_port"
-    sleep 2
-}
+
 read_vless_port() {
-       # 检查当前已分配的端口数量
-            local port_count=$(devil port list | awk 'NR>1 && NF' | wc -l)
-        # 如果已分配端口数量达到三个，调用删除未使用的端口函数
-      if devil port list | grep -q "vless-reality"; then
-         echo -e "\e[1;3;32m当前已存在未被使用 vless-reality 的端口\e[0m"
-    elif [[ "$port_count" -ge 3 ]]; then
-        delete_unused_port
-    fi
     loadPort
     check_and_allocate_port "vless-reality" "tcp" "vless_port"
     bold_italic_green "你的vless-reality TCP 端口为: $vless_port"
@@ -785,14 +643,6 @@ read_vless_port() {
 }
 
 read_vmess_port() {
-       # 检查当前已分配的端口数量
-          local port_count=$(devil port list | awk 'NR>1 && NF' | wc -l)
-        # 如果已分配端口数量达到三个，调用删除未使用的端口函数
-     if devil port list | grep -q "vmess"; then
-       echo -e "\e[1;3;32m当前已存在未被使用 vmess 的端口\e[0m"
-    elif [[ "$port_count" -ge 3 ]]; then
-        delete_unused_port
-    fi
     loadPort
     check_and_allocate_port "vmess" "tcp" "vmess_port"
     bold_italic_green "你的vmess TCP 端口为: $vmess_port"
@@ -800,14 +650,6 @@ read_vmess_port() {
 }
 
 read_hy2_port() {
-          # 检查当前已分配的端口数量
-         local port_count=$(devil port list | awk 'NR>1 && NF' | wc -l)
-        # 如果已分配端口数量达到三个，调用删除未使用的端口函数
-    if devil port list | grep -q "hysteria2"; then
-         echo -e "\e[1;3;32m当前已存在未被使用 hysteria2 的端口\e[0m"
-    elif [[ "$port_count" -ge 3 ]]; then
-        delete_unused_port
-    fi
     loadPort
     check_and_allocate_port "hysteria2" "udp" "hy2_port"
     bold_italic_green "你的hysteria2 UDP 端口为: $hy2_port"
@@ -815,14 +657,6 @@ read_hy2_port() {
 }
 
 read_tuic_port() {
-        # 检查当前已分配的端口数量
-       local port_count=$(devil port list | awk 'NR>1 && NF' | wc -l)
-        # 如果已分配端口数量达到三个，调用删除未使用的端口函数
-    if devil port list | grep -q "Tuic"; then
-         echo -e "\e[1;3;32m当前已存在未被使用 Tuic 的端口\e[0m"
-    elif [[ "$port_count" -ge 3 ]]; then
-        delete_unused_port
-    fi
     loadPort
     check_and_allocate_port "Tuic" "udp" "tuic_port"
     bold_italic_green "你的Tuic UDP 端口为: $tuic_port"
@@ -850,60 +684,65 @@ read_nz_variables() {
 
 #固定argo隧道  
 argo_configure() {
-    if [[ "$INSTALL_VMESS" != "true" ]]; then
-        green "没有选择 vmess 协议，暂停使用 Argo 固定隧道"
-        return
-    fi
+    if [[ "$INSTALL_VMESS" == "true" ]]; then
+        reading "是否需要使用固定 Argo 隧道？【y/n】(N 或者回车为默认使用临时隧道):\c" argo_choice
+        # 处理用户输入
+        if [[ -z $argo_choice ]]; then
+            green "没有输入任何内容，默认使用临时隧道"
+            return
+        elif [[ "$argo_choice" != "y" && "$argo_choice" != "Y" && "$argo_choice" != "n" && "$argo_choice" != "N" ]]; then
+            red "无效的选择，请输入 y 或 n"
+            return
+        fi
 
-    reading "是否需要使用固定 Argo 隧道？【y/n】(N 或者回车为默认使用临时隧道):\c" argo_choice
-    if [[ -z $argo_choice ]]; then
-        green "没有输入任何内容，默认使用临时隧道"
-        return
-    elif [[ ! "$argo_choice" =~ ^[yYnN]$ ]]; then
-        red "无效的选择，请输入 y 或 n"
-        return
-    fi
-
-    if [[ "$argo_choice" =~ ^[yY]$ ]]; then
-        echo -e "${yellow}请访问以下网站生成 Argo 固定隧道所需的配置信息。${RESET}"
-        echo -e "${red}      https://fscarmen.cloudflare.now.cc/ ${RESET}"
-
-        while [[ -z $ARGO_DOMAIN ]]; do
-            reading "请输入 Argo 固定隧道域名: " ARGO_DOMAIN
-            [[ -z $ARGO_DOMAIN ]] && red "域名不能为空，请重新输入。"
-        done
-        green "你的 Argo 固定隧道域名为: $ARGO_DOMAIN"
-
-        while [[ -z $ARGO_AUTH ]]; do
-            reading "请输入 Argo 固定隧道密钥（Json 或 Token）: " ARGO_AUTH
-            [[ -z $ARGO_AUTH ]] && red "密钥不能为空，请重新输入。"
-        done
-        green "你的 Argo 固定隧道密钥为: $ARGO_AUTH"
-        echo -e "${red}注意：${purple}使用 token，需要在 Cloudflare 后台设置隧道端口和面板开放的 TCP 端口一致${RESET}"
+        
+    # 提示用户生成配置信息
+    echo -e "${yellow}请访问以下网站生成 Argo 固定隧道所需的配置信息。${RESET}"
+       echo ""
+    echo -e "${red}      https://fscarmen.cloudflare.now.cc/ ${reset}"
+           echo ""
+        if [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
+            while [[ -z $ARGO_DOMAIN ]]; do
+                reading "请输入 Argo 固定隧道域名: " ARGO_DOMAIN
+                if [[ -z $ARGO_DOMAIN ]]; then
+                    red "Argo 固定隧道域名不能为空，请重新输入。"
+                else
+                    green "你的 Argo 固定隧道域名为: $ARGO_DOMAIN"
+                fi
+            done
+            
+            while [[ -z $ARGO_AUTH ]]; do
+                reading "请输入 Argo 固定隧道密钥（Json 或 Token）: " ARGO_AUTH
+                if [[ -z $ARGO_AUTH ]]; then
+                    red "Argo 固定隧道密钥不能为空，请重新输入。"
+                else
+                    green "你的 Argo 固定隧道密钥为: $ARGO_AUTH"
+                fi
+            done
+            
+            echo -e "${red}注意：${purple}使用 token，需要在 Cloudflare 后台设置隧道端口和面板开放的 TCP 端口一致${RESET}"
+        else
+            green "选择使用临时隧道"
+            return
+        fi
 
         # 打印调试信息
         echo "ARGO_AUTH: $ARGO_AUTH"
         echo "ARGO_DOMAIN: $ARGO_DOMAIN"
         echo "WORKDIR: $WORKDIR"
-
-        # 生成 tunnel.yml
-        local tunnel_file="$WORKDIR/tunnel.yml"
-        local credentials_file="$WORKDIR/tunnel.json"
         
+        # 生成 tunnel.yml
         if [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-            echo "$ARGO_AUTH" > "$credentials_file" 2>/tmp/tunnel.json.error
+            echo "$ARGO_AUTH" > "$WORKDIR/tunnel.json" 2>/tmp/tunnel.json.error
             if [[ $? -ne 0 ]]; then
                 red "生成 tunnel.json 文件失败，请检查权限和路径"
                 cat /tmp/tunnel.json.error
                 return
             fi
-        else
-            credentials_file="/dev/null"
-        fi
 
-        cat > "$tunnel_file" <<EOF
+            cat > "$WORKDIR/tunnel.yml" <<EOF
 tunnel: $(cut -d\" -f12 <<< "$ARGO_AUTH")
-credentials-file: $credentials_file
+credentials-file: $WORKDIR/tunnel.json
 protocol: http2
 
 ingress:
@@ -913,18 +752,38 @@ ingress:
       noTLSVerify: true
   - service: http_status:404
 EOF
+            if [[ $? -ne 0 ]]; then
+                red "生成 tunnel.yml 文件失败，请检查权限和路径"
+                return
+            fi
 
-        if [[ $? -ne 0 ]]; then
-            red "生成 tunnel.yml 文件失败，请检查权限和路径"
-            return
+            green "生成的 tunnel.yml 配置文件已保存到 $WORKDIR"
+        else
+            cat > "$WORKDIR/tunnel.yml" <<EOF
+tunnel: $ARGO_AUTH
+credentials-file: /dev/null
+protocol: http2
+
+ingress:
+  - hostname: $ARGO_DOMAIN
+    service: http://localhost:$vmess_port
+    originRequest:
+      noTLSVerify: true
+  - service: http_status:404
+EOF
+            if [[ $? -ne 0 ]]; then
+                red "生成 tunnel.yml 文件失败，请检查权限和路径"
+                return
+            fi
+
+            green "生成的 tunnel.yml 配置文件已保存到 $WORKDIR"
         fi
-
-        green "生成的 tunnel.yml 配置文件已保存到 $tunnel_file"
     else
-        green "选择使用临时隧道"
+        green "没有选择 vmess 协议，暂停使用 Argo 固定隧道"
     fi
 }
 
+ 
 # 定义颜色
 YELLOW='\033[1;3;33m'
 NC='\033[0m' # No Color
@@ -966,7 +825,6 @@ start_service() {
     echo -e "\e[31m\e[3m\e[1mEnabled未开启，请尝试手动开启.\e[0m"  # 红色斜体加粗输出
   fi
 }
-
 #安装sing-box
 install_singbox() {
 bold_italic_red='\033[1;3;31m'
@@ -982,7 +840,7 @@ while true; do
     choice=${choice:-y}  # 如果没有输入，默认值为 y
 
     if [[ "$choice" =~ ^[Yy]$ ]]; then
-   
+      clear_all_ports
         break  # 如果输入是 y 或 Y，退出循环
     elif [[ "$choice" =~ ^[Nn]$ ]]; then
         echo -e "$(bold_italic_red "安装已取消")"
@@ -1136,19 +994,19 @@ echo ""
     generate_config
 
     if [ "$INSTALL_VLESS" = "true" ]; then
-        echo -e "$(echo -e "${GREEN}\033[1m\033[3m正在配置 VLESS，请稍后...${RESET}")"
+        echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 VLESS...${RESET}")"
     fi
 
     if [ "$INSTALL_VMESS" = "true" ]; then
-        echo -e "$(echo -e "${GREEN}\033[1m\033[3m正在配置 VMESS，请稍后...${RESET}")"
+        echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 VMESS...${RESET}")"
     fi
 
     if [ "$INSTALL_HYSTERIA2" = "true" ]; then
-        echo -e "$(echo -e "${GREEN}\033[1m\033[3m正在配置 Hysteria2，请稍后...${RESET}")"
+        echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 Hysteria2...${RESET}")"
     fi
 
     if [ "$INSTALL_TUIC" = "true" ]; then
-        echo -e "$(echo -e "${GREEN}\033[1m\033[3m正在配置 TUIC，请稍后...${RESET}")"
+        echo -e "$(echo -e "${GREEN}\033[1m\033[3m配置 TUIC...${RESET}")"
     fi
 
     # 运行 sing-box
@@ -1169,12 +1027,11 @@ echo ""
 uninstall_singbox() {
    
     echo -e "$(bold_italic_purple "正在卸载 sing-box，请稍后...")"
-    read -p $'\033[1;3;38;5;220m确定要卸载吗? (ENTER默认:y)【y/n】:\033[0m ' choice
+    read -p $'\033[1;3;38;5;220m确定要卸载吗?<ENTER默认Y>【y/n】:\033[0m ' choice
     choice=${choice:-y}  # 默认值为 y
-  
+
     case "$choice" in
         [Yy])
-	      sleep 2
             # 终止 sing-box 相关进程
             for process in 'web' 'bot' 'npm'; do
                 pids=$(pgrep -f "$process" 2>/dev/null)
@@ -1205,9 +1062,7 @@ uninstall_singbox() {
             fi
 
             echo -e "$(bold_italic_purple "正在卸载......")"
-            sleep 3
-              cleanup_delete
-            # 可选：暂停片刻让用户看到消息
+            sleep 3  # 可选：暂停片刻让用户看到消息
             echo -e "$(bold_italic_purple "卸载完成！")"
             ;;
       
@@ -1262,17 +1117,17 @@ echo ""
 YELLOW="\033[1;3;33m"
 RESET="\033[0m"
  
- # 使用当前用户的主目录定义默认路径
+ # Define default paths using the current user's home directory
 CERT_PATH="${HOME}/sbox/cert.pem"
 PRIVATE_KEY_PATH="${HOME}/sbox/private.key"
-# 配置文件生成函数 
+ 
 generate_config() {
-    # 生成现实密钥对
+    # Generate reality key pair
     output=$(./web generate reality-keypair)
     private_key=$(echo "${output}" | awk '/PrivateKey:/ {print $2}')
     public_key=$(echo "${output}" | awk '/PublicKey:/ {print $2}')
 
-    # 生成TLS证书和密钥
+    # Generate TLS certificate and key
     openssl ecparam -genkey -name prime256v1 -out "$WORKDIR/private.key"
     openssl req -new -x509 -days 3650 -key "$WORKDIR/private.key" -out "$WORKDIR/cert.pem" -subj "/CN=$HOSTNAME"
 
@@ -1282,7 +1137,7 @@ generate_config() {
         return 1
     fi
 
-    # 基于所选服务创建配置文件
+    # Create configuration file based on selected services
     cat > "$WORKDIR/config.json" <<EOF
 {
   "log": {
@@ -1321,10 +1176,10 @@ generate_config() {
   "inbounds": [
 EOF
 
-    # 跟踪是否添加了任何服务
+    # Track whether any services are added
     service_added=false
 
-    # 如果选择，则附加VLESS配置
+    # Append VLESS configuration if selected
     if [ "$INSTALL_VLESS" = "true" ]; then
         cat >> "$WORKDIR/config.json" <<EOF
     {
@@ -1432,7 +1287,7 @@ EOF
 EOF
     fi
 
-    # 继续写入配置的其余部分
+    # Continue writing the rest of the configuration
     cat >> "$WORKDIR/config.json" <<EOF
   ],
   "outbounds": [
@@ -1522,12 +1377,12 @@ EOF
 }
 
 
-# 启动服务的函数
+# running files
 run_sb() {
   green() {
     echo -e "\e[32;3;1m$1\e[0m"
 }
- if [ -e "$WORKDIR/npm" ]; then
+    if [ -e "$WORKDIR/npm" ]; then
         tlsPorts=("443" "8443" "2096" "2087" "2083" "2053")
         if [[ "${tlsPorts[*]}" =~ "${NEZHA_PORT}" ]]; then
             NEZHA_TLS="--tls"
@@ -1591,32 +1446,21 @@ fi
 
     # 将最终的 IP 存储到全局变量中
     FINAL_IP="$IP"
-      # 输出最终使用的IP地址
-    echo -e "${CYAN}\033[1;3;32m最终使用的IP地址是: $FINAL_IP${RESET}"
 }
-  get_argodomain() {
-    if [[ -n $ARGO_AUTH ]]; then
-    echo "$ARGO_DOMAIN"
-  else
-    local retry=0
-    local max_retries=6
-    local argodomain=""
-    while [[ $retry -lt $max_retries ]]; do
-      ((retry++))
-      argodomain=$(grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' boot.log | sed 's@https://@@') 
-      if [[ -n $argodomain ]]; then
-        break
-      fi
-      sleep 1
-    done
-    echo "$argodomain"
-  fi
-  } 
+  
 get_links() {
   
      purple() {
         echo -e "\\033[1;3;35m$*\\033[0m"
     }
+  
+  get_argodomain() {
+    if [[ -n $ARGO_AUTH ]]; then
+      echo "$ARGO_DOMAIN"
+    else
+      grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' boot.log | sed 's@https://@@'
+    fi
+  }
 argodomain=$(get_argodomain)
 echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
 sleep 1
@@ -1632,6 +1476,8 @@ echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}
     subdomain=${current_fqdn%%.*}    
   fi  
     
+    # 输出最终使用的IP地址
+    echo -e "${CYAN}\033[1;3;32m最终使用的IP地址是: $FINAL_IP${RESET}"
     # 获取用户名信息
       USERNAME=$(whoami)
    echo ""
@@ -1650,7 +1496,7 @@ $(if [ "$INSTALL_VMESS" = "true" ]; then
 fi)
 
 $(if [ "$INSTALL_VMESS" = "true" ] && [ -n "$argodomain" ]; then
-    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"www.visa.com\", \"port\": \"443\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
 fi)
 
 $(if [ "$INSTALL_HYSTERIA2" = "true" ]; then
@@ -1988,7 +1834,3 @@ done
    
 }
 menu
-
-
-
-
