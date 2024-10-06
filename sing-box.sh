@@ -850,27 +850,60 @@ read_nz_variables() {
 
 #固定argo隧道  
 argo_configure() {
-  if [[ -z $ARGO_AUTH || -z $ARGO_DOMAIN ]]; then
-      reading "是否需要使用固定argo隧道？【y/n】: " argo_choice
-      [[ -z $argo_choice ]] && return
-      [[ "$argo_choice" != "y" && "$argo_choice" != "Y" && "$argo_choice" != "n" && "$argo_choice" != "N" ]] && { red "无效的选择，请输入y或n"; return; }
-      if [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
-          reading "请输入argo固定隧道域名: " ARGO_DOMAIN
-          green "你的argo固定隧道域名为: $ARGO_DOMAIN"
-          reading "请输入argo固定隧道密钥（Json或Token）: " ARGO_AUTH
-          green "你的argo固定隧道密钥为: $ARGO_AUTH"
-	  echo -e "${red}注意：${purple}使用token，需要在cloudflare后台设置隧道端口和面板开放的tcp端口一致${re}"
-      else
-          green "ARGO隧道变量未设置，将使用临时隧道"
-          return
-      fi
-  fi
+    if [[ "$INSTALL_VMESS" != "true" ]]; then
+        green "没有选择 vmess 协议，暂停使用 Argo 固定隧道"
+        return
+    fi
 
-  if [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-    echo $ARGO_AUTH > tunnel.json
-    cat > tunnel.yml << EOF
+    reading "是否需要使用固定 Argo 隧道？【y/n】(N 或者回车为默认使用临时隧道):\c" argo_choice
+    if [[ -z $argo_choice ]]; then
+        green "没有输入任何内容，默认使用临时隧道"
+        return
+    elif [[ ! "$argo_choice" =~ ^[yYnN]$ ]]; then
+        red "无效的选择，请输入 y 或 n"
+        return
+    fi
+
+    if [[ "$argo_choice" =~ ^[yY]$ ]]; then
+        echo -e "${yellow}请访问以下网站生成 Argo 固定隧道所需的配置信息。${RESET}"
+        echo -e "${red}      https://fscarmen.cloudflare.now.cc/ ${RESET}"
+
+        while [[ -z $ARGO_DOMAIN ]]; do
+            reading "请输入 Argo 固定隧道域名: " ARGO_DOMAIN
+            [[ -z $ARGO_DOMAIN ]] && red "域名不能为空，请重新输入。"
+        done
+        green "你的 Argo 固定隧道域名为: $ARGO_DOMAIN"
+
+        while [[ -z $ARGO_AUTH ]]; do
+            reading "请输入 Argo 固定隧道密钥（Json 或 Token）: " ARGO_AUTH
+            [[ -z $ARGO_AUTH ]] && red "密钥不能为空，请重新输入。"
+        done
+        green "你的 Argo 固定隧道密钥为: $ARGO_AUTH"
+        echo -e "${red}注意：${purple}使用 token，需要在 Cloudflare 后台设置隧道端口和面板开放的 TCP 端口一致${RESET}"
+
+        # 打印调试信息
+        echo "ARGO_AUTH: $ARGO_AUTH"
+        echo "ARGO_DOMAIN: $ARGO_DOMAIN"
+        echo "WORKDIR: $WORKDIR"
+
+        # 生成 tunnel.yml
+        local tunnel_file="$WORKDIR/tunnel.yml"
+        local credentials_file="$WORKDIR/tunnel.json"
+        
+        if [[ $ARGO_AUTH =~ TunnelSecret ]]; then
+            echo "$ARGO_AUTH" > "$credentials_file" 2>/tmp/tunnel.json.error
+            if [[ $? -ne 0 ]]; then
+                red "生成 tunnel.json 文件失败，请检查权限和路径"
+                cat /tmp/tunnel.json.error
+                return
+            fi
+        else
+            credentials_file="/dev/null"
+        fi
+
+        cat > "$tunnel_file" <<EOF
 tunnel: $(cut -d\" -f12 <<< "$ARGO_AUTH")
-credentials-file: tunnel.json
+credentials-file: $credentials_file
 protocol: http2
 
 ingress:
@@ -880,12 +913,18 @@ ingress:
       noTLSVerify: true
   - service: http_status:404
 EOF
-  else
-    green "ARGO_AUTH mismatch TunnelSecret,use token connect to tunnel"
-  fi
+
+        if [[ $? -ne 0 ]]; then
+            red "生成 tunnel.yml 文件失败，请检查权限和路径"
+            return
+        fi
+
+        green "生成的 tunnel.yml 配置文件已保存到 $tunnel_file"
+    else
+        green "选择使用临时隧道"
+    fi
 }
 
- 
 # 定义颜色
 YELLOW='\033[1;3;33m'
 NC='\033[0m' # No Color
