@@ -1176,15 +1176,13 @@ echo ""
     if [[ -n $ARGO_DOMAIN ]]; then
         echo -e "ArgoDomain:${ARGO_DOMAIN}"
     fi
-
     echo -e "$(bold_italic_purple "安装完成！")"
 }
-
     
 uninstall_singbox() {
    
     echo -e "$(bold_italic_purple "正在卸载 sing-box，请稍后...")"
-    read -p $'\033[1;3;38;5;220m确定要卸载吗?<ENTER默认Y>【y/n】:\033[0m ' choice
+    read -p $'\033[1;3;38;5;220m确定要卸载吗? (ENTER默认:y)【y/n】:\033[0m ' choice
     choice=${choice:-y}  # 默认值为 y
 
     case "$choice" in
@@ -1219,7 +1217,9 @@ uninstall_singbox() {
             fi
 
             echo -e "$(bold_italic_purple "正在卸载......")"
-            sleep 3  # 可选：暂停片刻让用户看到消息
+            sleep 3
+              cleanup_delete
+            # 可选：暂停片刻让用户看到消息
             echo -e "$(bold_italic_purple "卸载完成！")"
             ;;
       
@@ -1653,7 +1653,7 @@ $(if [ "$INSTALL_VMESS" = "true" ]; then
 fi)
 
 $(if [ "$INSTALL_VMESS" = "true" ] && [ -n "$argodomain" ]; then
-    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"www.visa.com\", \"port\": \"443\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+     printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
 fi)
 
 $(if [ "$INSTALL_HYSTERIA2" = "true" ]; then
