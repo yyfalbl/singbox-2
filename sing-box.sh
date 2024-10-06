@@ -1132,9 +1132,10 @@ uninstall_singbox() {
     echo -e "$(bold_italic_purple "正在卸载 sing-box，请稍后...")"
     read -p $'\033[1;3;38;5;220m确定要卸载吗? (ENTER默认:y)【y/n】:\033[0m ' choice
     choice=${choice:-y}  # 默认值为 y
-
+         selp 3
     case "$choice" in
         [Yy])
+	      sleep 2
             # 终止 sing-box 相关进程
             for process in 'web' 'bot' 'npm'; do
                 pids=$(pgrep -f "$process" 2>/dev/null)
