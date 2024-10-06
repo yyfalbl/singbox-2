@@ -23,6 +23,8 @@ RESET='\033[0m'
 
 # 设置工作目录
 WORKDIR="$HOME/sbox"
+export CFIP=${CFIP:-'www.visa.com.tw'} 
+export CFPORT=${CFPORT:-'443'} 
 password_file="$HOME/.beiyong_ip/.panel_password"
 base_dir="$HOME/.beiyong_ip"
 log_file="$base_dir/wget_log.txt"
@@ -167,57 +169,6 @@ beiyong_ip() {
         fi
     fi
 }
-
-get_server_info() {
-    # 颜色变量
-    CYAN="\033[1;36m"
-    GREEN_BOLD_ITALIC="\033[1;3;32m"  # 绿色加粗斜体
-      YELLOW_BOLD_ITALIC="\033[1;3;33m" # 黄色加粗斜体
-    RESET="\033[0m"
-
-    # 获取当前用户名
-    user=$(whoami)
-
-    # 根据面板选择设置 SERV_DOMAIN
-    if [[ "$panel_number" == "1" ]]; then
-        SERV_DOMAIN="$user.serv00.net"
-    else
-        SERV_DOMAIN="$user.ct8.pl"
-    fi
-
-    # 尝试获取 IPv4 地址，如果失败则尝试获取 IPv6 地址
-    IP=$(curl -s --max-time 3 ifconfig.me)
-
-    if [[ -z "$IP" ]]; then
-        # 如果没有获取到 IPv4 地址，尝试获取 IPv6 地址
-        IP=$(curl -s --max-time 3 ipv6.ip.sb)
-        if [[ -n "$IP" ]]; then
-            IP="[$IP]"  # 将 IPv6 地址用方括号包裹
-        else
-            echo -e "${CYAN}无法获取 IP 地址，请检查网络连接或 API 服务是否正常。${RESET}"
-            return 1  # 退出函数并返回错误状态
-        fi
-    fi
-
-    # 输出获取到的 IP 地址
-    echo -e "${GREEN_BOLD_ITALIC}当前服务器的 IP 地址是：$IP${RESET}"
-
-    # 获取当前服务器的完整域名（FQDN）
-    current_fqdn=$(hostname -f)
-
-    # 根据域名判断并输出相应的信息
-    if [[ "$current_fqdn" == *.serv00.com ]]; then
-        echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
-         echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.serv00.net${RESET}"
-     beiyong_ip
-    elif [[ "$current_fqdn" == *.ct8.pl ]]; then
-        echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
-     echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.s1.ct8.pl${RESET}"
-        process_ct8
-    else
-        echo -e "${CYAN}当前域名不属于 serv00.com 或 ct8.pl 域。${RESET}"
-    fi
-}
 # 清理所有文件函数
 cleanup_delete() {
     local target_dir="$HOME"
@@ -287,6 +238,56 @@ cleanup_and_delete() {
         echo "目录 $target_dir 不存在。"
     fi
 }
+get_server_info() {
+    # 颜色变量
+    CYAN="\033[1;36m"
+    GREEN_BOLD_ITALIC="\033[1;3;32m"  # 绿色加粗斜体
+      YELLOW_BOLD_ITALIC="\033[1;3;33m" # 黄色加粗斜体
+    RESET="\033[0m"
+
+    # 获取当前用户名
+    user=$(whoami)
+
+    # 根据面板选择设置 SERV_DOMAIN
+    if [[ "$panel_number" == "1" ]]; then
+        SERV_DOMAIN="$user.serv00.net"
+    else
+        SERV_DOMAIN="$user.ct8.pl"
+    fi
+
+    # 尝试获取 IPv4 地址，如果失败则尝试获取 IPv6 地址
+    IP=$(curl -s --max-time 3 ifconfig.me)
+
+    if [[ -z "$IP" ]]; then
+        # 如果没有获取到 IPv4 地址，尝试获取 IPv6 地址
+        IP=$(curl -s --max-time 3 ipv6.ip.sb)
+        if [[ -n "$IP" ]]; then
+            IP="[$IP]"  # 将 IPv6 地址用方括号包裹
+        else
+            echo -e "${CYAN}无法获取 IP 地址，请检查网络连接或 API 服务是否正常。${RESET}"
+            return 1  # 退出函数并返回错误状态
+        fi
+    fi
+
+    # 输出获取到的 IP 地址
+    echo -e "${GREEN_BOLD_ITALIC}当前服务器的 IP 地址是：$IP${RESET}"
+
+    # 获取当前服务器的完整域名（FQDN）
+    current_fqdn=$(hostname -f)
+
+    # 根据域名判断并输出相应的信息
+    if [[ "$current_fqdn" == *.serv00.com ]]; then
+        echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
+         echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.serv00.net${RESET}"
+     beiyong_ip
+    elif [[ "$current_fqdn" == *.ct8.pl ]]; then
+        echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
+     echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.s1.ct8.pl${RESET}"
+        process_ct8
+    else
+        echo -e "${CYAN}当前域名不属于 serv00.com 或 ct8.pl 域。${RESET}"
+    fi
+}
 # 检查sing-box运行
 check_singbox_installed() {
     if [ -e "$HOME/sbox/web" ]; then
@@ -304,16 +305,11 @@ check_web_status() {
         echo -e "$(bold_italic_red "sing-boxNotRunning")"
     fi
 }
-
-
-
 # Socks5 安装和配置的主函数
-
 generate_random_string() {
   local length=$1
   openssl rand -base64 "$length" | tr -dc 'a-zA-Z0-9'
 }
-
 setup_socks5() {
   # 设置工作目录
   FILE_PATH="$WORKDIR"
@@ -526,39 +522,61 @@ delete_unused_port() {
         return
     fi
 
-    # 计算已分配的端口数量
     local port_count=$(echo "$port_list" | wc -l)
 
-    # 如果已分配端口数量达到三个，询问用户删除哪个端口
     if [[ "$port_count" -ge 3 ]]; then
-        echo "以下是可删除的端口："
-        echo "$port_list"
-        read -p "请输入要删除的端口号: " port_to_delete
-
-        # 验证用户输入的端口是否在列表中
-        if echo "$port_list" | grep -q "^$port_to_delete "; then
-            local type=$(echo "$port_list" | grep "^$port_to_delete " | awk '{print $2}')
-            if ! check_port_in_use "$port_to_delete"; then
-                local rt=$(devil port del "$type" "$port_to_delete" 2>&1)
-                echo "已成功删除端口: $port_to_delete"
-                if [[ "$rt" =~ "successfully" ]]; then
-                    echo "已成功删除端口: $port_to_delete"
-                else
-                     echo -e "\e[1;3;31m正在检测面板开放的端口，并重新分配.....\e[0m"
-          
-                fi
+        echo -e "\e[1;3;31m以下是可删除的端口(黄色代表占用该端口,不可删除!)：\e[0m"
+        while read -r line; do
+            local port=$(echo "$line" | awk '{print $1}')
+            local type=$(echo "$line" | awk '{print $2}')
+            if check_port_in_use "$port"; then
+                echo -e "\e[1;3;33m$line【已被占用】\e[0m"
             else
-                echo "端口 $port_to_delete 被占用，无法删除。"
+                echo -e "\e[1;3;32m$line【未被占用】\e[0m"
             fi
-        else
-            echo "输入的端口号无效或不在可删除的列表中。"
-        fi
+        done <<< "$port_list"
+
+        local valid_input=false
+        while [[ "$valid_input" == false ]]; do
+            read -p "$(echo -e '\e[1;3;33m请输入要删除的端口号（直接按Enter删除一个未占用的端口）: \e[0m')" port_to_delete
+
+            if [[ -z "$port_to_delete" ]]; then
+                port_to_delete=$(echo "$port_list" | awk '{print $1}' | while read -r p; do
+                    if ! check_port_in_use "$p"; then
+                        echo "$p"
+                        break  # 找到一个未占用的端口，退出循环
+                    fi
+                done | head -n 1)
+                
+                if [[ -z "$port_to_delete" ]]; then
+                    echo -e "\e[1;3;31m没有可删除的未占用端口。\e[0m"
+                    return
+                fi
+                echo -e "\e[1;3;32m自动选择删除端口: $port_to_delete\e[0m"
+            fi
+
+            if echo "$port_list" | grep -q "^$port_to_delete "; then
+                local type=$(echo "$port_list" | grep "^$port_to_delete " | awk '{print $2}')
+                if ! check_port_in_use "$port_to_delete"; then
+                    local rt=$(devil port del "$type" "$port_to_delete" 2>&1)
+                    if [[ "$rt" =~ "successfully" ]]; then
+                        echo -e "\e[1;3;31m已成功删除端口: $port_to_delete\e[0m"
+                    else
+                        echo -e "\e[1;3;31m正在检测面板开放的端口，并重新分配.....\e[0m"
+                    fi
+                else
+                    echo -e "\e[1;3;33m端口 $port_to_delete 被占用，无法删除。\e[0m"
+                fi
+                valid_input=true
+            else
+                echo -e "\e[1;3;31m输入的端口号无效或不在可删除的列表中，请重新输入。\e[0m"
+            fi
+        done
         return
     fi
-
+    
     while read -r line; do
-        [[ -z "$line" ]] && continue  # 忽略空行
-
+        [[ -z "$line" ]] && continue
         local port=$(echo "$line" | awk '{print $1}')
         local type=$(echo "$line" | awk '{print $2}')
 
@@ -568,13 +586,12 @@ delete_unused_port() {
 
             if ! check_port_in_use "$port"; then
                 local rt=$(devil port del "$type" "$port" 2>&1)
-                echo "已成功删除未占用的端口: $port"
-                
+                echo -e "\e[1;32;3m已成功删除未占用的端口: $port\e[0m"
+
                 if [[ "$rt" =~ "successfully" ]]; then
-                    echo "已成功删除未占用的端口: $port"
+                    echo -e "\e[1;32;3m已成功删除未占用的端口: $port\e[0m"
                 else
-                    echo -e "\e[1;3;31m正在检测面板开放的端口，并重新分配.....\e[0m" 
-                
+                    echo -e "\e[1;3;31m正在检测面板开放的端口，并重新分配.....\e[0m"
                 fi
             else
                 echo "端口 $port 被占用，跳过删除。"
@@ -659,7 +676,6 @@ loadPort() {
 
   return 0
 }
-
 cleanPort() {
   output=$(devil port list)
   while read -r port typ opis; do
@@ -688,7 +704,7 @@ check_and_allocate_port() {
     local new_port=""
 
     if [[ "$existing_port" != "failed" ]]; then
-        bold_italic_yellow "已分配的 $protocol_name 端口为 : $existing_port"
+        bold_italic_yellow "已分配的 $protocol_name $protocol_type 端口为 : $existing_port"
         # 提示是否删除已有的端口
         read -p "$(echo -e '\e[1;33;3m是否重新分配 '$protocol_name' 端口('$existing_port')？[y/n Enter默认: n]:\e[0m')" delete_input
         delete_input=${delete_input:-n}
@@ -697,15 +713,13 @@ check_and_allocate_port() {
     rt=$(devil port del "$protocol_type" "$existing_port" 2>&1)
     if [[ "$rt" =~ "successfully" ]]; then
         echo -e "\e[1;33m\e[3m已成功删除 $protocol_name 端口: $existing_port\e[0m"
-        # 加载最新的端口信息
-        loadPort
-
+  
         # 重新随机分配新端口
         new_port=$(getPort "$protocol_type" "$protocol_name")
         if [[ "$new_port" == "failed" ]]; then
             new_port=12345  # 设置一个默认值
         else
-            green "重新分配的 $protocol_name 端口为: $new_port"
+            green "重新分配的 $protocol_name  $protocol_type端口为: $new_port"
         fi
     else
         if ! devil port list | grep -q "$existing_port"; then
@@ -715,7 +729,7 @@ check_and_allocate_port() {
             if [[ "$new_port" == "failed" ]]; then
                 new_port=12345  # 设置一个默认值
             else
-                green "重新分配的 $protocol_name 端口为: $new_port"
+                green "重新分配的 $protocol_name $protocol_type端口为: $new_port"
             fi
         else
             red "删除 $protocol_name 端口失败: $existing_port"
@@ -734,14 +748,15 @@ check_and_allocate_port() {
     # 更新全局变量
     eval "$port_var_name=\"$new_port\""
 }
-
 read_socks5_port() {
        # 检查当前已分配的端口数量
-        local port_count=$(devil port list | awk 'NR>1' | wc -l)
+             local port_count=$(devil port list | awk 'NR>1 && NF' | wc -l)
         # 如果已分配端口数量达到三个，调用删除未使用的端口函数
-        if [[ "$port_count" -ge 3 ]]; then
-            delete_unused_port
-        fi
+       if devil port list | grep -q "socks5"; then
+       echo -e "\e[1;3;32m当前已存在未被使用 socks5 的端口\e[0m"
+    elif [[ "$port_count" -ge 3 ]]; then
+        delete_unused_port
+    fi
     loadPort
     check_and_allocate_port "socks5" "tcp" "socks5_port"
     bold_italic_green "你的socks5 TCP 端口为: $socks5_port"
@@ -749,11 +764,13 @@ read_socks5_port() {
 }
 read_vless_port() {
        # 检查当前已分配的端口数量
-        local port_count=$(devil port list | awk 'NR>1' | wc -l)
+            local port_count=$(devil port list | awk 'NR>1 && NF' | wc -l)
         # 如果已分配端口数量达到三个，调用删除未使用的端口函数
-        if [[ "$port_count" -ge 3 ]]; then
-            delete_unused_port
-        fi
+      if devil port list | grep -q "vless-reality"; then
+         echo -e "\e[1;3;32m当前已存在未被使用 vless-reality 的端口\e[0m"
+    elif [[ "$port_count" -ge 3 ]]; then
+        delete_unused_port
+    fi
     loadPort
     check_and_allocate_port "vless-reality" "tcp" "vless_port"
     bold_italic_green "你的vless-reality TCP 端口为: $vless_port"
@@ -762,11 +779,13 @@ read_vless_port() {
 
 read_vmess_port() {
        # 检查当前已分配的端口数量
-        local port_count=$(devil port list | awk 'NR>1' | wc -l)
+          local port_count=$(devil port list | awk 'NR>1 && NF' | wc -l)
         # 如果已分配端口数量达到三个，调用删除未使用的端口函数
-        if [[ "$port_count" -ge 3 ]]; then
-            delete_unused_port
-        fi
+     if devil port list | grep -q "vmess"; then
+       echo -e "\e[1;3;32m当前已存在未被使用 vmess 的端口\e[0m"
+    elif [[ "$port_count" -ge 3 ]]; then
+        delete_unused_port
+    fi
     loadPort
     check_and_allocate_port "vmess" "tcp" "vmess_port"
     bold_italic_green "你的vmess TCP 端口为: $vmess_port"
@@ -775,11 +794,13 @@ read_vmess_port() {
 
 read_hy2_port() {
           # 检查当前已分配的端口数量
-        local port_count=$(devil port list | awk 'NR>1' | wc -l)
+         local port_count=$(devil port list | awk 'NR>1 && NF' | wc -l)
         # 如果已分配端口数量达到三个，调用删除未使用的端口函数
-        if [[ "$port_count" -ge 3 ]]; then
-            delete_unused_port
-        fi
+    if devil port list | grep -q "hysteria2"; then
+         echo -e "\e[1;3;32m当前已存在未被使用 hysteria2 的端口\e[0m"
+    elif [[ "$port_count" -ge 3 ]]; then
+        delete_unused_port
+    fi
     loadPort
     check_and_allocate_port "hysteria2" "udp" "hy2_port"
     bold_italic_green "你的hysteria2 UDP 端口为: $hy2_port"
@@ -788,17 +809,19 @@ read_hy2_port() {
 
 read_tuic_port() {
         # 检查当前已分配的端口数量
-        local port_count=$(devil port list | awk 'NR>1' | wc -l)
+       local port_count=$(devil port list | awk 'NR>1 && NF' | wc -l)
         # 如果已分配端口数量达到三个，调用删除未使用的端口函数
-        if [[ "$port_count" -ge 3 ]]; then
-            delete_unused_port
-        fi
+    if devil port list | grep -q "Tuic"; then
+         echo -e "\e[1;3;32m当前已存在未被使用 Tuic 的端口\e[0m"
+    elif [[ "$port_count" -ge 3 ]]; then
+        delete_unused_port
+    fi
     loadPort
     check_and_allocate_port "Tuic" "udp" "tuic_port"
     bold_italic_green "你的Tuic UDP 端口为: $tuic_port"
      sleep 2
 }
-   
+  
 read_nz_variables() {
   if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
       bold_italic_green "**_使用自定义变量哪吒运行哪吒探针_**"
