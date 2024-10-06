@@ -372,8 +372,8 @@ setup_socks5() {
   fi
 
   # 创建配置文件
-  echo -e "${CYAN}创建配置文件: ${FILE_PATH}/config.json${RESET}"
-  cat > "$FILE_PATH/config.json" << EOF
+  echo -e "${CYAN}创建配置文件: ${FILE_PATH}/socks.json${RESET}"
+  cat > "$FILE_PATH/socks.json" << EOF
 {
   "log": {
     "access": "/dev/null",
@@ -431,7 +431,7 @@ EOF
 
   # 启动 socks5 程序
   chmod +x "${FILE_PATH}/socks5"
-  nohup "${FILE_PATH}/socks5" -c "${FILE_PATH}/config.json" >/dev/null 2>&1 &
+  nohup "${FILE_PATH}/socks5" -c "${FILE_PATH}/socks.json" >/dev/null 2>&1 &
   sleep 1
 
   # 检查程序是否启动成功
