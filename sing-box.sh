@@ -859,12 +859,10 @@ argo_configure() {
         elif [[ "$argo_choice" != "y" && "$argo_choice" != "Y" && "$argo_choice" != "n" && "$argo_choice" != "N" ]]; then
             red "无效的选择，请输入 y 或 n"
             return
-        fi
-
-        
+        fi       
     # 提示用户生成配置信息
     echo -e "${yellow}请访问以下网站生成 Argo 固定隧道所需的配置信息。${RESET}"
-       echo ""
+           echo ""
     echo -e "${red}      https://fscarmen.cloudflare.now.cc/ ${reset}"
            echo ""
         if [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
@@ -905,12 +903,14 @@ argo_configure() {
                 cat /tmp/tunnel.json.error
                 return
             fi
-
+            credentials_file="$WORKDIR/tunnel.json"
+        else
+            credentials_file="/dev/null"
+        fi
             cat > "$WORKDIR/tunnel.yml" <<EOF
 tunnel: $(cut -d\" -f12 <<< "$ARGO_AUTH")
 credentials-file: $WORKDIR/tunnel.json
 protocol: http2
-
 ingress:
   - hostname: $ARGO_DOMAIN
     service: http://localhost:$vmess_port
@@ -922,31 +922,10 @@ EOF
                 red "生成 tunnel.yml 文件失败，请检查权限和路径"
                 return
             fi
-
             green "生成的 tunnel.yml 配置文件已保存到 $WORKDIR"
         else
-            cat > "$WORKDIR/tunnel.yml" <<EOF
-tunnel: $ARGO_AUTH
-credentials-file: /dev/null
-protocol: http2
-
-ingress:
-  - hostname: $ARGO_DOMAIN
-    service: http://localhost:$vmess_port
-    originRequest:
-      noTLSVerify: true
-  - service: http_status:404
-EOF
-            if [[ $? -ne 0 ]]; then
-                red "生成 tunnel.yml 文件失败，请检查权限和路径"
-                return
-            fi
-
-            green "生成的 tunnel.yml 配置文件已保存到 $WORKDIR"
+            green "没有选择 vmess 协议，暂停使用 Argo 固定隧道"
         fi
-    else
-        green "没有选择 vmess 协议，暂停使用 Argo 固定隧道"
-    fi
 }
 
  
@@ -1345,10 +1324,10 @@ generate_config() {
   "inbounds": [
 EOF
 
-    # Track whether any services are added
+    # 跟踪是否添加了任何服务
     service_added=false
 
-    # Append VLESS configuration if selected
+    # 如果选择，则附加VLESS配置
     if [ "$INSTALL_VLESS" = "true" ]; then
         cat >> "$WORKDIR/config.json" <<EOF
     {
@@ -1546,11 +1525,12 @@ EOF
 }
 
 
-# running files
+# 启动服务的函数
 run_sb() {
   green() {
     echo -e "\e[32;3;1m$1\e[0m"
 }
+# 启动 npm
     if [ -e "$WORKDIR/npm" ]; then
         tlsPorts=("443" "8443" "2096" "2087" "2083" "2053")
         if [[ "${tlsPorts[*]}" =~ "${NEZHA_PORT}" ]]; then
@@ -1563,17 +1543,17 @@ run_sb() {
             nohup "$WORKDIR/npm" -s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY} ${NEZHA_TLS} >/dev/null 2>&1 &
             sleep 2
             pgrep -x "npm" > /dev/null && green "npm is running" || { red "npm is not running, restarting..."; pkill -x "npm" && nohup "$WORKDIR/npm" -s "${NEZHA_SERVER}:${NEZHA_PORT}" -p "${NEZHA_KEY}" ${NEZHA_TLS} >/dev/null 2>&1 & sleep 2; purple "npm restarted"; }
-       # else
-        #     purple "NEZHA variable is empty, skipping running"
+       else
+       purple "NEZHA variable is empty, skipping running"
         fi
     fi
-
+# 启动 web
     if [ -e "$WORKDIR/web" ]; then
         nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 &
         sleep 2
         pgrep -x "web" > /dev/null && green "WEB is running" || { red "web is not running, restarting..."; pkill -x "web" && nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
     fi
-    
+    # 启动 bot
       if [ -e $WORKDIR/bot ]; then
     if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
       args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
@@ -1586,6 +1566,8 @@ run_sb() {
     sleep 2
     pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
   fi
+  # 调用启动服务的函数
+  run_sb
 }
   # 获取ip
 get_ip() {
