@@ -1265,17 +1265,17 @@ echo ""
 YELLOW="\033[1;3;33m"
 RESET="\033[0m"
  
- # Define default paths using the current user's home directory
+ # 使用当前用户的主目录定义默认路径
 CERT_PATH="${HOME}/sbox/cert.pem"
 PRIVATE_KEY_PATH="${HOME}/sbox/private.key"
- 
+# 配置文件生成函数 
 generate_config() {
-    # Generate reality key pair
+    # 生成现实密钥对
     output=$(./web generate reality-keypair)
     private_key=$(echo "${output}" | awk '/PrivateKey:/ {print $2}')
     public_key=$(echo "${output}" | awk '/PublicKey:/ {print $2}')
 
-    # Generate TLS certificate and key
+    # 生成TLS证书和密钥
     openssl ecparam -genkey -name prime256v1 -out "$WORKDIR/private.key"
     openssl req -new -x509 -days 3650 -key "$WORKDIR/private.key" -out "$WORKDIR/cert.pem" -subj "/CN=$HOSTNAME"
 
@@ -1285,7 +1285,7 @@ generate_config() {
         return 1
     fi
 
-    # Create configuration file based on selected services
+    # 基于所选服务创建配置文件
     cat > "$WORKDIR/config.json" <<EOF
 {
   "log": {
@@ -1435,7 +1435,7 @@ EOF
 EOF
     fi
 
-    # Continue writing the rest of the configuration
+    # 继续写入配置的其余部分
     cat >> "$WORKDIR/config.json" <<EOF
   ],
   "outbounds": [
@@ -1566,7 +1566,7 @@ run_sb() {
     sleep 2
     pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
   fi
-  # 调用启动服务的函数
+  # 调用启动服务函数
   run_sb
 }
   # 获取ip
@@ -1598,20 +1598,29 @@ fi
     # 将最终的 IP 存储到全局变量中
     FINAL_IP="$IP"
 }
-  
+  get_argodomain() {
+    if [[ -n $ARGO_AUTH ]]; then
+    echo "$ARGO_DOMAIN"
+  else
+    local retry=0
+    local max_retries=6
+    local argodomain=""
+    while [[ $retry -lt $max_retries ]]; do
+      ((retry++))
+      argodomain=$(grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' boot.log | sed 's@https://@@') 
+      if [[ -n $argodomain ]]; then
+        break
+      fi
+      sleep 1
+    done
+    echo "$argodomain"
+  fi
+  } 
 get_links() {
   
      purple() {
         echo -e "\\033[1;3;35m$*\\033[0m"
     }
-  
-  get_argodomain() {
-    if [[ -n $ARGO_AUTH ]]; then
-      echo "$ARGO_DOMAIN"
-    else
-      grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' boot.log | sed 's@https://@@'
-    fi
-  }
 argodomain=$(get_argodomain)
 echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
 sleep 1
