@@ -1566,8 +1566,6 @@ run_sb() {
     sleep 2
     pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
   fi
-  # 调用启动服务函数
-  run_sb
 }
   # 获取ip
 get_ip() {
