@@ -1527,8 +1527,7 @@ run_sb() {
   green() {
     echo -e "\e[32;3;1m$1\e[0m"
 }
-# 启动 npm
-    if [ -e "$WORKDIR/npm" ]; then
+ if [ -e "$WORKDIR/npm" ]; then
         tlsPorts=("443" "8443" "2096" "2087" "2083" "2053")
         if [[ "${tlsPorts[*]}" =~ "${NEZHA_PORT}" ]]; then
             NEZHA_TLS="--tls"
@@ -1540,17 +1539,17 @@ run_sb() {
             nohup "$WORKDIR/npm" -s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY} ${NEZHA_TLS} >/dev/null 2>&1 &
             sleep 2
             pgrep -x "npm" > /dev/null && green "npm is running" || { red "npm is not running, restarting..."; pkill -x "npm" && nohup "$WORKDIR/npm" -s "${NEZHA_SERVER}:${NEZHA_PORT}" -p "${NEZHA_KEY}" ${NEZHA_TLS} >/dev/null 2>&1 & sleep 2; purple "npm restarted"; }
-       else
-       purple "NEZHA variable is empty, skipping running"
+       # else
+        #     purple "NEZHA variable is empty, skipping running"
         fi
     fi
-# 启动 web
+
     if [ -e "$WORKDIR/web" ]; then
         nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 &
         sleep 2
         pgrep -x "web" > /dev/null && green "WEB is running" || { red "web is not running, restarting..."; pkill -x "web" && nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
     fi
-    # 启动 bot
+    
       if [ -e $WORKDIR/bot ]; then
     if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
       args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
