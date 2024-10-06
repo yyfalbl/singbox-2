@@ -1595,6 +1595,23 @@ fi
 
     # 将最终的 IP 存储到全局变量中
     FINAL_IP="$IP"
+    current_fqdn=$(hostname -f)
+
+# 检查域名是否以 serv00.com 结尾
+if [[ "$current_fqdn" == *.serv00.com ]]; then
+echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}"
+   # echo "该服务器属于 serv00.com 域"
+
+    # 提取子域名（假设子域名在主域名前缀的第一部分）
+    subdomain=${current_fqdn%%.*}    
+  fi  
+    
+    # 输出最终使用的IP地址
+    echo -e "${CYAN}\033[1;3;32m最终使用的IP地址是: $FINAL_IP${RESET}"
+    # 获取用户名信息
+      USERNAME=$(whoami)
+   echo ""
+    sleep 2
 }
   get_argodomain() {
     if [[ -n $ARGO_AUTH ]]; then
@@ -1615,31 +1632,11 @@ fi
   fi
   } 
 get_links() {
-  
-     purple() {
-        echo -e "\\033[1;3;35m$*\\033[0m"
-    }
+     purple() { echo -e "\\033[1;3;35m$*\\033[0m"}
 argodomain=$(get_argodomain)
 echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
 sleep 1
       
-current_fqdn=$(hostname -f)
-
-# 检查域名是否以 serv00.com 结尾
-if [[ "$current_fqdn" == *.serv00.com ]]; then
-echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}"
-   # echo "该服务器属于 serv00.com 域"
-
-    # 提取子域名（假设子域名在主域名前缀的第一部分）
-    subdomain=${current_fqdn%%.*}    
-  fi  
-    
-    # 输出最终使用的IP地址
-    echo -e "${CYAN}\033[1;3;32m最终使用的IP地址是: $FINAL_IP${RESET}"
-    # 获取用户名信息
-      USERNAME=$(whoami)
-   echo ""
-    sleep 3
   printf "${RED}${BOLD_ITALIC}注意：v2ray或其他软件的跳过证书验证需设置为true, 否则hy2或tuic节点可能不通${RESET}\n"
      echo ""
       sleep 3
