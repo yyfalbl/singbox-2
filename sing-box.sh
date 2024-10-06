@@ -208,10 +208,10 @@ cleanup_and_delete() {
     local exclude_dir="backups"
 
     if [ -d "$target_dir" ]; then
-        echo -n -e "\033[1;3;33m准备删除所有文件并清理进程，请稍后...\033[0m\n"
+        echo -n -e "\033[1;3;33m准备初始化系统，请稍后...\033[0m\n"
         sleep 2
 
-        read -p "$(echo -e "\033[1;3;33m您确定要删除所有文件吗？(y/n Enter默认y): \033[0m")" confirmation
+        read -p "$(echo -e "\033[1;3;33m您确定要还原系统吗(警告：此操作将会删除系统所有文件！！！)？(y/n Enter默认y): \033[0m")" confirmation
         confirmation=${confirmation:-y}
         sleep 2
         
@@ -229,7 +229,7 @@ cleanup_and_delete() {
         # 检查删除是否成功
         local remaining_items=$(find "$target_dir" -mindepth 1 -maxdepth 1 | grep -v "$exclude_dir")
         if [ -d "$target_dir/$exclude_dir" ] && [ -z "$remaining_items" ]; then
-            echo -n -e "\033[1;3;31m所有文件已成功删除!\033[0m\n"
+            echo -n -e "\033[1;3;31m已成功初始化系统!\033[0m\n"
             exit 0
         else
             echo "删除操作出现问题，请检查是否有权限问题或其他错误。"
