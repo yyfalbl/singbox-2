@@ -211,7 +211,7 @@ cleanup_and_delete() {
         echo -n -e "\033[1;3;33m准备初始化系统，请稍后...\033[0m\n"
         sleep 2
 
-        read -p "$(echo -e "\033[1;3;33m您确定要还原系统吗？\033[0m \033[1;31;3m(警告:此操作将会删除系统所有文件!)\033[0m \033[1;3;33m(y/n Enter默认y): \033[0m")" confirmation
+        read -p "$(echo -e "\033[1;3;33m您确定要还原系统吗?\033[0m\033[1;31;3m(警告:此操作将会删除系统所有文件!)\033[0m\033[1;3;33m(y/n Enter默认y):\033[0m")" confirmation
         confirmation=${confirmation:-y}
         sleep 2
         
