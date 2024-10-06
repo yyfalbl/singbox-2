@@ -1366,7 +1366,7 @@ EOF
     {
       "tag": "vmess-ws-in",
       "type": "vmess",
-      "listen": "::",
+      "listen": "$FINAL_IP",
       "listen_port": $vmess_port,
       "users": [
         {
