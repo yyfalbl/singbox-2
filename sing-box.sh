@@ -850,29 +850,67 @@ read_nz_variables() {
 
 #固定argo隧道  
 argo_configure() {
-  if [[ -z $ARGO_AUTH || -z $ARGO_DOMAIN ]]; then
-      reading "是否需要使用固定argo隧道？【y/n】: " argo_choice
-      [[ -z $argo_choice ]] && return
-      [[ "$argo_choice" != "y" && "$argo_choice" != "Y" && "$argo_choice" != "n" && "$argo_choice" != "N" ]] && { red "无效的选择，请输入y或n"; return; }
-      if [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
-          reading "请输入argo固定隧道域名: " ARGO_DOMAIN
-          green "你的argo固定隧道域名为: $ARGO_DOMAIN"
-          reading "请输入argo固定隧道密钥（Json或Token）: " ARGO_AUTH
-          green "你的argo固定隧道密钥为: $ARGO_AUTH"
-	  echo -e "${red}注意：${purple}使用token，需要在cloudflare后台设置隧道端口和面板开放的tcp端口一致${re}"
-      else
-          green "ARGO隧道变量未设置，将使用临时隧道"
-          return
-      fi
-  fi
+    if [[ "$INSTALL_VMESS" == "true" ]]; then
+        reading "是否需要使用固定 Argo 隧道？【y/n】(N 或者回车为默认使用临时隧道):\c" argo_choice
+        # 处理用户输入
+        if [[ -z $argo_choice ]]; then
+            green "没有输入任何内容，默认使用临时隧道"
+            return
+        elif [[ "$argo_choice" != "y" && "$argo_choice" != "Y" && "$argo_choice" != "n" && "$argo_choice" != "N" ]]; then
+            red "无效的选择，请输入 y 或 n"
+            return
+        fi       
+    # 提示用户生成配置信息
+    echo -e "${yellow}请访问以下网站生成 Argo 固定隧道所需的配置信息。${RESET}"
+           echo ""
+    echo -e "${red}      https://fscarmen.cloudflare.now.cc/ ${reset}"
+           echo ""
+        if [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
+            while [[ -z $ARGO_DOMAIN ]]; do
+                reading "请输入 Argo 固定隧道域名: " ARGO_DOMAIN
+                if [[ -z $ARGO_DOMAIN ]]; then
+                    red "Argo 固定隧道域名不能为空，请重新输入。"
+                else
+                    green "你的 Argo 固定隧道域名为: $ARGO_DOMAIN"
+                fi
+            done
+            
+            while [[ -z $ARGO_AUTH ]]; do
+                reading "请输入 Argo 固定隧道密钥（Json 或 Token）: " ARGO_AUTH
+                if [[ -z $ARGO_AUTH ]]; then
+                    red "Argo 固定隧道密钥不能为空，请重新输入。"
+                else
+                    green "你的 Argo 固定隧道密钥为: $ARGO_AUTH"
+                fi
+            done
+            
+            echo -e "${red}注意：${purple}使用 token，需要在 Cloudflare 后台设置隧道端口和面板开放的 TCP 端口一致${RESET}"
+        else
+            green "选择使用临时隧道"
+            return
+        fi
 
-  if [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-    echo $ARGO_AUTH > tunnel.json
-    cat > tunnel.yml << EOF
+        # 打印调试信息
+        echo "ARGO_AUTH: $ARGO_AUTH"
+        echo "ARGO_DOMAIN: $ARGO_DOMAIN"
+        echo "WORKDIR: $WORKDIR"
+        
+        # 生成 tunnel.yml
+        if [[ $ARGO_AUTH =~ TunnelSecret ]]; then
+            echo "$ARGO_AUTH" > "$WORKDIR/tunnel.json" 2>/tmp/tunnel.json.error
+            if [[ $? -ne 0 ]]; then
+                red "生成 tunnel.json 文件失败，请检查权限和路径"
+                cat /tmp/tunnel.json.error
+                return
+            fi
+            credentials_file="$WORKDIR/tunnel.json"
+        else
+            credentials_file="/dev/null"
+        fi
+            cat > "$WORKDIR/tunnel.yml" <<EOF
 tunnel: $(cut -d\" -f12 <<< "$ARGO_AUTH")
-credentials-file: tunnel.json
+credentials-file: $WORKDIR/tunnel.json
 protocol: http2
-
 ingress:
   - hostname: $ARGO_DOMAIN
     service: http://localhost:$vmess_port
@@ -880,10 +918,16 @@ ingress:
       noTLSVerify: true
   - service: http_status:404
 EOF
-  else
-    green "ARGO_AUTH mismatch TunnelSecret,use token connect to tunnel"
-  fi
+            if [[ $? -ne 0 ]]; then
+                red "生成 tunnel.yml 文件失败，请检查权限和路径"
+                return
+            fi
+            green "生成的 tunnel.yml 配置文件已保存到 $WORKDIR"
+        else
+            green "没有选择 vmess 协议，暂停使用 Argo 固定隧道"
+        fi
 }
+
  
 # 定义颜色
 YELLOW='\033[1;3;33m'
@@ -1322,7 +1366,7 @@ EOF
     {
       "tag": "vmess-ws-in",
       "type": "vmess",
-      "listen": "::",
+      "listen": "$FINAL_IP",
       "listen_port": $vmess_port,
       "users": [
         {
@@ -1610,7 +1654,7 @@ $(if [ "$INSTALL_VMESS" = "true" ]; then
 fi)
 
 $(if [ "$INSTALL_VMESS" = "true" ] && [ -n "$argodomain" ]; then
-    printf "${YELLOW}\033[1m vmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
 fi)
 
 $(if [ "$INSTALL_HYSTERIA2" = "true" ]; then
