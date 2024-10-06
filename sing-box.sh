@@ -1595,6 +1595,8 @@ fi
 
     # 将最终的 IP 存储到全局变量中
     FINAL_IP="$IP"
+      # 输出最终使用的IP地址
+    echo -e "${CYAN}\033[1;3;32m最终使用的IP地址是: $FINAL_IP${RESET}"
 }
   get_argodomain() {
     if [[ -n $ARGO_AUTH ]]; then
@@ -1634,8 +1636,6 @@ echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}
     subdomain=${current_fqdn%%.*}    
   fi  
     
-    # 输出最终使用的IP地址
-    echo -e "${CYAN}\033[1;3;32m最终使用的IP地址是: $FINAL_IP${RESET}"
     # 获取用户名信息
       USERNAME=$(whoami)
    echo ""
