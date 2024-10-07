@@ -1635,7 +1635,7 @@ get_links() {
         echo -e "\\033[1;3;35m$*\\033[0m"
     }
 argodomain=$(get_argodomain)
-if [[ -z "$argodomain" ]]; then
+if [[ -n "$argodomain" ]]; then
     echo -e "\e[1;3;33mArgo隧道未开启，建议开启隧道功能!\e[0m"
 else
   echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n" 
