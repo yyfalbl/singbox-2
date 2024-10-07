@@ -16,5 +16,7 @@ https://fscarmen.cloudflare.now.cc/
 按以下顺序操作：
 ![image](https://github.com/user-attachments/assets/c306a9c5-049e-4cb0-8669-d6ec345e4456)
 ![image](https://github.com/user-attachments/assets/6b50f68e-3b25-42d6-b082-52c7a482062b)
+![image](https://github.com/user-attachments/assets/c9e05cdb-c5df-414b-a94f-da284f098a46)
+
 
 
