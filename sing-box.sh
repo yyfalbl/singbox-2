@@ -211,7 +211,7 @@ cleanup_delete() {
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
-    local exclude_dirs="backups:.beifile"
+    local exclude_dirs="backups"
 
     if [ -d "$target_dir" ]; then
         echo -n -e "\033[1;3;33m准备初始化系统，请稍后...\033[0m\n"
