@@ -26,8 +26,8 @@ WORKDIR="$HOME/sbox"
 mkdir -p $HOME/.beifile
 export CFIP=${CFIP:-'www.visa.com.tw'} 
 export CFPORT=${CFPORT:-'443'} 
-password_file="$HOME/.beifile/.panel_password"
 base_dir="$HOME/.beifile"
+password_file="$HOME/.beifile/.panel_password"
 log_file="$base_dir/wget_log.txt"
 ip_file="$base_dir/saved_ip.txt"
 saved_ip=$(cat "$base_dir/.serv00_ip" 2>/dev/null)
@@ -962,7 +962,7 @@ RESET="\033[0m"
     done
 }
 start_service() {
-  if [ -f "$HOME/.beifile/.enabled_flag" ]; then
+  if [ -f "$base_dir/.enabled_flag" ]; then
     echo -e "\e[32;1;3m=== Enabled 已为你自动已开启===  \e[33;1;3m注意：第一次开启Enabled后，请重启服务器后生效，切记！！！\e[0m"
     return
   fi
@@ -970,7 +970,7 @@ start_service() {
   devil binexec on > /dev/null 2>&1
   if [ $? -eq 0 ]; then
     echo -e "\e[32;1;3m=== Enabled 已为你自动已开启===  \e[33;1;3m注意：第一次开启Enabled后，请重启服务器后生效，切记！！！\e[0m"
-    touch "$HOME/.beeifile/.enabled_flag"  # 创建标志文件
+    touch "$base_dir/.enabled_flag"  # 创建标志文件
   else
     echo -e "\e[31m\e[3m\e[1mEnabled未开启，请尝试手动开启.\e[0m"  # 红色斜体加粗输出
   fi
