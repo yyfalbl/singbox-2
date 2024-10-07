@@ -1573,35 +1573,34 @@ run_sb() {
 }
   # 获取ip
 get_ip() {
-    read -p "$(echo -e "${CYAN}\033[1;3;33m是否启用备用IP地址（输入y确认，否则按Enter键自动检测）: ${RESET}") " choice
-
-    if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
-        # 尝试从 netstat 获取备用 IP
-        IP=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
-
-        # 尝试从两个文件获取 IP
-        if [[ -z "$IP" ]]; then
-    for file in "$base_dir/.serv00_ip" "$ip_file"; do
-        if [[ -f "$file" ]]; then
-            IP=$(cat "$file")
-            if [[ -n "$IP" ]]; then
-                echo -e "${GREEN}\033[1;32m服务器备用 IP 地址是: $IP${RESET}"
-                break
-            fi
-        fi
-    done
-fi
+  ip=$(curl -s --max-time 1.5 ipv4.ip.sb)
+  if [ -z "$ip" ]; then
+    ip=$( [[ "$HOSTNAME" =~ ^s([0-9]|[1-2][0-9]|30)\.serv00\.com$ ]] && echo "cache${BASH_REMATCH[1]}.serv00.com" || echo "$HOSTNAME" )
+  else
+    url="https://www.toolsdaquan.com/toolapi/public/ipchecking/$ip/443"
+    response=$(curl -s --location --max-time 3 --request GET "$url" --header 'Referer: https://www.toolsdaquan.com/ipcheck')
+    if [ -z "$response" ] || ! echo "$response" | grep -q '"icmp":"success"'; then
+        accessible=false
     else
-        # 自动检测 IP 地址
-        IP=$(curl -s https://api.ipify.org || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
-        echo -e "${CYAN}\033[1;3;32m自动检测的设备 IP 地址是: $IP${RESET}"
+        accessible=true
     fi
-
-    # 将最终的 IP 存储到全局变量中
-    FINAL_IP="$IP"
-      # 输出最终使用的IP地址
-    echo -e "${CYAN}\033[1;3;32m最终使用的IP地址是: $FINAL_IP${RESET}"
+    if [ "$accessible" = false ]; then
+        ip=$( [[ "$HOSTNAME" =~ ^s([0-9]|[1-2][0-9]|30)\.serv00\.com$ ]] && echo "cache${BASH_REMATCH[1]}.serv00.com" || echo "$ip" )
+    fi
+  fi
+  echo "$ip"
 }
+
+# 调用 get_ip 函数并将结果存储在 IP 变量中
+IP=$(get_ip)
+
+# 如果 IP 是 cacheX.serv00.com，则提取对应的 IP
+if [[ "$IP" =~ ^cache[0-9]+\.serv00\.com$ ]]; then
+    IP=$(host "$IP" | grep "has address" | awk '{print $4}')
+fi
+
+# 将最终提取的 IP 存储到全局变量 FINAL_IP
+FINAL_IP="$IP"
  get_argodomain() {
     if [[ -n $ARGO_AUTH ]]; then
         echo "$ARGO_DOMAIN"
