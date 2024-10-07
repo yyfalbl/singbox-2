@@ -858,13 +858,16 @@ argo_configure() {
         reading "是否需要使用固定 Argo 隧道？【y/n】: " argo_choice
         
         # 处理用户输入
-        if [[ "$argo_choice" != "y" && "$argo_choice" != "Y" ]]; then
-            red "无效的选择，请输入 y"
-            return
-        fi       
+       if [[ "$argo_choice" == "n" || "$argo_choice" == "N" ]]; then
+    echo "退出程序"
+    exit 0
+elif [[ "$argo_choice" != "y" && "$argo_choice" != "Y" ]]; then
+    red "无效的选择，请输入 y 或 n"
+    return
+fi    
 
         # 提示用户生成配置信息
-        echo -e "${yellow}请访问以下网站生成 Argo 固定隧道所需的配置信息。${RESET}"
+       echo -e "\e[1;3;32m请访问以下网站生成 Argo 固定隧道所需的配置信息。\e[0m"
         echo ""
         echo -e "${red}      https://fscarmen.cloudflare.now.cc/ ${reset}"
         echo ""
