@@ -63,7 +63,6 @@ get_login_url() {
 
 # 定义主函数
 process_ct8() {
-   
     # 确保 base_dir 目录存在
     if [[ ! -d "$base_dir" ]]; then
         mkdir -p "$base_dir"
@@ -88,16 +87,16 @@ process_ct8() {
     # 登录循环，直到登录成功或用户选择不再尝试
     while true; do
         # 执行登录请求并记录日志，错误输出重定向到文件
-        wget -S --save-cookies "$cookies_file" --keep-session-cookies --post-data "username=$username&password=$password" "$login_url" -O /dev/null 2> "$log_file"
+        curl -s -c "$cookies_file" -d "username=$username&password=$password" "$login_url" -o /dev/null
         
         # 检查是否登录成功
         if grep -q "HTTP/.* 200 OK" "$log_file" || grep -q "HTTP/.* 302 Found" "$log_file"; then
             # 如果成功，进行后续操作
-            wget -S --load-cookies "$cookies_file" -O /dev/null "$target_url" 2>> "$log_file"
-            
+            curl -s -b "$cookies_file" -o "$log_file" "$target_url"
+
             # 提取 IP 地址并保存
-            ip_address=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq | head -n 1)
-            
+            ip_address=$(curl -s https://api.ipify.org)
+
             if [[ -n "$ip_address" ]]; then
                 echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip_address}${RESET}"
                 echo "$ip_address" > "$ip_file"
@@ -110,9 +109,8 @@ process_ct8() {
         else
             if [[ "$login_url" == *"ct8.pl"* ]]; then
                 # 仅在 ct8.pl 时，不显示任何错误信息，只尝试提取 IP
-                # 提取 IP 地址并保存
-                ip_address=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq | head -n 1)
-                
+                ip_address=$(curl -s https://api.ipify.org)
+
                 if [[ -n "$ip_address" ]]; then
                     echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip_address}${RESET}"
                     echo "$ip_address" > "$ip_file"
@@ -138,6 +136,7 @@ process_ct8() {
         fi
     done
 }
+
 # 备用ip获取函数
 beiyong_ip() {
     # 检查是否已保存 IP 地址
