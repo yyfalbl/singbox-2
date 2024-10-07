@@ -855,15 +855,15 @@ read_nz_variables() {
 #固定argo隧道  
 argo_configure() {
     if [[ "$INSTALL_VMESS" == "true" ]]; then
-        while true; do
-            reading "是否需要使用固定 Argo 隧道？【y/n】: " argo_choice
+         while true; do
+            reading "是否需要开启Argo隧道？【y/n】: " argo_choice
             
-            # 处理用户输入
-            if [[ "$argo_choice" == "n" || "$argo_choice" == "N" ]]; then
-                echo "退出 Argo 配置"
-                return  # 仅退出函数，不退出整个脚本
-            elif [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
+            # 处理用户输入，按 Enter 默认选择 y
+            if [[ -z "$argo_choice" || "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
                 break  # 有效选择，退出循环
+            elif [[ "$argo_choice" == "n" || "$argo_choice" == "N" ]]; then
+               echo -e "\e[1;3;31mArgo隧道功能未开启!\e[0m"
+                return  # 仅退出函数，不退出整个脚本
             else
                 red "无效的选择，请输入 y 或 n"
             fi
