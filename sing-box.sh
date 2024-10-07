@@ -30,6 +30,7 @@ base_dir="$HOME/.beifile"
 password_file="$HOME/.beifile/.panel_password"
 log_file="$base_dir/wget_log.txt"
 ip_file="$base_dir/saved_ip.txt"
+ip1_file="$base_dir/saved_ip1.txt"
 cookies_file="$base_dir/cookies.txt"
 saved_ip=$(cat "$base_dir/.serv00_ip" 2>/dev/null)
 ip_address=""
@@ -70,12 +71,22 @@ process_ct8() {
         mkdir -p "$base_dir"
     fi
 
-    # 检查是否已有保存的 IP 地址
-    if [[ -f "$ip_file" && -s "$ip_file" ]]; then
-        ip_address=$(cat "$ip_file")
-        echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址: ${ip_address}${RESET}"
-        return  # 已有 IP 地址则直接返回
-    fi
+# 检查是否已有保存的 IP 地址
+if [[ -f "$ip1_file" && -s "$ip1_file" ]]; then
+    ip1_address=$(cat "$ip1_file")
+    echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址: ${ip1_address}${RESET}"
+    return  # 已有 IP 地址则直接返回
+fi
+
+# 提取新的 IP 地址并保存
+ip1_address=$(curl -s https://api.ipify.org 2>/dev/null)
+
+if [[ -n "$ip1_address" ]]; then
+    echo -e "${GREEN_BOLD_ITALIC}提取的服务器 IP 地址: ${ip1_address}${RESET}"
+    echo "$ip1_address" > "$ip1_file"
+else
+    echo "没有提取到 IP 地址"
+fi
 
     # 自动获取当前用户名
     username=$(whoami)
@@ -263,11 +274,11 @@ get_server_info() {
     fi
 
     # 尝试获取 IPv4 地址，如果失败则尝试获取 IPv6 地址
-    IP=$(curl -s --max-time 3 ifconfig.me)
+    IP=$(curl -s https://api.ipify.org)
 
     if [[ -z "$IP" ]]; then
         # 如果没有获取到 IPv4 地址，尝试获取 IPv6 地址
-        IP=$(curl -s --max-time 3 ipv6.ip.sb)
+        IP=$(curl -s https://api.ipify.org 3 ipv6.ip.sb)
         if [[ -n "$IP" ]]; then
             IP="[$IP]"  # 将 IPv6 地址用方括号包裹
         else
@@ -289,7 +300,7 @@ get_server_info() {
      beiyong_ip
     elif [[ "$current_fqdn" == *.ct8.pl ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
-     echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.s1.ct8.pl${RESET}"
+     echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.ct8.pl${RESET}"
         process_ct8
     else
         echo -e "${CYAN}当前域名不属于 serv00.com 或 ct8.pl 域。${RESET}"
