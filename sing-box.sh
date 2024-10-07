@@ -860,7 +860,7 @@ argo_configure() {
         # 处理用户输入
         if [[ -z $argo_choice ]]; then
             green "没有输入任何内容，默认使用临时隧道"
-            return
+            argo_choice="n"  # 默认选择临时隧道
         elif [[ "$argo_choice" != "y" && "$argo_choice" != "Y" && "$argo_choice" != "n" && "$argo_choice" != "N" ]]; then
             red "无效的选择，请输入 y 或 n"
             return
@@ -894,6 +894,17 @@ argo_configure() {
             echo -e "${red}注意：${purple}使用 token，需要在 Cloudflare 后台设置隧道端口和面板开放的 TCP 端口一致${RESET}"
         else
             green "选择使用临时隧道"
+            # 生成临时隧道的配置文件
+            echo '{"tunnel": "temporary_tunnel", "credentials": "temporary_credentials"}' > "$WORKDIR/tunnel.json"
+            cat > "$WORKDIR/tunnel.yml" <<EOF
+tunnel: temporary_tunnel
+protocol: http2
+ingress:
+  - service: http://localhost:$vmess_port
+  - service: http_status:404
+EOF
+            green "临时隧道配置文件已生成到 $WORKDIR/tunnel.yml"
+            green "临时隧道的 tunnel.json 文件已生成到 $WORKDIR/tunnel.json"
             return
         fi
         
@@ -902,7 +913,7 @@ argo_configure() {
             echo "$ARGO_AUTH" > "$WORKDIR/tunnel.json" 2>"$WORKDIR/tunnel.json.error"
             if [[ $? -ne 0 ]]; then
                 red "生成 tunnel.json 文件失败，请检查权限和路径"
-                 cat "$WORKDIR/tunnel.json.error" 2>/dev/null
+                cat "$WORKDIR/tunnel.json.error" 2>/dev/null
                 return
             fi
             credentials_file="$WORKDIR/tunnel.json"
@@ -933,7 +944,7 @@ EOF
         green "没有选择 vmess 协议，暂停使用 Argo 固定隧道"
     fi
 }
- 
+
 # 定义颜色
 YELLOW='\033[1;3;33m'
 NC='\033[0m' # No Color
