@@ -30,6 +30,7 @@ base_dir="$HOME/.beifile"
 password_file="$HOME/.beifile/.panel_password"
 log_file="$base_dir/wget_log.txt"
 ip_file="$base_dir/saved_ip.txt"
+cookies_file="$base_dir/cookies.txt"
 saved_ip=$(cat "$base_dir/.serv00_ip" 2>/dev/null)
 ip_address=""
 FINAL_IP=""
@@ -86,16 +87,16 @@ process_ct8() {
 
     # 登录循环，直到登录成功或用户选择不再尝试
     while true; do
-        # 执行登录请求并记录日志，错误输出重定向到文件
-        curl -s -c "$cookies_file" -d "username=$username&password=$password" "$login_url" -o /dev/null
+        # 执行登录请求并记录日志
+        curl -s -c "$cookies_file" -d "username=$username&password=$password" "$login_url" -o "$log_file"
         
         # 检查是否登录成功
         if grep -q "HTTP/.* 200 OK" "$log_file" || grep -q "HTTP/.* 302 Found" "$log_file"; then
             # 如果成功，进行后续操作
             curl -s -b "$cookies_file" -o "$log_file" "$target_url"
 
-            # 提取 IP 地址并保存
-            ip_address=$(curl -s https://api.ipify.org)
+            # 提取 IP 地址
+            ip_address=$(curl -s https://api.ipify.org 2>/dev/null)
 
             if [[ -n "$ip_address" ]]; then
                 echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip_address}${RESET}"
@@ -107,31 +108,18 @@ process_ct8() {
                 return
             fi
         else
-            if [[ "$login_url" == *"ct8.pl"* ]]; then
-                # 仅在 ct8.pl 时，不显示任何错误信息，只尝试提取 IP
-                ip_address=$(curl -s https://api.ipify.org)
+            # 显示错误信息并提示是否重新登录
+            echo -e "${RED_BOLD_ITALIC}登录失败，请检查用户名或密码！${RESET}"
+            echo "登录失败，保留日志文件和其他数据进行调试"
 
-                if [[ -n "$ip_address" ]]; then
-                    echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip_address}${RESET}"
-                    echo "$ip_address" > "$ip_file"
-                else
-                    echo "没有提取到 IP 地址"
-                fi
-                return
+            # 提示用户是否重新尝试登录
+            echo -n -e "\033[1;3;33m是否重新登录？（y/n）:\033[0m"
+            read -r choice
+            if [[ "$choice" =~ ^[Nn]$ ]]; then
+                exit 1
             else
-                # 显示错误信息并提示是否重新登录
-                echo -e "${RED_BOLD_ITALIC}登录失败，请检查用户名或密码！${RESET}"
-                echo "登录失败，保留日志文件和其他数据进行调试"
-
-                # 提示用户是否重新尝试登录
-                echo -n -e "\033[1;3;33m是否重新登录？（y/n）:\033[0m"
-                read -r choice
-                if [[ "$choice" =~ ^[Nn]$ ]]; then
-                    exit 1
-                else
-                    get_login_url
-                    get_password
-                fi
+                get_login_url
+                get_password
             fi
         fi
     done
