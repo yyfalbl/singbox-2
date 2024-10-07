@@ -23,7 +23,7 @@ RESET='\033[0m'
 
 # 设置工作目录
 WORKDIR="$HOME/sbox"
-mkdir -p /home/yangyunfei06/.beifile
+mkdir -p $HOME/.beifile
 export CFIP=${CFIP:-'www.visa.com.tw'} 
 export CFPORT=${CFPORT:-'443'} 
 password_file="$HOME/.beifile/.panel_password"
