@@ -34,7 +34,7 @@ ip1_file="$base_dir/saved_ip1.txt"
 cookies_file="$base_dir/cookies.txt"
 saved_ip=$(cat "$base_dir/.serv00_ip" 2>/dev/null)
 ip_address=""
-FINAL_IP=""
+
     
 # 定义函数来检查密码是否存在
 get_password() {
@@ -315,7 +315,35 @@ check_web_status() {
     fi
 }
 
+get_ip() {
+  ip=$(curl -s --max-time 1.5 ipv4.ip.sb)
+  if [ -z "$ip" ]; then
+    ip=$( [[ "$HOSTNAME" =~ ^s([0-9]|[1-2][0-9]|30)\.serv00\.com$ ]] && echo "cache${BASH_REMATCH[1]}.serv00.com" || echo "$HOSTNAME" )
+  else
+    url="https://www.toolsdaquan.com/toolapi/public/ipchecking/$ip/443"
+    response=$(curl -s --location --max-time 3 --request GET "$url" --header 'Referer: https://www.toolsdaquan.com/ipcheck')
+    if [ -z "$response" ] || ! echo "$response" | grep -q '"icmp":"success"'; then
+        accessible=false
+    else
+        accessible=true
+    fi
+    if [ "$accessible" = false ]; then
+        ip=$( [[ "$HOSTNAME" =~ ^s([0-9]|[1-2][0-9]|30)\.serv00\.com$ ]] && echo "cache${BASH_REMATCH[1]}.serv00.com" || echo "$ip" )
+    fi
+  fi
+  echo "$ip"
+}
 
+# 调用 get_ip 函数并将结果存储在 IP 变量中
+IP=$(get_ip)
+
+# 如果 IP 是 cacheX.serv00.com，则提取对应的 IP
+if [[ "$IP" =~ ^cache[0-9]+\.serv00\.com$ ]]; then
+    IP=$(host "$IP" | grep "has address" | awk '{print $4}')
+fi
+
+# 最终显示提取出来的 IP 地址
+echo "最终提取出来的 IP 地址: $IP"
 
 # Socks5 安装和配置的主函数
 
@@ -343,13 +371,11 @@ setup_socks5() {
     return
   fi
 
-  # 提示用户输入IP地址（或按回车自动检测）
-  get_ip
   # 如果用户输入了IP地址，使用用户提供的IP地址，否则自动检测
   if [ -n "$user_ip" ]; then
       IP="$user_ip"
   else
-      IP=$FINAL_IP
+      IP=$IP
   fi
 
   # 输出最终使用的IP地址和域名
@@ -1162,7 +1188,7 @@ echo ""
 
     # 运行 sing-box
     # 显示当前有效 IP 地址，使用绿色加粗斜体
-echo -e "\033[1;32m\033[1m\033[3m当前有效IP地址: $FINAL_IP\033[0m"
+echo -e "\033[1;32m\033[1m\033[3m当前有效IP地址: $IP\033[0m"
    generate_config
    run_sb && sleep 3
     get_links
@@ -1338,7 +1364,7 @@ EOF
     {
       "tag": "vless-reality-version",
       "type": "vless",
-      "listen": "$FINAL_IP",
+      "listen": "$IP",
       "listen_port": $vless_port,
       "users": [
         {
@@ -1395,7 +1421,7 @@ EOF
     {
       "tag": "hysteria-in",
       "type": "hysteria2",
-      "listen": "$FINAL_IP",
+      "listen": "$IP",
       "listen_port": $hy2_port,
       "users": [
         {
@@ -1421,7 +1447,7 @@ EOF
     {
       "tag": "tuic-in",
       "type": "tuic",
-      "listen": "$FINAL_IP",
+      "listen": "$IP",
       "listen_port": $tuic_port,
       "users": [
         {
@@ -1572,36 +1598,7 @@ run_sb() {
     pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
   fi
 }
-  # 获取ip
-get_ip() {
-  ip=$(curl -s --max-time 1.5 ipv4.ip.sb)
-  if [ -z "$ip" ]; then
-    ip=$( [[ "$HOSTNAME" =~ ^s([0-9]|[1-2][0-9]|30)\.serv00\.com$ ]] && echo "cache${BASH_REMATCH[1]}.serv00.com" || echo "$HOSTNAME" )
-  else
-    url="https://www.toolsdaquan.com/toolapi/public/ipchecking/$ip/443"
-    response=$(curl -s --location --max-time 3 --request GET "$url" --header 'Referer: https://www.toolsdaquan.com/ipcheck')
-    if [ -z "$response" ] || ! echo "$response" | grep -q '"icmp":"success"'; then
-        accessible=false
-    else
-        accessible=true
-    fi
-    if [ "$accessible" = false ]; then
-        ip=$( [[ "$HOSTNAME" =~ ^s([0-9]|[1-2][0-9]|30)\.serv00\.com$ ]] && echo "cache${BASH_REMATCH[1]}.serv00.com" || echo "$ip" )
-    fi
-  fi
-  echo "$ip"
-}
 
-# 调用 get_ip 函数并将结果存储在 IP 变量中
-IP=$(get_ip)
-
-# 如果 IP 是 cacheX.serv00.com，则提取对应的 IP
-if [[ "$IP" =~ ^cache[0-9]+\.serv00\.com$ ]]; then
-    IP=$(host "$IP" | grep "has address" | awk '{print $4}')
-fi
-
-# 将最终提取的 IP 存储到全局变量 FINAL_IP
-FINAL_IP="$IP"
  get_argodomain() {
     if [[ -n $ARGO_AUTH ]]; then
         echo "$ARGO_DOMAIN"
@@ -1666,7 +1663,7 @@ echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}
     # 生成并保存配置文件
 cat <<EOF > "$WORKDIR/list.txt"
 $(if [ "$INSTALL_VLESS" = "true" ]; then
-    printf "${YELLOW}\033[1mvless://$UUID@$FINAL_IP:$vless_port/?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.ups.com&fp=chrome&pbk=$public_key&type=tcp&headerType=none#${USERNAME}-${subdomain}${RESET}\n"
+    printf "${YELLOW}\033[1mvless://$UUID@$IP:$vless_port/?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.ups.com&fp=chrome&pbk=$public_key&type=tcp&headerType=none#${USERNAME}-${subdomain}${RESET}\n"
 fi)
 
 $(if [ "$INSTALL_VMESS" = "true" ]; then
@@ -1675,24 +1672,24 @@ $(if [ "$INSTALL_VMESS" = "true" ]; then
         printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
          echo ""
         # 生成不带 Argo 的链接
-        printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$FINAL_IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+        printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
     else
         # 只生成不带 Argo 的链接
-        printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$FINAL_IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+        printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
     fi
 fi)
 
 $(if [ "$INSTALL_HYSTERIA2" = "true" ]; then
-    printf "${YELLOW}\033[1mhysteria2://$UUID@$FINAL_IP:$hy2_port/?sni=www.bing.com&alpn=h3&insecure=1#${USERNAME}-${subdomain}${RESET}\n"
+    printf "${YELLOW}\033[1mhysteria2://$UUID@$IP:$hy2_port/?sni=www.bing.com&alpn=h3&insecure=1#${USERNAME}-${subdomain}${RESET}\n"
 fi)
 
 $(if [ "$INSTALL_SOCKS5" = "true" ]; then
-    printf "${YELLOW}\033[1mSocks5 代理地址： $FINAL_IP:$SOCKS5_PORT 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS${RESET}\n"
+    printf "${YELLOW}\033[1mSocks5 代理地址： $IP:$SOCKS5_PORT 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS${RESET}\n"
     printf "${YELLOW}\033[1msocks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${SOCKS5_PORT}${RESET}\n"
 fi)
 
 $(if [ "$INSTALL_TUIC" = "true" ]; then
-    printf "${YELLOW}\033[1mtuic://$UUID:admin123@$FINAL_IP:$tuic_port?sni=www.bing.com&congestion_control=bbr&udp_relay_mode=native&alpn=h3&allow_insecure=1#${USERNAME}-${subdomain}${RESET}\n"
+    printf "${YELLOW}\033[1mtuic://$UUID:admin123@$IP:$tuic_port?sni=www.bing.com&congestion_control=bbr&udp_relay_mode=native&alpn=h3&allow_insecure=1#${USERNAME}-${subdomain}${RESET}\n"
 fi)
   
 EOF
