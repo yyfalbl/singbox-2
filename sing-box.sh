@@ -927,8 +927,6 @@ EOF
             red "生成 tunnel.yml 文件失败，请检查权限和路径"
             return
         fi
-
-        green "生成的 tunnel.yml 配置文件已保存到 $WORKDIR"
     else
         green "没有选择 vmess 协议，暂停使用 Argo 固定隧道"
     fi
