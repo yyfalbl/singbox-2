@@ -856,7 +856,7 @@ read_nz_variables() {
 argo_configure() {
     if [[ "$INSTALL_VMESS" == "true" ]]; then
          while true; do
-            reading "是否需要开启Argo隧道？【y/n】: " argo_choice
+            reading "是否需要开启Argo隧道？【y/n ENTER默认开启】: " argo_choice
             
             # 处理用户输入，按 Enter 默认选择 y
             if [[ -z "$argo_choice" || "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
@@ -1117,17 +1117,6 @@ done
 
     if [ "$INSTALL_VMESS" = "true" ]; then
             read_vmess_port
-
-        echo -e "${bold_italic_yellow}是否使用Argo功能?<ENTER默认开启>【y/n】${RESET}:\c"
-        read -p "" argo_choice
-        argo_choice=${argo_choice:-y}  # 默认开启
-
-        if [[ "$argo_choice" == [Yy] ]]; then
-            argo_configure
-        else
-            echo -e "$(bold_italic_green "跳过Argo功能配置...")"
-            ARGO_DOMAIN=""  # 清除 Argo 域名
-        fi
     fi
 
     if [ "$INSTALL_HYSTERIA2" = "true" ]; then
@@ -1623,7 +1612,7 @@ fi
             red "未能从 boot.log 中提取 Argo 域名。"
             return 1  # 返回非零值表示失败
         else
-            echo "未启用 Argo 隧道，未生成临时域名。"
+            echo " "
             return 0
         fi
     fi
