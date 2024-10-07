@@ -1257,7 +1257,7 @@ echo ""
              echo -e "\e[1;3;33m所需配置文件已存在，无需下载！\e[0m"
         else
             wget -q -O "$FILENAME" "$URL"
-           echo -e "$(bold_italic_yellow "下载成功，配置文件已保存"        
+           echo -e "$(bold_italic_yellow "下载成功，配置文件已保存在:$WORKDIR")"        
         fi
         
         chmod +x $FILENAME
