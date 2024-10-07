@@ -1626,15 +1626,16 @@ fi
             return 0
         fi
     fi
-    echo "当前 ArgoDomain: $argodomain"
+   
 }
-get_argodomain
+
 get_links() {
   
      purple() {
         echo -e "\\033[1;3;35m$*\\033[0m"
     }
 argodomain=$(get_argodomain)
+ echo "当前 ArgoDomain: $argodomain"
 if [[ -z "$argodomain" ]]; then
     echo "没有配置 Argo 隧道，跳过生成相应的链接。"
 else
