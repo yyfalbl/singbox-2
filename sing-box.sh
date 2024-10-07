@@ -64,6 +64,7 @@ get_login_url() {
 
 # 定义主函数
 process_ct8() {
+   
     # 确保 base_dir 目录存在
     if [[ ! -d "$base_dir" ]]; then
         mkdir -p "$base_dir"
@@ -87,17 +88,17 @@ process_ct8() {
 
     # 登录循环，直到登录成功或用户选择不再尝试
     while true; do
-        # 执行登录请求并记录日志
-        curl -s -c "$cookies_file" -d "username=$username&password=$password" "$login_url" -o "$log_file"
+        # 执行登录请求并记录日志，错误输出重定向到文件
+        wget -S --save-cookies "$cookies_file" --keep-session-cookies --post-data "username=$username&password=$password" "$login_url" -O /dev/null 2> "$log_file"
         
         # 检查是否登录成功
         if grep -q "HTTP/.* 200 OK" "$log_file" || grep -q "HTTP/.* 302 Found" "$log_file"; then
             # 如果成功，进行后续操作
-            curl -s -b "$cookies_file" -o "$log_file" "$target_url"
-
-            # 提取 IP 地址
-            ip_address=$(curl -s https://api.ipify.org 2>/dev/null)
-
+            wget -S --load-cookies "$cookies_file" -O /dev/null "$target_url" 2>> "$log_file"
+            
+            # 提取 IP 地址并保存
+            ip_address=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq | head -n 1)
+            
             if [[ -n "$ip_address" ]]; then
                 echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip_address}${RESET}"
                 echo "$ip_address" > "$ip_file"
@@ -108,18 +109,32 @@ process_ct8() {
                 return
             fi
         else
-            # 显示错误信息并提示是否重新登录
-            echo -e "${RED_BOLD_ITALIC}登录失败，请检查用户名或密码！${RESET}"
-            echo "登录失败，保留日志文件和其他数据进行调试"
-
-            # 提示用户是否重新尝试登录
-            echo -n -e "\033[1;3;33m是否重新登录？（y/n）:\033[0m"
-            read -r choice
-            if [[ "$choice" =~ ^[Nn]$ ]]; then
-                exit 1
+            if [[ "$login_url" == *"ct8.pl"* ]]; then
+                # 仅在 ct8.pl 时，不显示任何错误信息，只尝试提取 IP
+                # 提取 IP 地址并保存
+                ip_address=$(awk '/\.\.\./ {getline; print}' "$log_file" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort | uniq | head -n 1)
+                
+                if [[ -n "$ip_address" ]]; then
+                    echo -e "${GREEN_BOLD_ITALIC}服务器备用 IP 地址: ${ip_address}${RESET}"
+                    echo "$ip_address" > "$ip_file"
+                else
+                    echo "没有提取到 IP 地址"
+                fi
+                return
             else
-                get_login_url
-                get_password
+                # 显示错误信息并提示是否重新登录
+                echo -e "${RED_BOLD_ITALIC}登录失败，请检查用户名或密码！${RESET}"
+                echo "登录失败，保留日志文件和其他数据进行调试"
+
+                # 提示用户是否重新尝试登录
+                echo -n -e "\033[1;3;33m是否重新登录？（y/n）:\033[0m"
+                read -r choice
+                if [[ "$choice" =~ ^[Nn]$ ]]; then
+                    exit 1
+                else
+                    get_login_url
+                    get_password
+                fi
             fi
         fi
     done
