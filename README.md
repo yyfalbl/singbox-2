@@ -9,7 +9,8 @@ serv00&ct8一键脚本
 bash <(curl -Ls https://raw.githubusercontent.com/yyfalbl/singbox-2/main/sing-box.sh)
 ```
 
-快捷固定隧道教程 网址如下
+快捷固定cf隧道教程 网址如下
 ```s
 https://fscarmen.cloudflare.now.cc/
 ```
+![image](https://github.com/user-attachments/assets/7611e827-8b2c-4162-b53f-ff9d2096cc01)
