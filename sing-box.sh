@@ -341,9 +341,10 @@ IP=$(get_ip)
 if [[ "$IP" =~ ^cache[0-9]+\.serv00\.com$ ]]; then
     IP=$(host "$IP" | grep "has address" | awk '{print $4}')
 fi
+# 最终显示提取出来的 IP 地址
+echo -e "\033[1;32m\033[1m\033[3m最终提取出来有效 IP 地址: $IP\033[0m"
 
 # Socks5 安装和配置的主函数
-
 generate_random_string() {
   local length=$1
   openssl rand -base64 "$length" | tr -dc 'a-zA-Z0-9'
