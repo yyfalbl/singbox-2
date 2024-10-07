@@ -1593,7 +1593,7 @@ get_ip() {
 fi
     else
         # 自动检测 IP 地址
-        IP=$(curl -s ifconfig.me || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
+        IP=$(curl -s https://api.ipify.org || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
         echo -e "${CYAN}\033[1;3;32m自动检测的设备 IP 地址是: $IP${RESET}"
     fi
 
