@@ -342,9 +342,6 @@ if [[ "$IP" =~ ^cache[0-9]+\.serv00\.com$ ]]; then
     IP=$(host "$IP" | grep "has address" | awk '{print $4}')
 fi
 
-# 最终显示提取出来的 IP 地址
-echo "最终提取出来的 IP 地址: $IP"
-
 # Socks5 安装和配置的主函数
 
 generate_random_string() {
