@@ -1636,7 +1636,7 @@ get_links() {
     }
 argodomain=$(get_argodomain)
 if [[ -n "$argodomain" ]]; then
-    echo "没有配置 Argo 隧道，跳过生成相应的链接。"
+    echo -e "\e[1;3;33mArgo隧道未开启，建议开启隧道功能!\e[0m"
 else
   echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n" 
 fi
