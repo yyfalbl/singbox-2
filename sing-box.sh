@@ -855,23 +855,27 @@ read_nz_variables() {
 #固定argo隧道  
 argo_configure() {
     if [[ "$INSTALL_VMESS" == "true" ]]; then
-        reading "是否需要使用固定 Argo 隧道？【y/n】: " argo_choice
-        
-        # 处理用户输入
-       if [[ "$argo_choice" == "n" || "$argo_choice" == "N" ]]; then
-    echo "退出程序"
-    exit 0
-elif [[ "$argo_choice" != "y" && "$argo_choice" != "Y" ]]; then
-    red "无效的选择，请输入 y 或 n"
-    return
-fi    
+        while true; do
+            reading "是否需要使用固定 Argo 隧道？【y/n】: " argo_choice
+            
+            # 处理用户输入
+            if [[ "$argo_choice" == "n" || "$argo_choice" == "N" ]]; then
+                echo "退出 Argo 配置"
+                return  # 仅退出函数，不退出整个脚本
+            elif [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
+                break  # 有效选择，退出循环
+            else
+                red "无效的选择，请输入 y 或 n"
+            fi
+        done
 
         # 提示用户生成配置信息
-       echo -e "\e[1;3;32m请访问以下网站生成 Argo 固定隧道所需的配置信息。\e[0m"
+        echo -e "\e[1;3;32m请访问以下网站生成 Argo 固定隧道所需的配置信息。\e[0m"
         echo ""
         echo -e "${red}      https://fscarmen.cloudflare.now.cc/ ${reset}"
         echo ""
 
+        # 获取 Argo 域名
         while [[ -z $ARGO_DOMAIN ]]; do
             reading "请输入 Argo 固定隧道域名: " ARGO_DOMAIN
             if [[ -z $ARGO_DOMAIN ]]; then
@@ -881,6 +885,7 @@ fi
             fi
         done
         
+        # 获取 Argo 密钥
         while [[ -z $ARGO_AUTH ]]; do
             reading "请输入 Argo 固定隧道密钥（Json 或 Token）: " ARGO_AUTH
             if [[ -z $ARGO_AUTH ]]; then
@@ -926,6 +931,7 @@ EOF
         green "没有选择 vmess 协议，暂停使用 Argo 固定隧道"
     fi
 }
+
 # 定义颜色
 YELLOW='\033[1;3;33m'
 NC='\033[0m' # No Color
