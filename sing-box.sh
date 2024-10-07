@@ -25,8 +25,8 @@ RESET='\033[0m'
 WORKDIR="$HOME/sbox"
 export CFIP=${CFIP:-'www.visa.com.tw'} 
 export CFPORT=${CFPORT:-'443'} 
-password_file="$HOME/.pydio/.panel_password"
-base_dir="$HOME/.pydio"
+password_file="$HOME/.beifile/.panel_password"
+base_dir="$HOME/.beifile"
 log_file="$base_dir/wget_log.txt"
 ip_file="$base_dir/saved_ip.txt"
 saved_ip=$(cat "$base_dir/.serv00_ip" 2>/dev/null)
@@ -172,7 +172,7 @@ beiyong_ip() {
 # 清理所有文件函数
 cleanup_delete() {
     local target_dir="$HOME"
-    local exclude_dirs="backups:.pydio"
+    local exclude_dirs="backups:.beifile"
 
     if [ -d "$target_dir" ]; then
         echo -n -e "\033[1;3;33m准备卸载所有程序及文件，请稍后...\033[0m\n"
@@ -207,7 +207,7 @@ cleanup_delete() {
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
-    local exclude_dirs="backups:.pydio"
+    local exclude_dirs="backups:.beifile"
 
     if [ -d "$target_dir" ]; then
         echo -n -e "\033[1;3;33m准备初始化系统，请稍后...\033[0m\n"
@@ -455,7 +455,7 @@ EOF
 }
     
 # 定义存储 UUID 的文件路径
-UUID_FILE="${HOME}/.pydio/.singbox_uuid"
+UUID_FILE="${HOME}/.beifile/.singbox_uuid"
 
 # Check if UUID file exists
 if [ -f "$UUID_FILE" ]; then
@@ -961,7 +961,7 @@ RESET="\033[0m"
     done
 }
 start_service() {
-  if [ -f "$HOME/.pydio/.enabled_flag" ]; then
+  if [ -f "$HOME/.beifile/.enabled_flag" ]; then
     echo -e "\e[32;1;3m=== Enabled 已为你自动已开启===  \e[33;1;3m注意：第一次开启Enabled后，请重启服务器后生效，切记！！！\e[0m"
     return
   fi
@@ -969,7 +969,7 @@ start_service() {
   devil binexec on > /dev/null 2>&1
   if [ $? -eq 0 ]; then
     echo -e "\e[32;1;3m=== Enabled 已为你自动已开启===  \e[33;1;3m注意：第一次开启Enabled后，请重启服务器后生效，切记！！！\e[0m"
-    touch "$HOME/.pydio/.enabled_flag"  # 创建标志文件
+    touch "$HOME/.beeifile/.enabled_flag"  # 创建标志文件
   else
     echo -e "\e[31m\e[3m\e[1mEnabled未开启，请尝试手动开启.\e[0m"  # 红色斜体加粗输出
   fi
