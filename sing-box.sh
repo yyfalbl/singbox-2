@@ -852,6 +852,7 @@ read_nz_variables() {
 argo_configure() {
     if [[ "$INSTALL_VMESS" == "true" ]]; then
         reading "是否需要使用固定 Argo 隧道？【y/n】(N 或者回车为默认使用临时隧道):\c" argo_choice
+        
         # 处理用户输入
         if [[ -z $argo_choice ]]; then
             green "没有输入任何内容，默认使用临时隧道"
@@ -860,11 +861,13 @@ argo_configure() {
             red "无效的选择，请输入 y 或 n"
             return
         fi       
-    # 提示用户生成配置信息
-    echo -e "${yellow}请访问以下网站生成 Argo 固定隧道所需的配置信息。${RESET}"
-           echo ""
-    echo -e "${red}      https://fscarmen.cloudflare.now.cc/ ${reset}"
-           echo ""
+
+        # 提示用户生成配置信息
+        echo -e "${yellow}请访问以下网站生成 Argo 固定隧道所需的配置信息。${RESET}"
+        echo ""
+        echo -e "${red}      https://fscarmen.cloudflare.now.cc/ ${reset}"
+        echo ""
+
         if [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
             while [[ -z $ARGO_DOMAIN ]]; do
                 reading "请输入 Argo 固定隧道域名: " ARGO_DOMAIN
@@ -907,10 +910,12 @@ argo_configure() {
         else
             credentials_file="/dev/null"
         fi
-            cat > "$WORKDIR/tunnel.yml" <<EOF
+
+        cat > "$WORKDIR/tunnel.yml" <<EOF
 tunnel: $(cut -d\" -f12 <<< "$ARGO_AUTH")
-credentials-file: $WORKDIR/tunnel.json
+credentials-file: $credentials_file
 protocol: http2
+
 ingress:
   - hostname: $ARGO_DOMAIN
     service: http://localhost:$vmess_port
@@ -918,16 +923,17 @@ ingress:
       noTLSVerify: true
   - service: http_status:404
 EOF
-            if [[ $? -ne 0 ]]; then
-                red "生成 tunnel.yml 文件失败，请检查权限和路径"
-                return
-            fi
-            green "生成的 tunnel.yml 配置文件已保存到 $WORKDIR"
-        else
-            green "没有选择 vmess 协议，暂停使用 Argo 固定隧道"
-        fi
-}
 
+        if [[ $? -ne 0 ]]; then
+            red "生成 tunnel.yml 文件失败，请检查权限和路径"
+            return
+        fi
+
+        green "生成的 tunnel.yml 配置文件已保存到 $WORKDIR"
+    else
+        green "没有选择 vmess 协议，暂停使用 Argo 固定隧道"
+    fi
+}
  
 # 定义颜色
 YELLOW='\033[1;3;33m'
