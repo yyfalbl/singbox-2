@@ -316,34 +316,32 @@ check_web_status() {
 }
 
 get_ip() {
+  # 获取当前的 IP
   ip=$(curl -s --max-time 1.5 ipv4.ip.sb)
-  if [ -z "$ip" ]; then
-    ip=$( [[ "$HOSTNAME" =~ ^s([0-9]|[1-2][0-9]|30)\.serv00\.com$ ]] && echo "cache${BASH_REMATCH[1]}.serv00.com" || echo "$HOSTNAME" )
-  else
+
+  # 如果 ip 不为空，检查是否可用
+  if [ -n "$ip" ]; then
     url="https://www.toolsdaquan.com/toolapi/public/ipchecking/$ip/443"
     response=$(curl -s --location --max-time 3 --request GET "$url" --header 'Referer: https://www.toolsdaquan.com/ipcheck')
-    if [ -z "$response" ] || ! echo "$response" | grep -q '"icmp":"success"'; then
-        accessible=false
-    else
-        accessible=true
-    fi
-    if [ "$accessible" = false ]; then
-        ip=$( [[ "$HOSTNAME" =~ ^s([0-9]|[1-2][0-9]|30)\.serv00\.com$ ]] && echo "cache${BASH_REMATCH[1]}.serv00.com" || echo "$ip" )
+
+    if [ -n "$response" ] && echo "$response" | grep -q '"icmp":"success"'; then
+      echo "$ip"  # 如果第一个 IP 可用，直接返回
+      return
     fi
   fi
-  echo "$ip"
+
+  # 如果第一个 IP 不可用，提取 cacheX.serv00.com
+  ip=$( [[ "$HOSTNAME" =~ ^s([0-9]|[1-2][0-9]|30)\.serv00\.com$ ]] && echo "cache${BASH_REMATCH[1]}.serv00.com" || echo "$HOSTNAME" )
+
+  # 检查 cacheX.serv00.com 的 IP
+  if [[ "$ip" =~ ^cache[0-9]+\.serv00\.com$ ]]; then
+      ip=$(host "$ip" | grep "has address" | awk '{print $4}')
+  fi
+
+  echo "$ip"  # 返回最终的 IP
 }
-
-# 调用 get_ip 函数并将结果存储在 IP 变量中
-IP=$(get_ip)
-
-# 如果 IP 是 cacheX.serv00.com，则提取对应的 IP
-if [[ "$IP" =~ ^cache[0-9]+\.serv00\.com$ ]]; then
-    IP=$(host "$IP" | grep "has address" | awk '{print $4}')
-fi
-# 最终显示提取出来的 IP 地址
-echo "最终提取出来的 IP 地址: $IP"
-
+# 调用 get_final_ip 函数并将结果存储在 FINAL_IP 变量中
+IP=$(get_final_ip)
 # Socks5 安装和配置的主函数
 generate_random_string() {
   local length=$1
