@@ -1230,40 +1230,44 @@ uninstall_singbox() {
 
 # Download Dependency Files
 download_singbox() {
-    ARCH=$(uname -m) && DOWNLOAD_DIR="$HOME/sbox" && mkdir -p "$DOWNLOAD_DIR" && FILE_INFO=()
-    
-     if [ "$ARCH" == "arm" ] || [ "$ARCH" == "arm64" ] || [ "$ARCH" == "aarch64" ]; then
-          FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-sb web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-bot13 bot")
-     
-  elif [ "$ARCH" == "amd64" ] || [ "$ARCH" == "x86_64" ] || [ "$ARCH" == "x86" ]; then
-     
-FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-web web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-bot bot")
-     
-  else
-      echo "Unsupported architecture: $ARCH"
-      exit 1
-  fi
-  
-echo -e "\e[1;3;32m正在下载所需配置文件，请稍后......\e[0m"
-echo ""
-  sleep 2
+    ARCH=$(uname -m)
+    DOWNLOAD_DIR="$HOME/sbox"
+    mkdir -p "$DOWNLOAD_DIR"
+    FILE_INFO=()
+
+    if [[ "$ARCH" == "arm" ]] || [[ "$ARCH" == "arm64" ]] || [[ "$ARCH" == "aarch64" ]]; then
+        FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-sb web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/arm64-bot13 bot")
+    elif [[ "$ARCH" == "amd64" ]] || [[ "$ARCH" == "x86_64" ]] || [[ "$ARCH" == "x86" ]]; then
+        FILE_INFO=("https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-web web" "https://github.com/yyfalbl/singbox-2/releases/download/v1.0.0/amd64-bot bot")
+    else
+        echo "Unsupported architecture: $ARCH"
+        exit 1
+    fi
+
+    echo -e "\e[1;3;32m正在下载所需配置文件，请稍后......\e[0m"
+    echo ""
+    sleep 2
 
     for entry in "${FILE_INFO[@]}"; do
         URL=$(echo "$entry" | cut -d ' ' -f 1)
         NEW_FILENAME=$(echo "$entry" | cut -d ' ' -f 2)
         FILENAME="$DOWNLOAD_DIR/$NEW_FILENAME"
         
-        if [ -e "$FILENAME" ]; then
-             echo -e "\e[1;3;33m所需配置文件已存在，无需下载！\e[0m"
+        if [[ -e "$FILENAME" ]]; then
+            echo -e "\e[1;3;33m所需配置文件已存在，无需下载！\e[0m"
         else
             wget -q -O "$FILENAME" "$URL"
-           echo -e "$(bold_italic_yellow "下载成功，配置文件已保存在:$WORKDIR")"          
+            if [[ $? -eq 0 ]]; then
+                echo -e "$(bold_italic_yellow "下载成功，配置文件已保存在: $FILENAME")"
+            else
+                echo -e "\e[1;31m下载失败，请检查网络连接或URL！\e[0m"
+                return 1
+            fi
         fi
-      fi  
-        chmod +x $FILENAME
+        
+        chmod +x "$FILENAME"
     done
-}
-    
+}   
  # Define color codes
 YELLOW="\033[1;3;33m"
 RESET="\033[0m"
