@@ -1112,11 +1112,21 @@ done
     }
 
     if [ "$INSTALL_VLESS" = "true" ]; then
-             read_vless_port
+             read_vless_port  
     fi
 
     if [ "$INSTALL_VMESS" = "true" ]; then
             read_vmess_port
+          echo -e "${bold_italic_yellow}是否使用Argo功能?<ENTER默认开启>【y/n】${RESET}:\c"
+        read -p "" argo_choice
+        argo_choice=${argo_choice:-y}  # 默认开启
+
+        if [[ "$argo_choice" == [Yy] ]]; then
+            argo_configure
+        else
+            echo -e "$(bold_italic_green "跳过Argo功能配置...")"
+            ARGO_DOMAIN=""  # 清除 Argo 域名
+        fi      
     fi
 
     if [ "$INSTALL_HYSTERIA2" = "true" ]; then
