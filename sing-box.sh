@@ -892,18 +892,13 @@ argo_configure() {
             green "选择使用临时隧道"
             return
         fi
-
-        # 打印调试信息
-        echo "ARGO_AUTH: $ARGO_AUTH"
-        echo "ARGO_DOMAIN: $ARGO_DOMAIN"
-        echo "WORKDIR: $WORKDIR"
         
         # 生成 tunnel.yml
         if [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-            echo "$ARGO_AUTH" > "$WORKDIR/tunnel.json" 2>/tmp/tunnel.json.error
+            echo "$ARGO_AUTH" > "$WORKDIR/tunnel.json" 2>"$WORKDIR/tunnel.json.error"
             if [[ $? -ne 0 ]]; then
                 red "生成 tunnel.json 文件失败，请检查权限和路径"
-                cat /tmp/tunnel.json.error
+                 cat "$WORKDIR/tunnel.json.error" 2>/dev/null
                 return
             fi
             credentials_file="$WORKDIR/tunnel.json"
