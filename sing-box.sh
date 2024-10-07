@@ -1634,11 +1634,8 @@ get_links() {
      purple() {
         echo -e "\\033[1;3;35m$*\\033[0m"
     }
-    echo "INSTALL_VLESS: $INSTALL_VLESS"
-echo "INSTALL_VMESS: $INSTALL_VMESS"
 argodomain=$(get_argodomain)
- echo "当前 ArgoDomain: $argodomain"
-if [[ -z "$argodomain" ]]; then
+if [[ -n "$argodomain" ]]; then
     echo "没有配置 Argo 隧道，跳过生成相应的链接。"
 else
   echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n" 
@@ -1672,10 +1669,12 @@ fi)
 $(if [ "$INSTALL_VMESS" = "true" ]; then
     if [ -n "$argodomain" ]; then
         printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
-    fi
     echo ""
-    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$FINAL_IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
-fi)
+    else
+        printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$FINAL_IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+    fi
+fi
+)
 
 
 $(if [ "$INSTALL_HYSTERIA2" = "true" ]; then
