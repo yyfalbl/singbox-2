@@ -71,22 +71,12 @@ process_ct8() {
         mkdir -p "$base_dir"
     fi
 
-# 检查是否已有保存的 IP 地址
-if [[ -f "$ip1_file" && -s "$ip1_file" ]]; then
-    ip1_address=$(cat "$ip1_file")
-    echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址: ${ip1_address}${RESET}"
-    return  # 已有 IP 地址则直接返回
-fi
-
-# 提取新的 IP 地址并保存
-ip1_address=$(curl -s https://api.ipify.org 2>/dev/null)
-
-if [[ -n "$ip1_address" ]]; then
-    echo -e "${GREEN_BOLD_ITALIC}提取的服务器 IP 地址: ${ip1_address}${RESET}"
-    echo "$ip1_address" > "$ip1_file"
-else
-    echo "没有提取到 IP 地址"
-fi
+    # 检查是否已有保存的 IP 地址
+    if [[ -f "$ip_file" && -s "$ip_file" ]]; then
+        ip_address=$(cat "$ip_file")
+        echo -e "${GREEN_BOLD_ITALIC}当前服务器备用 IP 地址: ${ip_address}${RESET}"
+        return  # 已有 IP 地址则直接返回
+    fi
 
     # 自动获取当前用户名
     username=$(whoami)
