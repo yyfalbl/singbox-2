@@ -8,3 +8,8 @@ serv00&ct8一键脚本
 ```s
 bash <(curl -Ls https://raw.githubusercontent.com/yyfalbl/singbox-2/main/sing-box.sh)
 ```
+
+快捷固定隧道教程 网址
+```s
+(https://fscarmen.cloudflare.now.cc/)
+```
