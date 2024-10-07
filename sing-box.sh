@@ -172,7 +172,7 @@ beiyong_ip() {
 # 清理所有文件函数
 cleanup_delete() {
     local target_dir="$HOME"
-    local exclude_dir="backups"
+    local exclude_dirs="backups:.pydio"
 
     if [ -d "$target_dir" ]; then
         echo -n -e "\033[1;3;33m准备卸载所有程序及文件，请稍后...\033[0m\n"
@@ -188,11 +188,12 @@ cleanup_delete() {
         fi
 
         # 删除除排除目录以外的所有内容
-        find "$target_dir" -mindepth 1 -maxdepth 1 ! -name "$exclude_dir" -exec rm -rf {} +
+        IFS=':' read -r -a exclude_array <<< "$exclude_dirs"
+        find "$target_dir" -mindepth 1 -maxdepth 1 \( -name "${exclude_array[0]}" -o -name "${exclude_array[1]}" \) -prune -o -exec rm -rf {} +
 
         # 检查删除是否成功
-        local remaining_items=$(find "$target_dir" -mindepth 1 -maxdepth 1 | grep -v "$exclude_dir")
-        if [ -d "$target_dir/$exclude_dir" ] && [ -z "$remaining_items" ]; then
+        local remaining_items=$(find "$target_dir" -mindepth 1 -maxdepth 1 | grep -v -e "${exclude_array[0]}" -e "${exclude_array[1]}")
+        if [ -z "$remaining_items" ]; then
             echo -n -e "\033[1;3;31m所有程序已卸载成功!\033[0m\n"
             exit 0
         else
@@ -202,16 +203,17 @@ cleanup_delete() {
         echo "目录 $target_dir 不存在。"
     fi
 }
+
 # 清理所有文件和进程的函数
 cleanup_and_delete() {
     local target_dir="$HOME"
-    local exclude_dir="backups"
+    local exclude_dirs="backups:.pydio"
 
     if [ -d "$target_dir" ]; then
         echo -n -e "\033[1;3;33m准备初始化系统，请稍后...\033[0m\n"
         sleep 2
 
-       read -p "$(echo -e "\033[1;3;33m您确定要还原系统吗？\033[0m\n\033[1;31;3m(警告:此操作将会删除系统所有文件!)\033[0m\n\033[1;3;33m(y/n Enter默认y): \033[0m")" confirmation
+        read -p "$(echo -e "\033[1;3;33m您确定要还原系统吗？\033[0m\n\033[1;31;3m(警告:此操作将会删除系统所有文件!)\033[0m\n\033[1;3;33m(y/n Enter默认y): \033[0m")" confirmation
         confirmation=${confirmation:-y}
         sleep 2
         
@@ -224,11 +226,12 @@ cleanup_and_delete() {
         pkill -u $(whoami)
 
         # 删除除排除目录以外的所有内容
-        find "$target_dir" -mindepth 1 -maxdepth 1 ! -name "$exclude_dir" -exec rm -rf {} +
+        IFS=':' read -r -a exclude_array <<< "$exclude_dirs"
+        find "$target_dir" -mindepth 1 -maxdepth 1 \( -name "${exclude_array[0]}" -o -name "${exclude_array[1]}" \) -prune -o -exec rm -rf {} +
 
         # 检查删除是否成功
-        local remaining_items=$(find "$target_dir" -mindepth 1 -maxdepth 1 | grep -v "$exclude_dir")
-        if [ -d "$target_dir/$exclude_dir" ] && [ -z "$remaining_items" ]; then
+        local remaining_items=$(find "$target_dir" -mindepth 1 -maxdepth 1 | grep -v -e "${exclude_array[0]}" -e "${exclude_array[1]}")
+        if [ -z "$remaining_items" ]; then
             echo -n -e "\033[1;3;31m已成功初始化系统!\033[0m\n"
             exit 0
         else
