@@ -1168,7 +1168,7 @@ echo ""
     
     # 仅在 Argo 配置存在时显示 ArgoDomain 信息
     if [[ -n $ARGO_DOMAIN ]]; then
-        echo -e "ArgoDomain:${ARGO_DOMAIN}"
+        echo -e "\e[33;1;3m隧道域名: ${ARGO_DOMAIN}\e[0m"
     fi
 
     echo -e "$(bold_italic_purple "安装完成！")"
