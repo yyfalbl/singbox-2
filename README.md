@@ -13,4 +13,6 @@ bash <(curl -Ls https://raw.githubusercontent.com/yyfalbl/singbox-2/main/sing-bo
 ```s
 https://fscarmen.cloudflare.now.cc/
 ```
-![image](https://github.com/user-attachments/assets/7611e827-8b2c-4162-b53f-ff9d2096cc01)
+按以下顺序操作：
+![image](https://github.com/user-attachments/assets/c306a9c5-049e-4cb0-8669-d6ec345e4456)
+
