@@ -1161,7 +1161,8 @@ echo ""
     fi
 
     # 运行 sing-box
-   get_ip
+    # 显示当前有效 IP 地址，使用绿色加粗斜体
+echo -e "\033[1;32m\033[1m\033[3m当前有效IP地址: $FINAL_IP\033[0m"
    generate_config
    run_sb && sleep 3
     get_links
