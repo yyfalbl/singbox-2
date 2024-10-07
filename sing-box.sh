@@ -341,7 +341,7 @@ get_ip() {
   echo "$ip"  # 返回最终的 IP
 }
 # 调用 get_final_ip 函数并将结果存储在 FINAL_IP 变量中
-IP=$(get_final_ip)
+IP=$(get_ip)
 # 显示最终提取出来的 IP 地址
 echo -e "\033[1;32m\033[1m\033[3m最终提取出来的 IP 地址: $IP\033[0m"
 # Socks5 安装和配置的主函数
