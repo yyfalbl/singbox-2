@@ -1259,7 +1259,7 @@ echo ""
             wget -q -O "$FILENAME" "$URL"
            echo -e "$(bold_italic_yellow "下载成功，配置文件已保存在:$WORKDIR")"          
         fi
-        
+      fi  
         chmod +x $FILENAME
     done
 }
