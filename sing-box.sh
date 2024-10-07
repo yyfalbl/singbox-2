@@ -1634,7 +1634,11 @@ get_links() {
         echo -e "\\033[1;3;35m$*\\033[0m"
     }
 argodomain=$(get_argodomain)
-echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
+if [[ -z "$argodomain" ]]; then
+    echo "没有配置 Argo 隧道，跳过生成相应的链接。"
+else
+  echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n" 
+fi
 sleep 1
       
 current_fqdn=$(hostname -f)
