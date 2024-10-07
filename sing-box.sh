@@ -1634,6 +1634,8 @@ get_links() {
      purple() {
         echo -e "\\033[1;3;35m$*\\033[0m"
     }
+    echo "INSTALL_VLESS: $INSTALL_VLESS"
+echo "INSTALL_VMESS: $INSTALL_VMESS"
 argodomain=$(get_argodomain)
  echo "当前 ArgoDomain: $argodomain"
 if [[ -z "$argodomain" ]]; then
