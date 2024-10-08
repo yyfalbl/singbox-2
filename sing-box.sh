@@ -868,7 +868,9 @@ if [[ "$INSTALL_VMESS" == "true" ]]; then
         green "开启固定隧道功能，请稍后..."
         sleep 3
     elif [[ "$argo_choice" == "n" || "$argo_choice" == "N" ]]; then
+      sleep 1
         yellow_bold_italic "将使用临时隧道,注意:临时隧道不稳定,建议固定隧道！"
+        sleep 3
     else
         red "无效的选择，请输入 y 或 n"
         return
