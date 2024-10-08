@@ -858,54 +858,54 @@ read_nz_variables() {
 #固定argo隧道  
 argo_configure() {
     if [[ "$INSTALL_VMESS" == "true" ]]; then
-         while true; do
-            reading "是否需要开启Argo隧道？【y/n ENTER默认开启】: " argo_choice
-            
-            # 处理用户输入，按 Enter 默认选择 y
-            if [[ -z "$argo_choice" || "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
-                break  # 有效选择，退出循环
-            elif [[ "$argo_choice" == "n" || "$argo_choice" == "N" ]]; then
-               echo -e "\e[1;3;31mArgo隧道功能未开启!\e[0m"
-                return  # 仅退出函数，不退出整个脚本
-            else
-                red "无效的选择，请输入 y 或 n"
-            fi
-        done
+        reading "是否需要使用固定 Argo 隧道？【y/n】(N 或者回车为默认使用临时隧道):\c" argo_choice
+        
+        # 处理用户输入
+        if [[ -z $argo_choice ]]; then
+            green "没有输入任何内容，默认使用临时隧道"
+            return
+        elif [[ "$argo_choice" != "y" && "$argo_choice" != "Y" && "$argo_choice" != "n" && "$argo_choice" != "N" ]]; then
+            red "无效的选择，请输入 y 或 n"
+            return
+        fi       
 
         # 提示用户生成配置信息
-        echo -e "\e[1;3;32m请访问以下网站生成 Argo 固定隧道所需的配置信息。\e[0m"
+        echo -e "${yellow}请访问以下网站生成 Argo 固定隧道所需的配置信息。${RESET}"
         echo ""
         echo -e "${red}      https://fscarmen.cloudflare.now.cc/ ${reset}"
         echo ""
 
-        # 获取 Argo 域名
-        while [[ -z $ARGO_DOMAIN ]]; do
-            reading "请输入 Argo 固定隧道域名: " ARGO_DOMAIN
-            if [[ -z $ARGO_DOMAIN ]]; then
-                red "Argo 固定隧道域名不能为空，请重新输入。"
-            else
-                green "你的 Argo 固定隧道域名为: $ARGO_DOMAIN"
-            fi
-        done
+        if [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
+            while [[ -z $ARGO_DOMAIN ]]; do
+                reading "请输入 Argo 固定隧道域名: " ARGO_DOMAIN
+                if [[ -z $ARGO_DOMAIN ]]; then
+                    red "Argo 固定隧道域名不能为空，请重新输入。"
+                else
+                    green "你的 Argo 固定隧道域名为: $ARGO_DOMAIN"
+                fi
+            done
+            
+            while [[ -z $ARGO_AUTH ]]; do
+                reading "请输入 Argo 固定隧道密钥（Json 或 Token）: " ARGO_AUTH
+                if [[ -z $ARGO_AUTH ]]; then
+                    red "Argo 固定隧道密钥不能为空，请重新输入。"
+                else
+                    green "你的 Argo 固定隧道密钥为: $ARGO_AUTH"
+                fi
+            done
+            
+            echo -e "${red}注意：${purple}使用 token，需要在 Cloudflare 后台设置隧道端口和面板开放的 TCP 端口一致${RESET}"
+        else
+            green "选择使用临时隧道"
+            return
+        fi
         
-        # 获取 Argo 密钥
-        while [[ -z $ARGO_AUTH ]]; do
-            reading "请输入 Argo 固定隧道密钥（Json 或 Token）: " ARGO_AUTH
-            if [[ -z $ARGO_AUTH ]]; then
-                red "Argo 固定隧道密钥不能为空，请重新输入。"
-            else
-                green "你的 Argo 固定隧道密钥为: $ARGO_AUTH"
-            fi
-        done
-        
-        echo -e "${red}注意：${purple}使用 token，需要在 Cloudflare 后台设置隧道端口和面板开放的 TCP 端口一致${RESET}"
-
         # 生成 tunnel.yml
         if [[ $ARGO_AUTH =~ TunnelSecret ]]; then
             echo "$ARGO_AUTH" > "$WORKDIR/tunnel.json" 2>"$WORKDIR/tunnel.json.error"
             if [[ $? -ne 0 ]]; then
                 red "生成 tunnel.json 文件失败，请检查权限和路径"
-                cat "$WORKDIR/tunnel.json.error" 2>/dev/null
+                 cat "$WORKDIR/tunnel.json.error" 2>/dev/null
                 return
             fi
             credentials_file="$WORKDIR/tunnel.json"
@@ -934,7 +934,6 @@ EOF
         green "没有选择 vmess 协议，暂停使用 Argo 固定隧道"
     fi
 }
-
 # 定义颜色
 YELLOW='\033[1;3;33m'
 NC='\033[0m' # No Color
@@ -1564,7 +1563,7 @@ run_sb() {
     elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
       args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
     else
- args="start --url http://localhost:8080"
+     args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080"
     fi
     nohup $WORKDIR/bot $args >/dev/null 2>&1 &
     sleep 2
@@ -1625,7 +1624,7 @@ fi
             red "未能从 boot.log 中提取 Argo 域名。"
             return 1  # 返回非零值表示失败
         else
-            echo " "
+            echo "$argodomain"
             return 0
         fi
     fi
@@ -1637,10 +1636,11 @@ get_links() {
      purple() {
         echo -e "\\033[1;3;35m$*\\033[0m"
     }
-argodomain=$(get_argodomain)
-
-  echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m$argodomain\e[0m\n" 
-
+# 假设 argo_configure 函数会设置某个标志变量
+if [ "$ARGO_CONFIGURED" = true ]; then
+    argodomain=$(get_argodomain)
+    echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
+fi
 sleep 1
       
 current_fqdn=$(hostname -f)
@@ -1756,7 +1756,7 @@ start_web() {
     if [ -e "$WORKDIR/tunnel.yml" ]; then
         args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
     else
-         args="start --url http://localhost:8080"
+     args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080"
     fi
     
     # 启动 bot 进程
