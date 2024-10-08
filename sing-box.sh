@@ -1636,6 +1636,7 @@ get_links() {
      purple() {
         echo -e "\\033[1;3;35m$*\\033[0m"
     }
+    echo "ARGO_CONFIGURED: $ARGO_CONFIGURED"
 # 假设 argo_configure 函数会设置某个标志变量
 if [ "$ARGO_CONFIGURED" = true ]; then
     argodomain=$(get_argodomain)
@@ -1673,7 +1674,7 @@ $(if [ "$INSTALL_VMESS" = "true" ]; then
 
     # 如果 ARGO_CONFIGURED 为 true，生成带 argodomain 的链接
     if [ "$ARGO_CONFIGURED" = true ]; then
-        printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+        printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"www.visa.com.tw\", \"port\": \"443\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
     fi
 fi)
 
