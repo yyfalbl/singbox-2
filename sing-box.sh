@@ -24,8 +24,8 @@ RESET='\033[0m'
 # 设置工作目录
 WORKDIR="$HOME/sbox"
 mkdir -p $HOME/.beifile
-export CFIP=${CFIP:-'www.visa.com.tw'} 
-export CFPORT=${CFPORT:-'443'} 
+export CFIP=${CFIP:-'www.visa.com.tw'}
+export CFPORT=${CFPORT:-'443'}
 base_dir="$HOME/.beifile"
 password_file="$HOME/.beifile/.panel_password"
 log_file="$base_dir/wget_log.txt"
@@ -1127,7 +1127,7 @@ done
             argo_configure
         else
             echo -e "$(bold_italic_green "跳过Argo功能配置...")"
-            ARGO_DOMAIN=""  # 清除 Argo 域名
+          
         fi      
     fi
 
@@ -1263,7 +1263,7 @@ echo ""
         
         chmod +x $FILENAME
     done
-} 
+}
  # Define color codes
 YELLOW="\033[1;3;33m"
 RESET="\033[0m"
@@ -1271,7 +1271,7 @@ RESET="\033[0m"
  # 使用当前用户的主目录定义默认路径
 CERT_PATH="${HOME}/sbox/cert.pem"
 PRIVATE_KEY_PATH="${HOME}/sbox/private.key"
-# 配置文件生成函数 
+# 配置文件生成函数
 generate_config() {
     # 生成现实密钥对
     output=$(./web generate reality-keypair)
@@ -1671,7 +1671,7 @@ $(if [ "$INSTALL_VMESS" = "true" ]; then
     printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$FINAL_IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
 fi)
 
-$(if [ "$INSTALL_VMESS" = "true" ] && [ -n "$argodomain" ]; then
+$(if [ "$INSTALL_VMESS" = "true" ] && [ "$ARGO_CONFIGURED" = true ]; then
     printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
 fi)
 
@@ -2010,6 +2010,5 @@ done
    
 }
 menu
-
 
 
