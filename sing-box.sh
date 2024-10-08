@@ -1564,7 +1564,7 @@ run_sb() {
     elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
       args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
     else
-      args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080"
+ args="start --url http://localhost:8080"
     fi
     nohup $WORKDIR/bot $args >/dev/null 2>&1 &
     sleep 2
@@ -1761,7 +1761,7 @@ start_web() {
     if [ -e "$WORKDIR/tunnel.yml" ]; then
         args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
     else
-        args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080"
+         args="start --url http://localhost:8080"
     fi
     
     # 启动 bot 进程
