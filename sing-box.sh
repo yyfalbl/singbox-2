@@ -1700,7 +1700,7 @@ green "Running done!"
 
 # 清理临时文件
 sleep 3
-rm -rf "$WORKDIR/npm" "$WORKDIR/boot.log" "" "$WORKDIR/core"
+rm -rf  "$WORKDIR/boot.log"  "$WORKDIR/core"
 }
     
 # 定义颜色函数
