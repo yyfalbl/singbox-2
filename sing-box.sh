@@ -1639,7 +1639,7 @@ get_links() {
     }
 argodomain=$(get_argodomain)
 
-  echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n" 
+  echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m$argodomain\e[0m\n" 
 
 sleep 1
       
