@@ -1625,7 +1625,7 @@ fi
             red "未能从 boot.log 中提取 Argo 域名。"
             return 1  # 返回非零值表示失败
         else
-            echo "argodomain: $argodomain "
+            echo " "
             return 0
         fi
     fi
