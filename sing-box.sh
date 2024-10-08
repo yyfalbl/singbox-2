@@ -857,20 +857,25 @@ read_nz_variables() {
 
 #固定argo隧道  
 argo_configure() {
-    if [[ "$INSTALL_VMESS" == "true" ]]; then
-        reading "是否需要使用固定 Argo 隧道？【y/n】(N 或者回车为默认使用临时隧道):\c" argo_choice
-        
-        # 处理用户输入
-        if [[ -z $argo_choice ]]; then
-            green "没有输入任何内容，默认使用临时隧道"
-            return
-        elif [[ "$argo_choice" != "y" && "$argo_choice" != "Y" && "$argo_choice" != "n" && "$argo_choice" != "N" ]]; then
-            red "无效的选择，请输入 y 或 n"
-            return
-        fi       
+if [[ "$INSTALL_VMESS" == "true" ]]; then
+    reading "是否需要使用固定 Argo 隧道？【y/n】(回车默认使用固定隧道):\c" argo_choice
+    
+    # 处理用户输入
+    if [[ -z $argo_choice ]]; then
+        green "开启固定隧道功能，请稍后..."
+      sleep 3
+    elif [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
+        green "开启固定隧道功能，请稍后..."
+        sleep 3
+    elif [[ "$argo_choice" == "n" || "$argo_choice" == "N" ]]; then
+        green "使用临时隧道"
+    else
+        red "无效的选择，请输入 y 或 n"
+        return
+    fi 
 
         # 提示用户生成配置信息
-        echo -e "${yellow}请访问以下网站生成 Argo 固定隧道所需的配置信息。${RESET}"
+        echo -e "${yellow}请访问以下网站生成 Argo 固定隧道所需的Json配置信息。${RESET}"
         echo ""
         echo -e "${red}      https://fscarmen.cloudflare.now.cc/ ${reset}"
         echo ""
@@ -1125,7 +1130,9 @@ done
 
         if [[ "$argo_choice" == [Yy] ]]; then
             argo_configure
+            ARGO_CONFIGURED=true
         else
+        ARGO_CONFIGURED=false
             echo -e "$(bold_italic_green "跳过Argo功能配置...")"
           
         fi      
@@ -1636,7 +1643,6 @@ get_links() {
      purple() {
         echo -e "\\033[1;3;35m$*\\033[0m"
     }
-    echo "ARGO_CONFIGURED: $ARGO_CONFIGURED"
 # 假设 argo_configure 函数会设置某个标志变量
 if [ "$ARGO_CONFIGURED" = true ]; then
     argodomain=$(get_argodomain)
@@ -1671,7 +1677,7 @@ fi)
 $(if [ "$INSTALL_VMESS" = "true" ]; then
     # 生成不带 argodomain 的链接
     printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$FINAL_IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
-
+   echo ""
     # 如果 ARGO_CONFIGURED 为 true，生成带 argodomain 的链接
     if [ "$ARGO_CONFIGURED" = true ]; then
         printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"www.visa.com.tw\", \"port\": \"443\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
@@ -2013,5 +2019,4 @@ done
    
 }
 menu
-
 
