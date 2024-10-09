@@ -19,7 +19,14 @@ bold_italic_yellow() { echo -e "${bold_yellow}\033[3m$1${reset}"; }
 bold_italic_purple() { echo -e "${bold_purple}\033[3m$1${reset}"; }
 RED_BOLD_ITALIC='\033[1;3;31m'  
 GREEN_BOLD_ITALIC='\033[1;3;32m'  
-RESET='\033[0m'  
+RESET='\033[0m' 
+red() {
+    local RED='\033[0;31m'      # 红色
+    local BOLD='\033[1m'        # 加粗
+    local ITALIC='\033[3m'      # 斜体
+    local RESET='\033[0m'       # 重置
+    echo -e "${BOLD}${ITALIC}${RED}$1${RESET}"
+}
 
 # 设置工作目录
 WORKDIR="$HOME/sbox"
@@ -871,7 +878,7 @@ while true; do
         break 
     elif [[ "$argo_choice" == "n" || "$argo_choice" == "N" ]]; then
       sleep 1
-        yellow_bold_italic "将使用临时隧道,注意:临时隧道不稳定,建议固定隧道！"
+        echo -e "${BOLD}${ITALIC}\033[1;32m将使用临时隧道\033[0m${RESET} \n注意: 临时隧道不稳定, 可能会出现不通，建议固定隧道！"
         sleep 3
         break 
     else
