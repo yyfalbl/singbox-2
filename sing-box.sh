@@ -1612,36 +1612,26 @@ fi
       # 输出最终使用的IP地址
     echo -e "${CYAN}\033[1;3;32m最终使用的IP地址是: $FINAL_IP${RESET}"
 }
- get_argodomain() {
-    if [[ -n $ARGO_AUTH ]]; then
-        echo "$ARGO_DOMAIN"
-    else
-        # 检查是否已经选择了开启 Argo 隧道
-        if [[ "$INSTALL_VMESS" == "true" && "$ENABLE_ARGO" == "true" ]]; then
-            local retry=0
-            local max_retries=6
-            local argodomain=""
-
-            while [[ $retry -lt $max_retries ]]; do
-                ((retry++))
-                argodomain=$(grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' boot.log | sed 's@https://@@')
-                if [[ -n $argodomain ]]; then
-                    echo "$argodomain"
-                    return 0
-                fi
-                sleep 1
-            done
-            
-            red "未能从 boot.log 中提取 Argo 域名。"
-            return 1  # 返回非零值表示失败
-        else
-            echo "$argodomain"
-            return 0
-        fi
-    fi
-   
+#获取临时或固定隧道域名
+get_argodomain() {
+  if [[ -n $ARGO_AUTH ]]; then
+    echo "$ARGO_DOMAIN"
+  else
+    local retry=0
+    local max_retries=6
+    local argodomain=""
+    while [[ $retry -lt $max_retries ]]; do
+      ((retry++))
+      argodomain=$(grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' boot.log | sed 's@https://@@') 
+      if [[ -n $argodomain ]]; then
+        break
+      fi
+      sleep 1
+    done
+    echo "$argodomain"
+  fi
 }
-
+#生成客户端通用链接
 get_links() {
   
      purple() {
