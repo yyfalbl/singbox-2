@@ -1678,11 +1678,12 @@ fi)
 
 $(if [ "$INSTALL_VMESS" = "true" ]; then
     # 生成不带 argodomain 的链接
+    echo -e "\033[1;32;3m以下为vmess客户通用端链接\033[0m"
     printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$FINAL_IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
    echo ""
     # 如果 ARGO_CONFIGURED 为 true，生成带 argodomain 的链接
     if [ "$ARGO_CONFIGURED" = true ]; then
-      echo "以下为vmess链接，替换speed.cloudflare.com为自己的优选ip可获得极致体验"
+     echo -e "\033[1;32;3m以下为vmess开启隧道功能链接，替换www.visa.com.tw为自己的优选ip可获得极致体验\033[0m"
         printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"www.visa.com.tw\", \"port\": \"443\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
     fi
 fi)
