@@ -858,24 +858,26 @@ read_nz_variables() {
 #固定argo隧道  
 argo_configure() {
 if [[ "$INSTALL_VMESS" == "true" ]]; then
-    reading "Y 固定Argo隧道 或者 N 使用临时隧道【y/n】(ENTER默认y):\c" argo_choice
-    
+while true; do
+    reading "Y 固定Argo隧道 或者 N 使用临时隧道【y/n】(ENTER默认y):\c" argo_choice 
     # 处理用户输入
     if [[ -z $argo_choice ]]; then
         green "开启固定隧道功能，请稍后..."
       sleep 3
+      break 
     elif [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
         green "开启固定隧道功能，请稍后..."
         sleep 3
+        break 
     elif [[ "$argo_choice" == "n" || "$argo_choice" == "N" ]]; then
       sleep 1
         yellow_bold_italic "将使用临时隧道,注意:临时隧道不稳定,建议固定隧道！"
         sleep 3
+        break 
     else
-        red "无效的选择，请输入 y 或 n"
-        return
+        red "无效的选择，请输入 y 或 n 或直接按Enter键"
     fi 
-
+done
         # 提示用户生成配置信息
     echo -e "\033[1;3;33m请访问以下网站生成 Argo 固定隧道所需的Json配置信息。${RESET}"
         echo ""
