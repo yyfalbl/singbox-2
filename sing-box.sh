@@ -878,7 +878,7 @@ while true; do
         break 
     elif [[ "$argo_choice" == "n" || "$argo_choice" == "N" ]]; then
       sleep 1
-       echo -e "${BOLD}${ITALIC}\033[1;32m将使用临时隧道...\033[0m${RESET} \n${BOLD}${ITALIC}${RED}注意: 临时隧道不稳定, 可能会出现不通，建议固定隧道！${RESET}"
+       echo -e "${BOLD}${ITALIC}\033[1;3;32m将使用临时隧道...\033[0m${RESET} \n${BOLD}${ITALIC}\033[1;3;31m注意: 临时隧道不稳定, 可能会出现不通，建议固定隧道！${RESET}"
         sleep 3
         break 
     else
