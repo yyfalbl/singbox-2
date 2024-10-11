@@ -451,7 +451,8 @@ EOF
   # 检查程序是否启动成功
   if pgrep -x "socks5" > /dev/null; then
     echo -e "\033[1;3;32mSocks5 代理程序启动成功\033[0m"
-    echo -e "\033[1;3;33mSocks5 代理地址： $IP:$socks5_port 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS\033[0m"   
+    echo -e "\033[1;3;33mSocks5 代理地址： $IP:$socks5_port 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS\033[0m" 
+    echo ""
     # 显示代理 URL
     echo -e "\033[1;3;33msocks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${socks5_port}\033[0m"
       
@@ -1928,7 +1929,7 @@ menu() {
    echo ""
    magenta "=== 欢迎使用SERV00和CT8|SING-BOX一键安装脚本 ==="
    echo ""
-    bold_italic_orange "\033[1;3m=== 脚本支持:VLESS VMESS HY2 TUIC socks5 协议，UUID自动生成 ===\033[0m"
+    bold_italic_orange "\033[1;3m=== 脚本支持:VLESS VMESS HY2 TUIC socks5 协议，UUID 自动生成 ===\033[0m"
     magenta "=== 支持安装：单，双，三个协议(面板最多只能开放3个端口)，自由选择 ==="
     bold_italic_light_blue "=== 固定argo隧道 可以优选ip或优选域名！  ==="
     bold_italic_light_blue "=== argo隧道配置文件生成网址  https://fscarmen.cloudflare.now.cc/ ==="
