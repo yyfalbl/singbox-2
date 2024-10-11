@@ -243,7 +243,7 @@ cleanup_and_delete() {
         # 检查删除是否成功
         local remaining_items=$(find "$target_dir" -mindepth 1 -maxdepth 1 | grep -v -e "${exclude_array[0]}" -e "${exclude_array[1]}")
         if [ -z "$remaining_items" ]; then
-            echo -n -e "\033[1;3;31m已成功初始化系统!\033[0m\n"
+            echo -n -e "\033[1;3;32m已成功初始化系统!\033[0m\n"
             exit 0
         else
             echo "删除操作出现问题，请检查是否有权限问题或其他错误。"
