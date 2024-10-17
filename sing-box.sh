@@ -1962,9 +1962,9 @@ done
    echo "==============="
    echo -e "\033[1;3;32m2. 安装Socks5\033[0m\033[1;3;33m(谨慎安装!)\033[0m"
    echo "==============="
-   red "\033[1;3m3. 卸载所有程序\033[0m"
+   bold_italic_light_blue "\033[1;3m3. 查看节点信息\033[0m"
    echo "==============="
-   bold_italic_light_blue "\033[1;3m4. 查看节点信息\033[0m"
+   red "\033[1;3m4. 卸载所有程序\033[0m"
    echo "==============="
    yellow "\\033[1;3m5. 清理系统进程\\033[0m"
    echo "==============="
@@ -1992,12 +1992,12 @@ done
             clear
             ;;
         3)
-            uninstall_singbox
+             cat $WORKDIR/list.txt
             read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
             clear
             ;;
         4)
-            cat $WORKDIR/list.txt
+           uninstall_singbox
             read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
             clear
             ;;
