@@ -1551,51 +1551,56 @@ EOF
 run_sb() {
   green() {
     echo -e "\e[32;3;1m$1\e[0m"
-}
-# 启动 npm
-    if [ -e "$WORKDIR/npm" ]; then
-        tlsPorts=("443" "8443" "2096" "2087" "2083" "2053")
-        if [[ "${tlsPorts[*]}" =~ "${NEZHA_PORT}" ]]; then
-            NEZHA_TLS="--tls"
-        else
-            NEZHA_TLS=""
-        fi
-        if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
-            export TMPDIR=$(pwd)
-            nohup "$WORKDIR/npm" -s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY} ${NEZHA_TLS} >/dev/null 2>&1 &
-            sleep 2
-            pgrep -x "npm" > /dev/null && green "npm is running" || { red "npm is not running, restarting..."; pkill -x "npm" && nohup "$WORKDIR/npm" -s "${NEZHA_SERVER}:${NEZHA_PORT}" -p "${NEZHA_KEY}" ${NEZHA_TLS} >/dev/null 2>&1 & sleep 2; purple "npm restarted"; }
-       else
-       purple "NEZHA variable is empty, skipping running"
-        fi
+  }
+
+  # 启动 npm
+  if [ -e "$WORKDIR/npm" ]; then
+    tlsPorts=("443" "8443" "2096" "2087" "2083" "2053")
+    if [[ "${tlsPorts[*]}" =~ "${NEZHA_PORT}" ]]; then
+      NEZHA_TLS="--tls"
+    else
+      NEZHA_TLS=""
     fi
-# 启动 web
-    if [ -e "$WORKDIR/web" ]; then
-        nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 &
-        sleep 2
-        pgrep -x "web" > /dev/null && green "WEB is running" || { red "web is not running, restarting..."; pkill -x "web" && nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
+    if [ -n "$NEZHA_SERVER" ] && [ -n "$NEZHA_PORT" ] && [ -n "$NEZHA_KEY" ]; then
+      export TMPDIR=$(pwd)
+      nohup "$WORKDIR/npm" -s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY} ${NEZHA_TLS} >/dev/null 2>&1 &
+      sleep 2
+      pgrep -x "npm" > /dev/null && green "npm is running" || { red "npm is not running, restarting..."; pkill -x "npm" && nohup "$WORKDIR/npm" -s "${NEZHA_SERVER}:${NEZHA_PORT}" -p "${NEZHA_KEY}" ${NEZHA_TLS} >/dev/null 2>&1 & sleep 2; purple "npm restarted"; }
+    else
+      purple "NEZHA variable is empty, skipping running"
     fi
-    # 启动 bot
-    if [ -e "$WORKDIR/bot" ]; then
+  fi
+
+  # 启动 web
+  if [ -e "$WORKDIR/web" ]; then
+    nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 &
+    sleep 2
+    pgrep -x "web" > /dev/null && green "WEB is running" || { red "web is not running, restarting..."; pkill -x "web" && nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >/dev/null 2>&1 & sleep 2; purple "web restarted"; }
+  fi
+
+  # 启动 bot
+  if [ -e "$WORKDIR/bot" ]; then
     # 如果 ARGO_AUTH 是一个有效的 Token 格式
     if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
-        args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}}"
+      args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}}"
     # 如果 ARGO_AUTH 包含 TunnelSecret 字符串，表示可能是一个 JSON 格式的配置
     elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-        args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
+      args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
     # 如果 ARGO_AUTH 是有效的 JSON 格式（检查是否以 '{' 开头并包含 '}' 结尾）
     elif [[ $ARGO_AUTH =~ ^\{.*\}$ ]]; then
-        args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}}"
+      args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}}"
     else
-        # 默认配置，使用 http2 协议和本地转发
-        args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080}"
+      # 默认配置，使用 http2 协议和本地转发
+      args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080}"
     fi
 
+    # 启动 bot 进程
     nohup $WORKDIR/bot $args >/dev/null 2>&1 &
     sleep 2
     pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
   fi
 }
+
   # 获取ip
 get_ip() {
     read -p "$(echo -e "${CYAN}\033[1;3;33m是否启用备用IP地址（输入y确认，否则按Enter键自动检测）: ${RESET}") " choice
