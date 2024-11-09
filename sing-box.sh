@@ -1579,6 +1579,15 @@ run_sb() {
   fi
 
   # 启动 bot
+  # 确保工作目录存在并具有写权限
+if [ ! -d "$WORKDIR" ]; then
+  mkdir -p "$WORKDIR"
+  chmod 755 "$WORKDIR"
+fi
+
+# 确保 boot.log 文件能够被创建或写入
+touch "$WORKDIR/boot.log" 2>/dev/null || { echo "无法创建 boot.log 文件，请检查权限。"; exit 1; }
+
   if [ -e "$WORKDIR/bot" ]; then
     # 如果 ARGO_AUTH 是一个有效的 Token 格式
     if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
