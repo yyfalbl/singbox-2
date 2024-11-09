@@ -1810,12 +1810,20 @@ if [ -e "$WORKDIR/bot" ]; then
     args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}}"
   else
     # 默认使用本地转发配置，判断是否设置了 vmess_port
-    if [[ -n "$vmess_port" ]]; then
-       args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port}"
-    else
-      args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080}"
+   if [[ -f "$WORKDIR/boot.log" ]]; then
+    # 从 boot.log 中提取域名
+    argodomain=$(grep -oP 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' "$WORKDIR/boot.log" | head -n 1)
+    
+    # 如果提取到域名并且 vmess_port 存在，使用 vmess_port 和提取的域名
+    if [[ -n "$argodomain" && -n "$vmess_port" ]]; then
+        args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port --hostname $argodomain}"
     fi
-  fi
+else
+    # 如果 boot.log 文件不存在，什么都不做（不设置默认端口和域名）
+    : 
+   fi
+
+ fi
 
   # 启动 bot 进程
   nohup $WORKDIR/bot $args >/dev/null 2>&1 &
