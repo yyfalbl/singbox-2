@@ -1810,21 +1810,19 @@ if [ -e "$WORKDIR/bot" ]; then
     args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}}"
   else
     # 默认使用本地转发配置，判断是否设置了 vmess_port
-  if [[ -f "$WORKDIR/boot.log" ]]; then
+if [[ -f "$WORKDIR/boot.log" ]]; then
     # 从 boot.log 中提取域名
-     argodomain=$(grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' "$WORKDIR/boot.log" | head -n 1)   
+    argodomain=$(grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' "$WORKDIR/boot.log" | head -n 1)
+    
     # 从 boot.log 提取端口号
     vmess_port=$(grep -oE 'localhost:(\d+)' "$WORKDIR/boot.log" | sed 's/localhost://')
 
-    # 如果提取到域名和端口号
+    # 如果同时提取到域名和端口号
     if [[ -n "$argodomain" && -n "$vmess_port" ]]; then
         # 使用提取的域名和端口
         args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port --hostname $argodomain}"
-    elif [[ -n "$vmess_port" ]]; then
-        # 如果没有域名，则仅使用端口
-        args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port}"
     else
-        # 如果没有找到端口，则使用默认端口和域名
+        # 如果没有提取到有效的域名或端口，则使用默认配置
         args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080}"
     fi
 else
