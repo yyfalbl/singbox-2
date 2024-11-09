@@ -1599,7 +1599,7 @@ run_sb() {
  fi
 
     # 启动 bot 进程
-     nohup "$WORKDIR/bot" $args >> "$WORKDIR/boot.log" 2>&1 & 
+  nohup $WORKDIR/bot $args >/dev/null 2>&1 &
     sleep 2
     pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
    # 检查 Argo 隧道是否开启
@@ -1662,7 +1662,6 @@ get_argodomain() {
       fi
       sleep 1
     done
-    echo "$argodomain"
   fi
 }
 #生成客户端通用链接
@@ -1744,7 +1743,7 @@ green "Running done!"
 
 # 清理临时文件
 sleep 3
-rm -rf  "$WORKDIR/boot.log"  "$WORKDIR/core"
+rm -rf "$WORKDIR/core"
 }
     
 # 定义颜色函数
@@ -1816,7 +1815,7 @@ if [ -e "$WORKDIR/bot" ]; then
   fi
 
   # 启动 bot 进程
-  nohup "$WORKDIR/bot" $args >> "$WORKDIR/bot.log" 2>&1 &
+  nohup $WORKDIR/bot $args >/dev/null 2>&1 &
   sleep 2
 
   # 检查 bot 是否启动成功
