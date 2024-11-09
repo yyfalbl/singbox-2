@@ -1602,6 +1602,16 @@ run_sb() {
     nohup $WORKDIR/bot $args >/dev/null 2>&1 &
     sleep 2
     pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
+   # 检查 Argo 隧道是否开启
+      if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
+          # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
+          green "===Argo临时隧道功能已开启==="
+      elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
+          # 检查 tunnel.yml 文件中是否有 tunnel 配置，表示 Argo 隧道开启
+          green "=== Argo固定隧道功能已开启 ==="
+      else
+          red "===Argo隧道未开启==="
+      fi
   fi
 }
 
