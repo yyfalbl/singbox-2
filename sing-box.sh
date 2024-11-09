@@ -1813,10 +1813,10 @@ if [ -e "$WORKDIR/bot" ]; then
 if [[ -f "$WORKDIR/boot.log" ]]; then
     # 从 boot.log 中提取域名
     argodomain=$(grep -oE 'https://[a-zA-Z0-9\.-]+\.trycloudflare\.com' "$WORKDIR/boot.log" | head -n 1)
-    
+    echo "$argodomain"
     # 从 boot.log 提取端口号
     vmess_port=$(grep -oE 'localhost:([0-9]+)' "$WORKDIR/boot.log" | sed 's/localhost://')
-
+echo "$vmess_port"
     # 如果同时提取到域名和端口号
     if [[ -n "$argodomain" && -n "$vmess_port" ]]; then
         # 使用提取的域名和端口
