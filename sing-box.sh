@@ -1812,7 +1812,7 @@ if [ -e "$WORKDIR/bot" ]; then
     # 默认使用本地转发配置，判断是否设置了 vmess_port
    if [[ -f "$WORKDIR/boot.log" ]]; then
     # 从 boot.log 中提取域名
-    argodomain=$(grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' boot.log | sed 's@https://@@') 
+     argodomain=$(grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' "$WORKDIR/boot.log" | head -n 1)
     
     # 如果提取到域名并且 vmess_port 存在，使用 vmess_port 和提取的域名
     if [[ -n "$argodomain" && -n "$vmess_port" ]]; then
