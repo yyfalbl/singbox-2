@@ -1788,13 +1788,24 @@ start_web() {
     fi
 
     # 启动bot进程
-     if [ -e "$WORKDIR/bot" ]; then
-    # 检查 tunnel.yml 文件是否存在
-    if [ -e "$WORKDIR/tunnel.yml" ]; then
-        args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
+    if [ -e "$WORKDIR/bot" ]; then
+  # 如果 ARGO_AUTH 是一个有效的 Token 格式
+  if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
+    args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}}"
+  # 如果 ARGO_AUTH 包含 TunnelSecret 字符串，表示可能是一个 JSON 格式的配置
+  elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
+    args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
+  # 如果 ARGO_AUTH 是有效的 JSON 格式（检查是否以 '{' 开头并包含 '}' 结尾）
+  elif [[ $ARGO_AUTH =~ ^\{.*\}$ ]]; then
+    args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}}"
+  else
+    # 默认配置，使用 http2 协议和本地转发
+    if [[ -n "$vmess_port" ]]; then
+      args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --url http://localhost:$vmess_port}"
     else
-     args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080"
+      args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --url http://localhost:8080}"
     fi
+  fi
     
     # 启动 bot 进程
     nohup "$WORKDIR/bot" $args >> "$WORKDIR/bot.log" 2>&1 &
