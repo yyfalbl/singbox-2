@@ -1582,7 +1582,7 @@ run_sb() {
   # 确保工作目录存在并具有写权限
 if [ ! -d "$WORKDIR" ]; then
   mkdir -p "$WORKDIR"
-  chmod 755 "$WORKDIR"
+  chmod +x "$WORKDIR"
 fi
 
 # 确保 boot.log 文件能够被创建或写入
@@ -1608,7 +1608,7 @@ touch "$WORKDIR/boot.log" 2>/dev/null || { echo "无法创建 boot.log 文件，
  fi
 
     # 启动 bot 进程
-    nohup $WORKDIR/bot $args >/dev/null 2>&1 &
+     nohup "$WORKDIR/bot" $args >> "$WORKDIR/boot.log" 2>&1 & 
     sleep 2
     pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
    # 检查 Argo 隧道是否开启
