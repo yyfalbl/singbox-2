@@ -42,7 +42,7 @@ cookies_file="$base_dir/cookies.txt"
 saved_ip=$(cat "$base_dir/.serv00_ip" 2>/dev/null)
 ip_address=""
 FINAL_IP=""
-    
+ echo $WORKDIR   
 # 定义函数来检查密码是否存在
 get_password() {
     # 如果密码文件存在，读取密码
