@@ -73,15 +73,15 @@ getUnblockIP(){
     
     # 从API返回的数据中提取出IP地址和状态信息
     local ip=$(echo "$response" | awk -F "|" '{print $1 }')
-    local 状态=$(echo "$response" | awk -F "|" '{print $2 }')
+    local status=$(echo "$response" | awk -F "|" '{print $2 }')
 
     # 将 "Accessible" 状态替换为 "未被墙"，"Blocked" 状态替换为 "已被墙"
     if [[ "$status" == "Accessible" ]]; then
-      状态="\e[1;3;32m未被墙\e[0m"  # 绿色、加粗和斜体
+      status="\e[1;3;32m未被墙\e[0m"  # 绿色、加粗和斜体
       # 如果主机未被墙，将IP添加到 unblock_ips 数组中
       unblock_ips+=("$ip")
     elif [[ "$status" == "Blocked" ]]; then
-      状态="\e[1;3;31m已被墙\e[0m"  # 红色、加粗和斜体
+      status="\e[1;3;31m已被墙\e[0m"  # 红色、加粗和斜体
     fi
 
     # 将主机名和 IP 设置为加粗和斜体
@@ -90,16 +90,15 @@ getUnblockIP(){
 
     # 输出主机信息，格式化输出：主机名、IP和状态
     printf "%-20b | %-15b | %-10b\n" "$bold_italic_host" "$bold_italic_ip" "$status"
-  已完成
+  done
   
   # 输出所有未被墙的IP地址
   echo -e "\n未被墙的IP地址："
   for ip in "${unblock_ips[@]}"; do
     echo "$ip"
+  done
 }
-
-
-    
+   
 # 定义函数来检查密码是否存在
 get_password() {
     # 如果密码文件存在，读取密码
