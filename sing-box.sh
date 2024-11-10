@@ -42,7 +42,8 @@ cookies_file="$base_dir/cookies.txt"
 saved_ip=$(cat "$base_dir/.serv00_ip" 2>/dev/null)
 ip_address=""
 FINAL_IP=""
-getUnblockIP(){
+# 获取没有被墙的ip
+  getUnblockIP(){
   # 获取当前主机的主机名
   local hostname=$(hostname)
   # 从主机名中提取出主机编号（即主机名的数字部分）
@@ -51,11 +52,6 @@ getUnblockIP(){
   # 构建一个主机名数组，包含 cache、web 和当前主机
   local hosts=("cache${host_number}.serv00.com" "web${host_number}.serv00.com" "$hostname")
 
-  # 打印分隔符线和表头
-  yellow "----------------------------------------------"
-  green "  主机名称          |      IP        |  状态"
-  yellow "----------------------------------------------"
-  
   # 定义一个数组，用于存储所有未被墙的IP
   local unblock_ips=()
 
@@ -76,28 +72,18 @@ getUnblockIP(){
 
     # 将 "Accessible" 状态替换为 "未被墙"，"Blocked" 状态替换为 "已被墙"
     if [[ "$status" == "Accessible" ]]; then
-      status="\e[1;3;32m未被墙\e[0m"  # 绿色、加粗和斜体
       # 如果主机未被墙，将IP添加到 unblock_ips 数组中
       unblock_ips+=("$ip")
-    elif [[ "$status" == "Blocked" ]]; then
-      status="\e[1;3;31m已被墙\e[0m"  # 红色、加粗和斜体
     fi
-
-    # 将主机名和 IP 设置为加粗和斜体
-    local bold_italic_host="\e[1;3m$host\e[0m"
-    local bold_italic_ip="\e[1;3m$ip\e[0m"
-
-    # 输出主机信息，格式化输出：主机名、IP和状态
-    printf "%-20b | %-15b | %-10b\n" "$bold_italic_host" "$bold_italic_ip" "$status"
   done
   
   # 输出所有未被墙的IP地址
   echo -e "\n未被墙的IP地址："
   for ip in "${unblock_ips[@]}"; do
-    echo "$ip"
+    echo -e "\033[1;32;3m当前可用服务器备用 IP 地址: $ip\033[0m" 
   done
 }
-    
+  
 # 定义函数来检查密码是否存在
 get_password() {
     # 如果密码文件存在，读取密码
