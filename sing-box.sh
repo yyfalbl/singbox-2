@@ -42,7 +42,13 @@ cookies_file="$base_dir/cookies.txt"
 saved_ip=$(cat "$base_dir/.serv00_ip" 2>/dev/null)
 ip_address=""
 FINAL_IP=""
- echo $WORKDIR   
+echo "Using config file: $WORKDIR/tunnel.yml"
+if [[ -f "$WORKDIR/tunnel.yml" ]]; then
+    echo "Config file found!"
+    cat "$WORKDIR/tunnel.yml"
+else
+    echo "Config file not found!"
+fi
 # 定义函数来检查密码是否存在
 get_password() {
     # 如果密码文件存在，读取密码
