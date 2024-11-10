@@ -1817,17 +1817,14 @@ if [ -e "$WORKDIR/bot" ]; then
 if [[ -f "$WORKDIR/boot.log" ]]; then
     # 从 boot.log 中提取域名
     argodomain=$(grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' $WORKDIR/boot.log | sed 's@https://@@') 
-    echo "$argodomain"
     # 从 boot.log 提取端口号
     vmess_port=$(grep -oE 'localhost:([0-9]+)' "$WORKDIR/boot.log" | sed 's/localhost://')
-echo "$vmess_port"
     # 如果同时提取到域名和端口号
     if [[ -n "$argodomain" && -n "$vmess_port" ]]; then
         # 使用提取的域名和端口
         args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port --hostname $argodomain}"
     else
-        # 如果没有提取到有效的域名或端口，则使用默认配置
-        echo "提取失败"
+        args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080}"
     fi
 
 fi
