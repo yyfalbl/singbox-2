@@ -1714,15 +1714,20 @@ fi
 sleep 2
 
 # 检查 Argo 隧道是否开启
-      if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
-          # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
-          green "===Argo临时隧道功能已开启==="
-      elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
-          # 检查 tunnel.yml 文件中是否有 tunnel 配置，表示 Argo 隧道开启
-          green "=== Argo固定隧道功能已开启 ==="
-      else
-          red "===Argo隧道未开启==="
-      fi
+    # 打印args内容，帮助调试
+echo "args: $args"
+
+# 检查args中是否包含临时隧道配置
+if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
+    # 如果args包含临时隧道的配置，表示开启了Argo临时隧道
+    green "===Argo临时隧道功能已开启==="
+elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
+    # 检查tunnel.yml文件中是否有tunnel配置，表示Argo隧道开启
+    green "=== Argo固定隧道功能已开启 ==="
+else
+    red "===Argo隧道未开启==="
+fi
+
       
 current_fqdn=$(hostname -f)
 
