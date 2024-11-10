@@ -865,29 +865,32 @@ read_nz_variables() {
 
 #固定argo隧道  
 argo_configure() {
-if [[ "$INSTALL_VMESS" == "true" ]]; then
-while true; do
-    reading "Y 固定Argo隧道 或者 N 使用临时隧道【y/n】(ENTER默认y):\c" argo_choice 
-    # 处理用户输入
-    if [[ -z $argo_choice ]]; then
-        green "开启固定隧道功能，请稍后..."
-      sleep 3
-      break 
-    elif [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
-        green "开启固定隧道功能，请稍后..."
-        sleep 3
-        break 
-    elif [[ "$argo_choice" == "n" || "$argo_choice" == "N" ]]; then
-      sleep 1
-       echo -e "${BOLD}${ITALIC}\033[1;3;32m将使用临时隧道...\033[0m${RESET} \n${BOLD}${ITALIC}\033[1;3;31m注意: 临时隧道不稳定, 可能会出现不通，建议固定隧道！${RESET}"
-        sleep 3
-        break 
-    else
-        red "无效的选择，请输入 y 或 n 或直接按Enter键"
-    fi 
-done
+    if [[ "$INSTALL_VMESS" == "true" ]]; then
+        while true; do
+            reading "Y 固定Argo隧道 或者 N 使用临时隧道【y/n】(ENTER默认y):\c" argo_choice
+            # 处理用户输入
+            if [[ -z $argo_choice ]]; then
+                # 如果用户按回车键（即为空），默认选择'y'
+                argo_choice="y"
+                green "默认选择开启固定隧道功能，请稍后..."
+                sleep 3
+                break
+            elif [[ "$argo_choice" == "y" || "$argo_choice" == "Y" ]]; then
+                green "开启固定隧道功能，请稍后..."
+                sleep 3
+                break
+            elif [[ "$argo_choice" == "n" || "$argo_choice" == "N" ]]; then
+                sleep 1
+                echo -e "${BOLD}${ITALIC}\033[1;3;32m将使用临时隧道...\033[0m${RESET} \n${BOLD}${ITALIC}\033[1;3;31m注意: 临时隧道不稳定, 可能会出现不通，建议固定隧道！${RESET}"
+                sleep 3
+                break
+            else
+                red "无效的选择，请输入 y 或 n 或直接按Enter键"
+            fi
+        done
+
         # 提示用户生成配置信息
-    echo -e "\033[1;3;33m请访问以下网站生成 Argo 固定隧道所需的Json配置信息。${RESET}"
+        echo -e "\033[1;3;33m请访问以下网站生成 Argo 固定隧道所需的Json配置信息。${RESET}"
         echo ""
         echo -e "${red}      https://fscarmen.cloudflare.now.cc/ ${reset}"
         echo ""
@@ -922,7 +925,7 @@ done
             echo "$ARGO_AUTH" > "$WORKDIR/tunnel.json" 2>"$WORKDIR/tunnel.json.error"
             if [[ $? -ne 0 ]]; then
                 red "生成 tunnel.json 文件失败，请检查权限和路径"
-                 cat "$WORKDIR/tunnel.json.error" 2>/dev/null
+                cat "$WORKDIR/tunnel.json.error" 2>/dev/null
                 return
             fi
             credentials_file="$WORKDIR/tunnel.json"
@@ -951,6 +954,7 @@ EOF
         green "没有选择 vmess 协议，暂停使用 Argo 固定隧道"
     fi
 }
+
 # 定义颜色
 YELLOW='\033[1;3;33m'
 NC='\033[0m' # No Color
