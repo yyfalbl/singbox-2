@@ -95,9 +95,9 @@ getUnblockIP(){
   # 输出所有未被墙的IP地址
   echo -e "\n未被墙的IP地址："
   for ip in "${unblock_ips[@]}"; do
-    echo -e "\033[1;32;3m当前服务器未被墙 IP 地址: $ip\033[0m"
-  已完成
+    echo "$ip"
 }
+
 
     
 # 定义函数来检查密码是否存在
