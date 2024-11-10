@@ -42,6 +42,7 @@ cookies_file="$base_dir/cookies.txt"
 saved_ip=$(cat "$base_dir/.serv00_ip" 2>/dev/null)
 ip_address=""
 FINAL_IP=""
+    
 # 定义函数来检查密码是否存在
 get_password() {
     # 如果密码文件存在，读取密码
@@ -1755,8 +1756,8 @@ purple() { echo -e "\e[1;35m$1\033[0m"; }
 reading() { read -p "$(red "$1")" "$2"; }
 
 # 启动 web和bot 函数    
+
 start_web() {
-    # 定义颜色输出函数
     green() {
         echo -e "\\033[1;3;32m$*\\033[0m"
     }
@@ -1769,88 +1770,93 @@ start_web() {
         echo -e "\\033[1;3;35m$*\\033[0m"
     }
 
-    # 检查并创建日志目录
-    create_log_dir() {
-        if [ ! -d "$(dirname $1)" ]; then
-            mkdir -p "$(dirname $1)"
-        fi
-    }
-
-    # 输出启动信息
-    echo -n -e "\033[1;3;31m正在启动sing-box服务, 请稍后......\033[0m\n"
-    sleep 1  # 可选：稍作停顿
+    # 保存光标位置
+    echo -n -e "\033[1;3;31m正在启动sing-box服务,请稍后......\033[0m\n"
+    sleep 1  # 可选：在启动进程前稍作停顿
 
     # 启动 web 进程
     if [ -e "$WORKDIR/web" ]; then
         chmod +x "$WORKDIR/web"
-        create_log_dir "$WORKDIR/web.log"  # 创建日志文件目录
-
+        
         # 启动 web 进程
         nohup "$WORKDIR/web" run -c "$WORKDIR/config.json" >"$WORKDIR/web.log" 2>&1 &
         sleep 2
 
         # 检查 web 进程是否启动成功
         if pgrep -x "web" > /dev/null; then
-            echo -ne "\r\033[K"  # 清除初始消息
-            green "WEB进程启动成功, 并正在运行！"
+            # 清除初始消息，换行
+            echo -ne "\r\033[K"
+            green "WEB进程启动成功,并正在运行！"
         else
-            echo -ne "\r\033[K"  # 清除初始消息
+            # 清除初始消息，换行
+            echo -ne "\r\033[K"
             red "web进程启动失败，请重试。检查日志以获取更多信息。"
+        #    echo "查看日志文件以获取详细信息: $WORKDIR/web.log"
         fi
     else
+        # 清除初始消息，换行
         echo -ne "\r\033[K"
         red "web可执行文件未找到，请检查路径是否正确。"
-        return
     fi
 
-    # 启动 bot 进程
-    if [ -e "$WORKDIR/bot" ]; then
-        create_log_dir "$WORKDIR/bot.log"  # 创建日志文件目录
-        # 设置 args 参数
-        if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
-            args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}}"
-        elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-            args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
-        else
-            # 默认使用本地转发配置，判断是否设置了 vmess_port
-            if [[ -f "$WORKDIR/boot.log" ]]; then
-                # 从 boot.log 中提取域名
-                argodomain=$(grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' $WORKDIR/boot.log | sed 's@https://@@') 
-                # 从 boot.log 提取端口号
-                vmess_port=$(grep -oE 'localhost:([0-9]+)' "$WORKDIR/boot.log" | sed 's/localhost://')
-                # 如果同时提取到域名和端口号
-                if [[ -n "$argodomain" && -n "$vmess_port" ]]; then
-                    args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port --hostname $argodomain}"
-                else
-                    echo "提取失败"
-                fi
-            fi
-        fi
-
-        # 启动 bot 进程
-        nohup $WORKDIR/bot $args >> $WORKDIR/bot.log 2>&1 &
-        sleep 2
-
-        # 检查 bot 是否启动成功
-        if pgrep -x "bot" > /dev/null; then
-            green "BOT进程启动成功, 并正在运行！"
-            
-            # 检查 Argo 隧道是否开启
-            if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
-                green "=== Argo 临时隧道功能已开启 ==="
-            elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
-                green "=== Argo 固定隧道功能已开启 ==="
-            else
-                red "=== Argo 隧道未开启 ==="
-            fi
-        else
-            red "bot进程启动失败，请检查日志以获取更多信息。"
-        fi
+  # 启动 bot 进程
+if [ -e "$WORKDIR/bot" ]; then
+  # 设置 args 参数
+  if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
+    args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}}"
+  elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
+    args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
+  elif [[ $ARGO_AUTH =~ ^\{.*\}$ ]]; then
+    args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}}"
+  else
+    # 默认使用本地转发配置，判断是否设置了 vmess_port
+if [[ -f "$WORKDIR/boot.log" ]]; then
+    # 从 boot.log 中提取域名
+    argodomain=$(grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' $WORKDIR/boot.log | sed 's@https://@@') 
+    echo "$argodomain"
+    # 从 boot.log 提取端口号
+    vmess_port=$(grep -oE 'localhost:([0-9]+)' "$WORKDIR/boot.log" | sed 's/localhost://')
+echo "$vmess_port"
+    # 如果同时提取到域名和端口号
+    if [[ -n "$argodomain" && -n "$vmess_port" ]]; then
+        # 使用提取的域名和端口
+        args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port --hostname $argodomain}"
     else
-        green "没有找到 bot 文件，无法启动 bot 进程。"
+        # 如果没有提取到有效的域名或端口，则使用默认配置
+        echo "提取失败"
     fi
-}
 
+fi
+
+
+ fi
+
+  # 启动 bot 进程
+  nohup $WORKDIR/bot $args >/dev/null 2>&1 &
+  sleep 2
+
+  # 检查 bot 是否启动成功
+  if pgrep -x "bot" > /dev/null; then
+      green "BOT进程启动成功, 并正在运行！"
+      
+      # 检查 Argo 隧道是否开启
+      if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
+          # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
+          green "===Argo临时隧道功能已开启==="
+      elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
+          # 检查 tunnel.yml 文件中是否有 tunnel 配置，表示 Argo 隧道开启
+          green "=== Argo固定隧道功能已开启 ==="
+      else
+          red "===Argo隧道未开启==="
+      fi
+  else
+      red "bot进程启动失败，请检查日志以获取更多信息。"
+  fi
+else
+  green "没有找到 bot 文件，无法启动 bot 进程。"
+fi
+
+}
     
 #停止sing-box服务
 stop_web() {
