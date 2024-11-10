@@ -1715,7 +1715,7 @@ sleep 2
 
 # 检查 Argo 隧道是否开启
 # 检查args中是否包含临时隧道配置
-if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
+if [[ "$args" == *"--url http://localhost:$vmess_port"* && -n "$argodomain" ]]; then
     # 如果args包含临时隧道的配置，表示开启了Argo临时隧道
     green "===Argo临时隧道功能已开启==="
 elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
