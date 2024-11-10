@@ -201,7 +201,7 @@ process_ct8() {
                 fi
             fi
         fi
-    已完成
+    done
 }
 
 # 备用ip获取函数
