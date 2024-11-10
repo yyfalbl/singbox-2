@@ -43,7 +43,7 @@ saved_ip=$(cat "$base_dir/.serv00_ip" 2>/dev/null)
 ip_address=""
 FINAL_IP=""
 # 获取没有被墙的ip
-  getUnblockIP(){
+ getUnblockIP(){
   # 获取当前主机的主机名
   local hostname=$(hostname)
   # 从主机名中提取出主机编号（即主机名的数字部分）
@@ -75,12 +75,10 @@ FINAL_IP=""
       # 如果主机未被墙，将IP添加到 unblock_ips 数组中
       unblock_ips+=("$ip")
     fi
-  done
-  
-  # 输出所有未被墙的IP地址
-  echo -e "\n未被墙的IP地址："
+  done 
+  # 输出所有未被墙的IP地址，不显示标题
   for ip in "${unblock_ips[@]}"; do
-    echo -e "\033[1;32;3m当前可用服务器备用 IP 地址: $ip\033[0m" 
+    echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip\033[0m" 
   done
 }
   
