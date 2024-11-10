@@ -43,7 +43,7 @@ saved_ip=$(cat "$base_dir/.serv00_ip" 2>/dev/null)
 ip_address=""
 FINAL_IP=""
 # 获取未被墙的ip
-getUnblockIP(){
+  getUnblockIP(){
   # 获取当前主机的主机名
   local hostname=$(hostname)
   # 从主机名中提取出主机编号（即主机名的数字部分）
@@ -98,7 +98,7 @@ getUnblockIP(){
     echo "$ip"
   done
 }
-   
+
 # 定义函数来检查密码是否存在
 get_password() {
     # 如果密码文件存在，读取密码
