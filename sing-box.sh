@@ -1714,9 +1714,6 @@ fi
 sleep 2
 
 # 检查 Argo 隧道是否开启
-    # 打印args内容，帮助调试
-echo "args: $args"
-
 # 检查args中是否包含临时隧道配置
 if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
     # 如果args包含临时隧道的配置，表示开启了Argo临时隧道
