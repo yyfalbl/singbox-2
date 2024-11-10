@@ -78,7 +78,7 @@ FINAL_IP=""
   done 
   # 输出所有未被墙的IP地址，不显示标题
   for ip in "${unblock_ips[@]}"; do
-    echo -e "\033[1;32;3m当前服务器备用 IP 地址: $ip\033[0m" 
+    echo -e "\033[1;32;3m当前可用服务器 IP 地址: $ip\033[0m" 
   done
 }
   
