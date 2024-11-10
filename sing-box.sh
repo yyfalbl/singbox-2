@@ -1722,7 +1722,7 @@ elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
     # 检查tunnel.yml文件中是否有tunnel配置，表示Argo隧道开启
     green "=== Argo固定隧道功能已开启 ==="
 else
-    red "===Argo隧道未开启==="
+    red "===Argo隧道功能未开启==="
 fi
 
       
