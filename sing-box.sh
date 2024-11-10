@@ -42,75 +42,19 @@ cookies_file="$base_dir/cookies.txt"
 saved_ip=$(cat "$base_dir/.serv00_ip" 2>/dev/null)
 ip_address=""
 FINAL_IP=""
-# 获取未被墙的ip
-  getUnblockIP(){
-  # 获取当前主机的主机名
-  local hostname=$(hostname)
-  # 从主机名中提取出主机编号（即主机名的数字部分）
-  local host_number=$(echo "$hostname" | awk -F'[s.]' '{print $2}')
-  
-  # 构建一个主机名数组，包含 cache、web 和当前主机
-  local hosts=("cache${host_number}.serv00.com" "web${host_number}.serv00.com" "$hostname")
-
-  # 打印分隔符线和表头
-  yellow "----------------------------------------------"
-  green "  主机名称          |      IP        |  状态"
-  yellow "----------------------------------------------"
-  
-  # 定义一个数组，用于存储所有未被墙的IP
-  local unblock_ips=()
-
-  # 遍历主机名称数组
-  for host in "${hosts[@]}"; do
-    # 使用curl命令调用API，获取主机的IP和状态信息
-    local response=$(curl -s "https://ss.botai.us.kg/api/getip?host=$host")
-
-    # 检查API返回的响应中是否包含 "not found" 字符串，表示无法识别该主机
-    if [[ "$response" =~ "not found" ]]; then
-      echo "未识别主机${host}, 请联系作者饭奇骏!"
-      return  # 退出函数
-    fi
     
-    # 从API返回的数据中提取出IP地址和状态信息
-    local ip=$(echo "$response" | awk -F "|" '{print $1 }')
-    local status=$(echo "$response" | awk -F "|" '{print $2 }')
-
-    # 将 "Accessible" 状态替换为 "未被墙"，"Blocked" 状态替换为 "已被墙"
-    if [[ "$status" == "Accessible" ]]; then
-      status="\e[1;3;32m未被墙\e[0m"  # 绿色、加粗和斜体
-      # 如果主机未被墙，将IP添加到 unblock_ips 数组中
-      unblock_ips+=("$ip")
-    elif [[ "$status" == "Blocked" ]]; then
-      status="\e[1;3;31m已被墙\e[0m"  # 红色、加粗和斜体
-    fi
-
-    # 将主机名和 IP 设置为加粗和斜体
-    local bold_italic_host="\e[1;3m$host\e[0m"
-    local bold_italic_ip="\e[1;3m$ip\e[0m"
-
-    # 输出主机信息，格式化输出：主机名、IP和状态
-    printf "%-20b | %-15b | %-10b\n" "$bold_italic_host" "$bold_italic_ip" "$status"
-  done
-  
-  # 输出所有未被墙的IP地址
-  echo -e "\n未被墙的IP地址："
-  for ip in "${unblock_ips[@]}"; do
-    echo "$ip"
-  done
-}
-
 # 定义函数来检查密码是否存在
 get_password() {
     # 如果密码文件存在，读取密码
     if [[ -f "$password_file" ]]; then
-        密码=$(cat "$password_file")
-        [[ -z "$password" ]] && unset 密码
+        password=$(cat "$password_file")
+        [[ -z "$password" ]] && unset password
     fi
 
     if [[ -z "$password" ]]; then
         # 如果密码文件不存在或内容为空，提示用户输入密码并保存
         echo -ne "\033[1;3;33m请输入登录panel面板的密码(填不填谁便你,直接按Enter键): \033[0m"  # 黄色斜体加粗，不换行
-        read -r 密码  # 不隐藏输入
+        read -r password  # 不隐藏输入
         # 将密码保存到文件中
         echo "$password" > "$password_file"
         chmod 600 "$password_file"  # 确保只有用户自己能读写这个文件
@@ -350,8 +294,7 @@ get_server_info() {
     if [[ "$current_fqdn" == *.serv00.com ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
          echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.serv00.net${RESET}"
-   #  beiyong_ip
-     getUnblockIP
+     beiyong_ip
     elif [[ "$current_fqdn" == *.ct8.pl ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
      echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.ct8.pl${RESET}"
@@ -434,10 +377,10 @@ setup_socks5() {
   while [[ -z "$SOCKS5_PASS" ]]; do
     SOCKS5_PASS=$(generate_random_string 10)  # 生成10位随机密码
     if [[ "$SOCKS5_PASS" == *"@"* || "$SOCKS5_PASS" == *":"* ]]; then
-      继续
+      continue
     fi
     break
-  已完成
+  done
   if [ -z "$SOCKS5_PASS" ]; then
     echo -e "${CYAN}随机生成的 socks5 密码是: ${SOCKS5_PASS}${RESET}"
   fi
@@ -944,7 +887,7 @@ argo_configure() {
             else
                 red "无效的选择，请输入 y 或 n 或直接按Enter键"
             fi
-        已完成
+        done
 
         # 提示用户生成配置信息
         echo -e "\033[1;3;33m请访问以下网站生成 Argo 固定隧道所需的Json配置信息。${RESET}"
@@ -960,7 +903,7 @@ argo_configure() {
                 else
                     green "你的 Argo 固定隧道域名为: $ARGO_DOMAIN"
                 fi
-            已完成
+            done
             
             while [[ -z $ARGO_AUTH ]]; do
                 reading "请输入 Argo 固定隧道密钥（Json 或 Token）: " ARGO_AUTH
@@ -969,7 +912,7 @@ argo_configure() {
                 else
                     green "你的 Argo 固定隧道密钥为: $ARGO_AUTH"
                 fi
-            已完成
+            done
             
             echo -e "${red}注意：${purple}使用 token，需要在 Cloudflare 后台设置隧道端口和面板开放的 TCP 端口一致${RESET}"
         else
@@ -1713,7 +1656,7 @@ get_argodomain() {
         break
       fi
       sleep 1
-    已完成
+    done
     echo "$argodomain"
   fi
 }
@@ -2070,7 +2013,7 @@ for ((i=0; i<size; i++)); do
     else
         echo -e "\033[1;33m||                         ||\033[0m"  # 中间部分
     fi
-已完成
+done
    echo ""
    green "\033[1;3m1. 安装sing-box\033[0m"
    echo "==============="
@@ -2141,7 +2084,7 @@ for ((i=0; i<size; i++)); do
             echo ""
             ;;
     esac
-    已完成
+    done
    
 }
 menu
