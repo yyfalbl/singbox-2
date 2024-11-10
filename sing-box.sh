@@ -1828,7 +1828,8 @@ fi
  fi
 
   # 启动 bot 进程
-  nohup $WORKDIR/bot $args >/dev/null 2>&1 &
+  nohup $WORKDIR/bot $args >> $WORKDIR/bot.log 2>&1 &
+
   sleep 2
 
   # 检查 bot 是否启动成功
