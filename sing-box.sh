@@ -42,6 +42,61 @@ cookies_file="$base_dir/cookies.txt"
 saved_ip=$(cat "$base_dir/.serv00_ip" 2>/dev/null)
 ip_address=""
 FINAL_IP=""
+getUnblockIP(){
+  # 获取当前主机的主机名
+  local hostname=$(hostname)
+  # 从主机名中提取出主机编号（即主机名的数字部分）
+  local host_number=$(echo "$hostname" | awk -F'[s.]' '{print $2}')
+  
+  # 构建一个主机名数组，包含 cache、web 和当前主机
+  local hosts=("cache${host_number}.serv00.com" "web${host_number}.serv00.com" "$hostname")
+
+  # 打印分隔符线和表头
+  yellow "----------------------------------------------"
+  green "  主机名称          |      IP        |  状态"
+  yellow "----------------------------------------------"
+  
+  # 定义一个数组，用于存储所有未被墙的IP
+  local unblock_ips=()
+
+  # 遍历主机名称数组
+  for host in "${hosts[@]}"; do
+    # 使用curl命令调用API，获取主机的IP和状态信息
+    local response=$(curl -s "https://ss.botai.us.kg/api/getip?host=$host")
+
+    # 检查API返回的响应中是否包含 "not found" 字符串，表示无法识别该主机
+    if [[ "$response" =~ "not found" ]]; then
+      echo "未识别主机${host}, 请联系作者饭奇骏!"
+      return  # 退出函数
+    fi
+    
+    # 从API返回的数据中提取出IP地址和状态信息
+    local ip=$(echo "$response" | awk -F "|" '{print $1 }')
+    local status=$(echo "$response" | awk -F "|" '{print $2 }')
+
+    # 将 "Accessible" 状态替换为 "未被墙"，"Blocked" 状态替换为 "已被墙"
+    if [[ "$status" == "Accessible" ]]; then
+      status="\e[1;3;32m未被墙\e[0m"  # 绿色、加粗和斜体
+      # 如果主机未被墙，将IP添加到 unblock_ips 数组中
+      unblock_ips+=("$ip")
+    elif [[ "$status" == "Blocked" ]]; then
+      status="\e[1;3;31m已被墙\e[0m"  # 红色、加粗和斜体
+    fi
+
+    # 将主机名和 IP 设置为加粗和斜体
+    local bold_italic_host="\e[1;3m$host\e[0m"
+    local bold_italic_ip="\e[1;3m$ip\e[0m"
+
+    # 输出主机信息，格式化输出：主机名、IP和状态
+    printf "%-20b | %-15b | %-10b\n" "$bold_italic_host" "$bold_italic_ip" "$status"
+  done
+  
+  # 输出所有未被墙的IP地址
+  echo -e "\n未被墙的IP地址："
+  for ip in "${unblock_ips[@]}"; do
+    echo "$ip"
+  done
+}
     
 # 定义函数来检查密码是否存在
 get_password() {
@@ -295,6 +350,7 @@ get_server_info() {
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
          echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.serv00.net${RESET}"
      beiyong_ip
+     getUnblockIP
     elif [[ "$current_fqdn" == *.ct8.pl ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
      echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.ct8.pl${RESET}"
