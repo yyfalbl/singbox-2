@@ -2038,12 +2038,23 @@ echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}
           # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
           green "===Argo临时隧道功能已开启==="
           echo ""
-        # 生成新的 vmess 链接
-vmess_link=$(printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n")
+     # 生成新的 vmess 链接，注意这里是 Base64 编码的链接
+vmess_data="{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\" }"
+vmess_base64=$(echo -n "$vmess_data" | base64 -w0)
 
-# 使用 sed 替换 list.txt 中包含 argodomain 的整行内容
-# 这里使用正则匹配包含 $argodomain 的行，替换为 vmess_link
-sed -i '' "s|https://[^ ]*\($argodomain\)[^ ]*|$vmess_link|g" "$WORKDIR/list.txt"
+# 构建完整的 vmess 链接
+vmess_link="vmess://$vmess_base64"
+
+# 调试输出 vmess_link 和 argodomain
+echo "Generated vmess link: $vmess_link"
+echo "argodomain: $argodomain"
+
+# 替换 list.txt 中包含 argodomain 的链接
+# 通过 sed 查找并替换包含 argodomain 的 vmess 链接
+sed -i '' "s|vmess://[A-Za-z0-9+/=]*$argodomain[A-Za-z0-9+/=]*|$vmess_link|g" "$WORKDIR/list.txt"
+
+# 打印替换后的文件内容（可选）
+cat "$WORKDIR/list.txt"
            echo ""
     elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
           # 检查 tunnel.yml 文件中是否有 tunnel 配置，表示 Argo 隧道开启
