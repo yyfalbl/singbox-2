@@ -1989,11 +1989,11 @@ WORKDIR="$HOME/sbox"
 if [ -e "$WORKDIR/bot" ]; then
   # 设置 args 参数
   if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
-    args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}}"
+    args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
   elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-    args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
+    args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
   elif [[ $ARGO_AUTH =~ ^\{.*\}$ ]]; then
-    args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}}"
+     args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}"
   else
     # 默认使用本地转发配置，判断是否设置了 vmess_port
 if [[ -f "$WORKDIR/boot.log" ]]; then
@@ -2004,9 +2004,9 @@ if [[ -f "$WORKDIR/boot.log" ]]; then
     # 如果同时提取到域名和端口号
     if [[ -n "$argodomain" && -n "$vmess_port" ]]; then
         # 使用提取的域名和端口
-        args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port --hostname $argodomain}"
+        args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port --hostname $argodomain"
     else
-        args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080}"
+        args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080 "
     fi
 
 fi
@@ -2015,7 +2015,7 @@ fi
  fi
 
   # 启动 bot 进程
-  nohup /home/yy-falbl/sbox/bot tunnel --edge-ip-version auto --config /home/yy-falbl/sbox/tunnel.yml run > /home/yy-falbl/sbox/bot.log 2>&1 &
+  nohup $WORKDIR/bot $args > $WORKDIR/bot.log 2>&1 &
   sleep 2
 
   # 检查 bot 是否启动成功
