@@ -2036,7 +2036,7 @@ if [[ "$current_fqdn" == *.serv00.com ]]; then
           echo ""
        # 生成新的 vmess 链接
 new_vmess_link="${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}"
-
+echo "$new_vmess_link"
 # 替换 list.txt 中的 vmess 链接
 sed -i '' "s|vmess://.*\"host\": \"$argodomain\".*|$new_vmess_link|g" "$WORKDIR/list.txt"
 
