@@ -2041,7 +2041,9 @@ link="vmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"ad
 # 打印生成的链接
 printf "${YELLOW}\033[1m$link${RESET}\n"
 
- sed -i "s|vmess://.*$CFIP.*$CFPORT.*|$link|" "$WORKDIR/list.txt"
+ # 替换文件中的旧链接，确保只替换对应的链接
+sed -i '' "s|vmess://.*$CFIP.*$CFPORT.*|$link|" "$WORKDIR/list.txt"
+
                 green "链接已成功替换。"
 
         echo ""
