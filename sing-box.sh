@@ -1982,12 +1982,12 @@ start_web() {
     fi
 
   # 启动 bot 进程
-if [ -e "$WORKDIR/bot" ]; then
-  # 设置 args 参数
-  if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
+if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
     args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}}"
   elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-    args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
+    args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
+  elif [[ $ARGO_AUTH =~ ^\{.*\}$ ]]; then
+    args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}}"
   else
     # 默认使用本地转发配置，判断是否设置了 vmess_port
 if [[ -f "$WORKDIR/boot.log" ]]; then
