@@ -2041,13 +2041,13 @@ link="vmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"ad
 # 打印生成的链接
 printf "${YELLOW}\033[1m$link${RESET}\n"
 
-# 检查 list.txt 中是否已经存在相同的链接
-if grep -q "$CFIP" "$WORKDIR/list.txt"; then
-    # 如果文件中已有该链接，使用 sed 替换掉原有链接
-    sed -i '' "s|vmess://.*$CFIP.*$CFPORT.*|$link|" "$WORKDIR/list.txt"
+# 查找现有的链接，使用 CFIP 和 CFPORT 字段进行匹配
+if grep -q "add\": \"$CFIP\".*\"port\": \"$CFPORT\"" "$WORKDIR/list.txt"; then
+    # 如果文件中已存在该链接，使用 sed 替换
+    sed -i '' "s|vmess://.*\"add\": \"$CFIP\".*\"port\": \"$CFPORT\".*|$link|" "$WORKDIR/list.txt"
     green "链接已更新！"
 else
-    # 如果文件中没有该链接，将其添加到文件末尾
+    # 如果文件中没有该链接，则追加
     echo "$link" >> "$WORKDIR/list.txt"
     green "链接已成功写入 $WORKDIR/list.txt 文件！"
 fi
