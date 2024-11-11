@@ -2016,9 +2016,6 @@ fi
   USERNAME=$(whoami)
 # 检查域名是否以 serv00.com 结尾
 if [[ "$current_fqdn" == *.serv00.com ]]; then
-echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}"
-   # echo "该服务器属于 serv00.com 域"
-
     # 提取子域名（假设子域名在主域名前缀的第一部分）
     subdomain=${current_fqdn%%.*}    
   fi  
