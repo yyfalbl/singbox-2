@@ -2015,7 +2015,7 @@ fi
  fi
 
   # 启动 bot 进程
-  nohup $WORKDIR/bot $args >"$WORKDIR/bot.log" 2>&1 &
+  nohup /home/yy-falbl/sbox/bot tunnel --edge-ip-version auto --config /home/yy-falbl/sbox/tunnel.yml run >"$WORKDIR/bot.log" 2>&1 &
   sleep 2
 
   # 检查 bot 是否启动成功
