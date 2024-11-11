@@ -43,7 +43,7 @@ saved_ip=$(cat "$base_dir/.serv00_ip" 2>/dev/null)
 ip_address=""
 FINAL_IP=""
 # 获取没有被墙的ip
-getUnblockIP(){
+getUnblockIP() {
   # 获取当前主机的主机名
   local hostname=$(hostname)
   # 从主机名中提取出主机编号（即主机名的数字部分）
@@ -61,7 +61,7 @@ getUnblockIP(){
     while read -r ip; do
        echo -e "\033[32;3;1m当前服务器可用 ip 地址: $ip\033[0m" 
     done < "$ip_file"
-    return
+    return 0  # 读取到文件中已有IP后退出函数
   fi
 
   # 定义一个数组，用于存储所有未被墙的IP
@@ -72,16 +72,16 @@ getUnblockIP(){
     # 使用curl命令调用API，获取主机的IP和状态信息
     local response=$(curl -s --fail "https://ss.botai.us.kg/api/getip?host=$host")
 
-    # 如果curl失败，返回错误
+    # 如果curl失败，返回错误并退出函数
     if [ $? -ne 0 ]; then
       echo "无法访问API或网络出现问题，请稍后重试。"
-      return
+      return 1  # 退出函数
     fi
 
     # 检查API返回的响应中是否包含 "not found" 字符串，表示无法识别该主机
     if [[ "$response" =~ "not found" ]]; then
       echo "未识别主机${host}, 请联系作者饭奇骏!"
-      return  # 退出函数
+      return 1  # 退出函数
     fi
     
     # 从API返回的数据中提取出IP地址和状态信息
@@ -95,9 +95,10 @@ getUnblockIP(){
     fi
   done 
 
-  # 如果没有找到任何未被墙的IP，输出提示
+  # 如果没有找到任何未被墙的IP，输出提示并退出函数
   if [ ${#unblock_ips[@]} -eq 0 ]; then
     echo "没有找到任何可用的未被墙服务器IP。"
+    return 1  # 退出函数
   else
     # 输出所有未被墙的IP地址，并保存到文件中
     for ip in "${unblock_ips[@]}"; do
@@ -106,7 +107,11 @@ getUnblockIP(){
       echo "$ip" >> "$ip_file"
     done
   fi
+
+  # 如果成功获取到 IP，则退出函数并继续执行其他流程
+  return 0
 }
+
 
   
 # 定义函数来检查密码是否存在
