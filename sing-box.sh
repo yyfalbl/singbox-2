@@ -100,9 +100,8 @@ getUnblockIP(){
     echo "没有找到任何可用的未被墙服务器IP。"
   else
     # 输出所有未被墙的IP地址，并保存到文件中
-    echo "检测到的未被墙IP地址："
     for ip in "${unblock_ips[@]}"; do
-      echo -e "\033[32;3;1m$ip\033[0m"  # 输出绿色斜体加粗的IP地址
+      echo -e "\033[32;3;1m当前服务器可用 ip 地址: $ip\033[0m"   # 输出绿色斜体加粗的IP地址
       # 将每个IP保存到文件中
       echo "$ip" >> "$ip_file"
     done
