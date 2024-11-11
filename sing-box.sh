@@ -1688,6 +1688,7 @@ run_sb() {
     pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
    
   fi
+  echo "$args"
 }
 
 getUnblockIP2() {
