@@ -1987,9 +1987,14 @@ if [ -e "$WORKDIR/bot" ]; then
     # 如果 ARGO_AUTH 是一个有效的 Token 格式
     if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
         args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
-    # 如果 ARGO_AUTH 包含 TunnelSecret 字符串，并且 tunnel.yml 文件存在
-    elif [[ $ARGO_AUTH =~ TunnelSecret ]] && [[ -f "$WORKDIR/tunnel.yml" ]]; then
-        args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
+    # 如果 ARGO_AUTH 包含 TunnelSecret 字符串，表示可能是一个 JSON 格式的配置
+    elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
+        if [ -f "$WORKDIR/tunnel.yml" ]; then
+            args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
+        else
+            red "没有找到 tunnel.yml 配置文件，无法启动固定隧道"
+        fi
+    # 如果 ARGO_AUTH 是有效的 JSON 格式（检查是否以 '{' 开头并包含 '}' 结尾）
     elif [[ $ARGO_AUTH =~ ^\{.*\}$ ]]; then
         args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}"
     else
@@ -2008,7 +2013,7 @@ if [ -e "$WORKDIR/bot" ]; then
     # 检查 bot 是否启动成功
     if pgrep -x "bot" > /dev/null; then
         green "BOT进程启动成功, 并正在运行！"
-
+        
         # 检查 Argo 隧道是否开启
         if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
             # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
