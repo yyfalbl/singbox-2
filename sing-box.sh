@@ -2025,6 +2025,12 @@ fi
       if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
           # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
           green "===Argo临时隧道功能已开启==="
+          echo ""
+          if [ "$ARGO_CONFIGURED" = true ]; then
+    argodomain=$(get_argodomain)
+    echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
+fi
+           printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
       elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
           # 检查 tunnel.yml 文件中是否有 tunnel 配置，表示 Argo 隧道开启
           green "=== Argo固定隧道功能已开启 ==="
@@ -2036,11 +2042,6 @@ fi
   fi
 else
   green "没有找到 bot 文件，无法启动 bot 进程。"
-fi
-
-if [ "$ARGO_CONFIGURED" = true ]; then
-    argodomain=$(get_argodomain)
-    echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
 fi
 
   echo "$WORKDIR/bot $args"
