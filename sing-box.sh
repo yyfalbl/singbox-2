@@ -57,8 +57,10 @@ getUnblockIP(){
 
   # 如果文件存在且不为空，直接读取文件中的IP
   if [[ -f "$ip_file" && -s "$ip_file" ]]; then
-    echo "从缓存文件读取未被墙的IP地址:"
-    cat "$ip_file"
+    # 读取文件中的IP并以绿色斜体加粗的样式输出
+    while read -r ip; do
+       echo -e "\033[32;3;1m当前服务器可用 ip 地址: $ip\033[0m" 
+    done < "$ip_file"
     return
   fi
 
@@ -98,13 +100,15 @@ getUnblockIP(){
     echo "没有找到任何可用的未被墙服务器IP。"
   else
     # 输出所有未被墙的IP地址，并保存到文件中
+    echo "检测到的未被墙IP地址："
     for ip in "${unblock_ips[@]}"; do
-      echo -e "\033[1;32;3m当前可用服务器 IP 地址: $ip\033[0m"
+      echo -e "\033[32;3;1m$ip\033[0m"  # 输出绿色斜体加粗的IP地址
       # 将每个IP保存到文件中
       echo "$ip" >> "$ip_file"
     done
   fi
 }
+
   
 # 定义函数来检查密码是否存在
 get_password() {
