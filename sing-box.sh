@@ -1982,7 +1982,9 @@ start_web() {
     fi
 
   # 启动 bot 进程
-if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
+if [ -e "$WORKDIR/bot" ]; then
+  # 设置 args 参数
+  if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
     args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}}"
   elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
     args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
