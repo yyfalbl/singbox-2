@@ -2020,7 +2020,7 @@ fi
       green "BOT进程启动成功, 并正在运行！"
       
       # 检查 Argo 隧道是否开启
-      if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
+      if [[ "$args" == *"--url http://localhost:$vmess_port"* && -n "$argodomain" ]]; then
           # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
           green "===Argo临时隧道功能已开启==="
       elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
