@@ -2033,37 +2033,8 @@ if [[ "$current_fqdn" == *.serv00.com ]]; then
           # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
           green "===Argo临时隧道功能已开启==="
           echo ""
-       # 确保变量 CFIP 和 CFPORT 已经设置，并输出它们
-echo "CFIP: $CFIP"
-echo "CFPORT: $CFPORT"
-
-# 查看 list.txt 内容，确认旧链接格式
-echo "list.txt 内容："
-cat "$WORKDIR/list.txt"
-
-# 去除 ANSI 转义字符
-cleaned_list=$(sed 's/\x1b\[[0-9;]*m//g' "$WORKDIR/list.txt")
-
-# 输出去除转义字符后的内容，确认内容是否正确
-echo "清除转义字符后的内容："
-echo "$cleaned_list"
- echo -n -e "\033[1;3;31m以下为新vmess开启隧道功能链接，替换www.visa.com.tw为自己的优选ip可获得极致体验\033[0m\n" 
-# 生成新的 vmess 链接
-link="vmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)"
-
-# 打印生成的链接
-printf "${YELLOW}\033[1m$link${RESET}\n"
-
- # 替换文件中的旧链接，确保只替换对应的链接
-updated_list=$(echo "$cleaned_list" | sed "s|vmess://.*$CFIP.*$CFPORT.*|$link|")
-
-             # 输出替换后的内容，检查是否替换成功
-echo "替换后的内容："
-echo "$updated_list"
-
-# 保存更新后的内容
-echo "$updated_list" > "$WORKDIR/list.txt"
-
+           echo -n -e "\033[1;3;31m以下为新vmess开启隧道功能链接，替换www.visa.com.tw为自己的优选ip可获得极致体验\033[0m\n" 
+printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
         echo ""
     elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
           # 检查 tunnel.yml 文件中是否有 tunnel 配置，表示 Argo 隧道开启
