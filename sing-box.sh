@@ -2040,11 +2040,10 @@ echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}
           echo ""
         # 生成新的 vmess 链接
 vmess_link=$(printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n")
-# 对 argodomain 和 vmess_link 进行转义，防止特殊字符造成问题
-escaped_argodomain=$(printf '%q' "$argodomain")
-escaped_vmess_link=$(printf '%q' "$vmess_link")
-# 替换文件中所有的 argodomain 为新的 argodomain
-sed -i '' "s|$argodomain|$vmess_link|g" "$WORKDIR/list.txt"
+
+# 使用 sed 替换 list.txt 中包含 argodomain 的整行内容
+# 这里使用正则匹配包含 $argodomain 的行，替换为 vmess_link
+sed -i '' "s|https://[^ ]*\($argodomain\)[^ ]*|$vmess_link|g" "$WORKDIR/list.txt"
            echo ""
     elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
           # 检查 tunnel.yml 文件中是否有 tunnel 配置，表示 Argo 隧道开启
