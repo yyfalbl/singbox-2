@@ -1978,47 +1978,48 @@ start_web() {
 if [ -e "$WORKDIR/bot" ]; then
     # 如果 ARGO_AUTH 是一个有效的 Token 格式
     if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
-      args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}}"
-    # 如果 ARGO_AUTH 包含 TunnelSecret 字符串，表示可能是一个 JSON 格式的配置
-     elif [[ $ARGO_AUTH =~ TunnelSecret ]] && [[ -f "$WORKDIR/tunnel.yml" ]]; then
-      args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
-    # 如果 ARGO_AUTH 是有效的 JSON 格式（检查是否以 '{' 开头并包含 '}' 结尾）
+        args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
+    # 如果 ARGO_AUTH 包含 TunnelSecret 字符串，并且 tunnel.yml 文件存在
+    elif [[ $ARGO_AUTH =~ TunnelSecret ]] && [[ -f "$WORKDIR/tunnel.yml" ]]; then
+        args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
     elif [[ $ARGO_AUTH =~ ^\{.*\}$ ]]; then
-      args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}}"
+        args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}"
     else
-      # 默认配置，使用 http2 协议和本地转发
-      if [[ -n "$vmess_port" ]]; then
-      args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port}"
-    else
-      args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080}"
+        # 默认配置，使用 http2 协议和本地转发
+        if [[ -n "$vmess_port" ]]; then
+            args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port"
+        else
+            args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080"
+        fi
     fi
- fi
 
-  # 启动 bot 进程
-  nohup $WORKDIR/bot $args > $WORKDIR/bot.log 2>&1 &
-  sleep 2
+    # 启动 bot 进程
+    nohup $WORKDIR/bot $args > $WORKDIR/bot.log 2>&1 &
+    sleep 2
 
-  # 检查 bot 是否启动成功
-  if pgrep -x "bot" > /dev/null; then
-      green "BOT进程启动成功, 并正在运行！"
-      
-      # 检查 Argo 隧道是否开启
-      if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
-          # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
-          green "===Argo临时隧道功能已开启==="
-      elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
-          # 检查 tunnel.yml 文件中是否有 tunnel 配置，表示 Argo 隧道开启
-          green "=== Argo固定隧道功能已开启 ==="
-      else
-          red "===Argo隧道未开启==="
-      fi
-  else
-      red "bot进程启动失败，请检查日志以获取更多信息。"
-  fi
+    # 检查 bot 是否启动成功
+    if pgrep -x "bot" > /dev/null; then
+        green "BOT进程启动成功, 并正在运行！"
+
+        # 检查 Argo 隧道是否开启
+        if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
+            # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
+            green "===Argo临时隧道功能已开启==="
+        elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
+            # 检查 tunnel.yml 文件中是否有 tunnel 配置，表示 Argo 隧道开启
+            green "=== Argo固定隧道功能已开启 ==="
+        else
+            red "===Argo隧道未开启==="
+        fi
+    else
+        red "bot进程启动失败，请检查日志以获取更多信息。"
+    fi
 else
-  green "没有找到 bot 文件，无法启动 bot 进程。"
+    green "没有找到 bot 文件，无法启动 bot 进程。"
 fi
+
 echo "启动命令：$WORKDIR/bot $args"
+
 }
     
 #停止sing-box服务
