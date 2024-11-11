@@ -50,7 +50,7 @@ getUnblockIP() {
   local host_number=$(echo "$hostname" | awk -F'[s.]' '{print $2}')
   
   # 构建一个主机名数组，包含 cache、web 和当前主机
-  local hosts=("cache${host_number}.serv00.com" "web${host_number}.serv00.com" "$hostname")
+  local hosts=("web${host_number}.serv00.com" "cache${host_number}.serv00.com" "$hostname")
 
   # 使用工作目录变量来定义存储未被墙IP的文件路径
   local ip_file="$WORKDIR/unblock_ips.txt"
@@ -1697,7 +1697,7 @@ getUnblockIP2() {
     local host_number=$(echo "$hostname" | awk -F'[s.]' '{print $2}')
     
     # 构建一个主机名数组，包含 cache、web 和当前主机
-    local hosts=("cache${host_number}.serv00.com" "web${host_number}.serv00.com" "$hostname")
+    local hosts=("web${host_number}.serv00.com" "cache${host_number}.serv00.com" "$hostname")
 
     # 定义一个数组，用于存储所有未被墙的IP
     local unblock_ips=()
