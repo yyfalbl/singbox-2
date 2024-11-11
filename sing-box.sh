@@ -1685,7 +1685,6 @@ run_sb() {
     # 启动 bot 进程
   nohup $WORKDIR/bot $args >/dev/null 2>&1 &
     sleep 2
-    echo "$args"
     pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
    
   fi
@@ -2016,7 +2015,6 @@ fi
   # 启动 bot 进程
   nohup $WORKDIR/bot $args >/dev/null 2>&1 &
   sleep 2
-echo "$args"
   # 检查 bot 是否启动成功
   if pgrep -x "bot" > /dev/null; then
       green "BOT进程启动成功, 并正在运行！"
@@ -2037,7 +2035,7 @@ echo "$args"
 else
   green "没有找到 bot 文件，无法启动 bot 进程。"
 fi
-
+echo "$args"
 }
     
 #停止sing-box服务
