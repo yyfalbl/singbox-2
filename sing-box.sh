@@ -2038,7 +2038,7 @@ fi
 else
   green "没有找到 bot 文件，无法启动 bot 进程。"
 fi
-
+echo "启动命令：$WORKDIR/bot $args"
 }
     
 #停止sing-box服务
