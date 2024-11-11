@@ -43,7 +43,7 @@ saved_ip=$(cat "$base_dir/.serv00_ip" 2>/dev/null)
 ip_address=""
 FINAL_IP=""
 # 获取没有被墙的ip
- getUnblockIP(){
+getUnblockIP(){
   # 获取当前主机的主机名
   local hostname=$(hostname)
   # 从主机名中提取出主机编号（即主机名的数字部分）
@@ -52,13 +52,29 @@ FINAL_IP=""
   # 构建一个主机名数组，包含 cache、web 和当前主机
   local hosts=("cache${host_number}.serv00.com" "web${host_number}.serv00.com" "$hostname")
 
+  # 使用工作目录变量来定义存储未被墙IP的文件路径
+  local ip_file="$WORKDIR/unblock_ips.txt"
+
+  # 如果文件存在且不为空，直接读取文件中的IP
+  if [[ -f "$ip_file" && -s "$ip_file" ]]; then
+    echo "从缓存文件读取未被墙的IP地址:"
+    cat "$ip_file"
+    return
+  fi
+
   # 定义一个数组，用于存储所有未被墙的IP
   local unblock_ips=()
 
   # 遍历主机名称数组
   for host in "${hosts[@]}"; do
     # 使用curl命令调用API，获取主机的IP和状态信息
-    local response=$(curl -s "https://ss.botai.us.kg/api/getip?host=$host")
+    local response=$(curl -s --fail "https://ss.botai.us.kg/api/getip?host=$host")
+
+    # 如果curl失败，返回错误
+    if [ $? -ne 0 ]; then
+      echo "无法访问API或网络出现问题，请稍后重试。"
+      return
+    fi
 
     # 检查API返回的响应中是否包含 "not found" 字符串，表示无法识别该主机
     if [[ "$response" =~ "not found" ]]; then
@@ -76,10 +92,19 @@ FINAL_IP=""
       unblock_ips+=("$ip")
     fi
   done 
-  # 输出所有未被墙的IP地址，不显示标题
-  for ip in "${unblock_ips[@]}"; do
-    echo -e "\033[1;32;3m当前可用服务器 IP 地址: $ip\033[0m" 
-  done
+
+  # 如果没有找到任何未被墙的IP，输出提示
+  if [ ${#unblock_ips[@]} -eq 0 ]; then
+    echo "没有找到任何可用的未被墙服务器IP。"
+  else
+    # 输出所有未被墙的IP地址，并保存到文件中
+    echo "检测到的未被墙IP地址："
+    for ip in "${unblock_ips[@]}"; do
+      echo -e "\033[1;32;3m当前可用服务器 IP 地址: $ip\033[0m"
+      # 将每个IP保存到文件中
+      echo "$ip" >> "$ip_file"
+    done
+  fi
 }
   
 # 定义函数来检查密码是否存在
@@ -333,8 +358,8 @@ get_server_info() {
     if [[ "$current_fqdn" == *.serv00.com ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
          echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.serv00.net${RESET}"
-     beiyong_ip
-    # getUnblockIP
+     # beiyong_ip
+     getUnblockIP
     elif [[ "$current_fqdn" == *.ct8.pl ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
      echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.ct8.pl${RESET}"
