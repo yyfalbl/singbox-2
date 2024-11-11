@@ -1684,45 +1684,57 @@ run_sb() {
    
   fi
 }
+
 getUnblockIP2() {
-  # 获取当前主机的主机名
-  local hostname=$(hostname)
-  # 从主机名中提取出主机编号（即主机名的数字部分）
-  local host_number=$(echo "$hostname" | awk -F'[s.]' '{print $2}')
-  
-  # 构建一个主机名数组，包含 cache、web 和当前主机
-  local hosts=("cache${host_number}.serv00.com" "web${host_number}.serv00.com" "$hostname")
+    # 获取当前主机的主机名
+    local hostname=$(hostname)
+    # 从主机名中提取出主机编号（即主机名的数字部分）
+    local host_number=$(echo "$hostname" | awk -F'[s.]' '{print $2}')
+    
+    # 构建一个主机名数组，包含 cache、web 和当前主机
+    local hosts=("cache${host_number}.serv00.com" "web${host_number}.serv00.com" "$hostname")
 
-  # 定义一个数组，用于存储所有未被墙的IP
-  local unblock_ips=()
+    # 定义一个数组，用于存储所有未被墙的IP
+    local unblock_ips=()
 
-  # 遍历主机名称数组
-  for host in "${hosts[@]}"; do
-    # 使用curl命令调用API，获取主机的IP和状态信息
-    local response=$(curl -s "https://ss.botai.us.kg/api/getip?host=$host")
+    # 遍历主机名称数组
+    for host in "${hosts[@]}"; do
+        # 使用curl命令调用API，获取主机的IP和状态信息
+        local response=$(curl -s "https://ss.botai.us.kg/api/getip?host=$host")
 
-    # 检查API返回的响应中是否包含 "not found" 字符串，表示无法识别该主机
-    if [[ "$response" =~ "not found" ]]; then
-      echo "未识别主机${host}, 请联系作者饭奇骏!"
-      return  # 退出函数
+        # 打印 API 返回的响应，帮助调试
+        echo "调试信息：API 响应: $response"
+
+        # 检查API返回的响应中是否包含 "not found" 字符串，表示无法识别该主机
+        if [[ "$response" =~ "not found" ]]; then
+            echo "未识别主机${host}, 请联系作者饭奇骏!"
+            return 1  # 退出函数，返回错误状态
+        fi
+        
+        # 从API返回的数据中提取出IP地址和状态信息
+        local ip=$(echo "$response" | awk -F "|" '{print $1 }')
+        local status=$(echo "$response" | awk -F "|" '{print $2 }')
+
+        # 打印调试信息，查看提取的 IP 和状态
+        echo "调试信息：提取的 IP: $ip, 状态: $status"
+
+        # 将 "Accessible" 状态替换为 "未被墙"，"Blocked" 状态替换为 "已被墙"
+        if [[ "$status" == "Accessible" ]]; then
+            # 如果主机未被墙，将IP添加到 unblock_ips 数组中
+            unblock_ips+=("$ip")
+        fi
+    done 
+    
+    # 如果未找到未被墙的 IP，输出提示
+    if [[ ${#unblock_ips[@]} -eq 0 ]]; then
+        echo "调试信息：没有找到有效的未被墙 IP 地址"
+        return 1  # 返回错误状态，表示未找到有效的备用 IP
     fi
     
-    # 从API返回的数据中提取出IP地址和状态信息
-    local ip=$(echo "$response" | awk -F "|" '{print $1 }')
-    local status=$(echo "$response" | awk -F "|" '{print $2 }')
-
-    # 将 "Accessible" 状态替换为 "未被墙"，"Blocked" 状态替换为 "已被墙"
-    if [[ "$status" == "Accessible" ]]; then
-      # 如果主机未被墙，将IP添加到 unblock_ips 数组中
-      unblock_ips+=("$ip")
-    fi
-  done 
-  
-  # 返回未被墙的 IP 地址列表
-  echo "${unblock_ips[@]}"
+    # 返回未被墙的 IP 地址列表
+    echo "${unblock_ips[@]}"
 }
 
-  # 获取ip
 get_ip() {
     # 提示用户选择方式: 输入 y 启用备用 IP，回车自动检测，或手动输入 IP
     read -p "$(echo -e "${CYAN}\033[1;3;33m是否自检有效备用IP地址（输入y确认，直接回车自动检测主机地址，或手动输入IP地址）: ${RESET}") " choice
@@ -1738,6 +1750,7 @@ get_ip() {
             echo -e "${GREEN}\033[1;32m选择的备用 IP 地址是: $IP${RESET}"
         else
             # 如果未获取到有效的未被墙的 IP，尝试从 netstat 获取备用 IP
+            echo -e "${CYAN}未获取到有效的未被墙 IP，尝试从 netstat 获取备用 IP...${RESET}"
             IP=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
             
             if [[ -z "$IP" ]]; then
@@ -1775,8 +1788,6 @@ get_ip() {
     # 输出最终使用的 IP 地址
     echo -e "${CYAN}\033[1;3;32m最终使用的IP地址是: $FINAL_IP${RESET}"
 }
-
-
 
 #获取临时或固定隧道域名
 get_argodomain() {
