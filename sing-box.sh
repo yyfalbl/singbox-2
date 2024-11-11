@@ -2027,12 +2027,12 @@ if [[ "$current_fqdn" == *.serv00.com ]]; then
   # 检查 bot 是否启动成功
   if pgrep -x "bot" > /dev/null; then
       green "BOT进程启动成功, 并正在运行！"
-      
+    
       # 检查 Argo 隧道是否开启
       if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
           # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
           green "===Argo临时隧道功能已开启==="
-          echo ""
+          echo "$argodomain"
        # 生成新的 vmess 链接
 new_vmess_link="${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}"
 
