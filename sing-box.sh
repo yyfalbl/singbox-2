@@ -1855,12 +1855,12 @@ sleep 2
 # 检查args中是否包含临时隧道配置
 if [[ "$args" == *"--url http://localhost:$vmess_port"* && -n "$argodomain" ]]; then
     # 如果args包含临时隧道的配置，表示开启了Argo临时隧道
-    green "===Argo临时隧道功能已开启==="
+    green "=== Argo临时隧道功能已开启 ==="
 elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
     # 检查tunnel.yml文件中是否有tunnel配置，表示Argo隧道开启
     green "=== Argo固定隧道功能已开启 ==="
 else
-    red "===Argo隧道功能未开启==="
+    red "=== Argo隧道功能未开启 ==="
 fi
 
       
@@ -2022,12 +2022,12 @@ fi
       # 检查 Argo 隧道是否开启
       if [[ "$args" == *"--url http://localhost:$vmess_port"* && -n "$argodomain" ]]; then
           # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
-          green "===Argo临时隧道功能已开启==="
+          green "=== Argo临时隧道功能已开启 ==="
       elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
           # 检查 tunnel.yml 文件中是否有 tunnel 配置，表示 Argo 隧道开启
           green "=== Argo固定隧道功能已开启 ==="
       else
-          red "===Argo隧道未开启==="
+          red "=== Argo隧道未开启 ==="
       fi
   else
       red "bot进程启动失败，请检查日志以获取更多信息。"
@@ -2035,7 +2035,7 @@ fi
 else
   green "没有找到 bot 文件，无法启动 bot 进程。"
 fi
-echo "启动命令：$WORKDIR/bot $args"
+
 }
     
 #停止sing-box服务
