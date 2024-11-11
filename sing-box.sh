@@ -2039,7 +2039,8 @@ if [[ "$current_fqdn" == *.serv00.com ]]; then
 new_vmess_link="${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
 escaped_argodomain=$(echo "$argodomain" | sed 's/[&/\]/\\&/g')
 # 删除旧的带 argodomain 的链接
-sed -i "" "/$escaped_argodomain/d" "$WORKDIR/list.txt"
+sed -i "/$escaped_argodomain/d" "$WORKDIR/list.txt"
+grep -v "$escaped_argodomain" "$WORKDIR/list.txt" > "$WORKDIR/list.txt.tmp" && mv "$WORKDIR/list.txt.tmp" "$WORKDIR/list.txt"
 # 将新的链接写入文件
 echo -e "$new_vmess_link" >> "$WORKDIR/list.txt"
 
