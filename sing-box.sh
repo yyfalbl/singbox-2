@@ -2033,8 +2033,12 @@ if [[ "$current_fqdn" == *.serv00.com ]]; then
           # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
           green "===Argo临时隧道功能已开启==="
           echo ""
-echo -n -e "\033[1;3;31m以下为新vmess开启隧道功能链接，替换www.visa.com.tw为自己的优选ip可获得极致体验\033[0m\n" 
-           printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+       # 生成新的 vmess 链接
+new_vmess_link="${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}"
+
+# 替换 list.txt 中的 vmess 链接
+sed -i '' "s|vmess://.*\"host\": \"$argodomain\".*|$new_vmess_link|g" "$WORKDIR/list.txt"
+
            echo ""
     elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
           # 检查 tunnel.yml 文件中是否有 tunnel 配置，表示 Argo 隧道开启
