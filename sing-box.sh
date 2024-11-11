@@ -318,12 +318,12 @@ cleanup_and_delete() {
         echo "目录 $target_dir 不存在。"
     fi
 }
-
+# 获取主机域名和ip地址
 get_server_info() {
     # 颜色变量
     CYAN="\033[1;36m"
     GREEN_BOLD_ITALIC="\033[1;3;32m"  # 绿色加粗斜体
-      YELLOW_BOLD_ITALIC="\033[1;3;33m" # 黄色加粗斜体
+    YELLOW_BOLD_ITALIC="\033[1;3;33m" # 黄色加粗斜体
     RESET="\033[0m"
 
     # 获取当前用户名
@@ -359,17 +359,25 @@ get_server_info() {
     # 根据域名判断并输出相应的信息
     if [[ "$current_fqdn" == *.serv00.com ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
-         echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.serv00.net${RESET}"
-     # beiyong_ip
-     getUnblockIP
+        echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.serv00.net${RESET}"
+        
+        # 先尝试获取未被墙的 IP 地址
+        if ! getUnblockIP; then
+            # 如果获取失败，调用备用 IP 函数
+            echo -e "${CYAN}未能获取未被墙的 IP 地址，尝试获取备用 IP 地址...${RESET}"
+            beiyong_ip
+        fi
     elif [[ "$current_fqdn" == *.ct8.pl ]]; then
         echo -e "${GREEN_BOLD_ITALIC}当前服务器主机地址是：$current_fqdn${RESET}"
-     echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.ct8.pl${RESET}"
+        echo -e "${YELLOW_BOLD_ITALIC}本机域名是: $user.ct8.pl${RESET}"
+        
+        # 调用 process_ct8 函数进行处理
         process_ct8
     else
         echo -e "${CYAN}当前域名不属于 serv00.com 或 ct8.pl 域。${RESET}"
     fi
 }
+
 
 # 检查sing-box运行
 check_singbox_installed() {
