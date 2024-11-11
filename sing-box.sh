@@ -1676,38 +1676,100 @@ run_sb() {
    
   fi
 }
+getUnblockIP2() {
+  # 获取当前主机的主机名
+  local hostname=$(hostname)
+  # 从主机名中提取出主机编号（即主机名的数字部分）
+  local host_number=$(echo "$hostname" | awk -F'[s.]' '{print $2}')
+  
+  # 构建一个主机名数组，包含 cache、web 和当前主机
+  local hosts=("cache${host_number}.serv00.com" "web${host_number}.serv00.com" "$hostname")
+
+  # 定义一个数组，用于存储所有未被墙的IP
+  local unblock_ips=()
+
+  # 遍历主机名称数组
+  for host in "${hosts[@]}"; do
+    # 使用curl命令调用API，获取主机的IP和状态信息
+    local response=$(curl -s "https://ss.botai.us.kg/api/getip?host=$host")
+
+    # 检查API返回的响应中是否包含 "not found" 字符串，表示无法识别该主机
+    if [[ "$response" =~ "not found" ]]; then
+      echo "未识别主机${host}, 请联系作者饭奇骏!"
+      return  # 退出函数
+    fi
+    
+    # 从API返回的数据中提取出IP地址和状态信息
+    local ip=$(echo "$response" | awk -F "|" '{print $1 }')
+    local status=$(echo "$response" | awk -F "|" '{print $2 }')
+
+    # 将 "Accessible" 状态替换为 "未被墙"，"Blocked" 状态替换为 "已被墙"
+    if [[ "$status" == "Accessible" ]]; then
+      # 如果主机未被墙，将IP添加到 unblock_ips 数组中
+      unblock_ips+=("$ip")
+    fi
+  done 
+  
+  # 返回未被墙的 IP 地址列表
+  echo "${unblock_ips[@]}"
+}
 
   # 获取ip
 get_ip() {
-    read -p "$(echo -e "${CYAN}\033[1;3;33m是否启用备用IP地址（输入y确认，否则按Enter键自动检测）: ${RESET}") " choice
+    # 提示用户选择方式: 输入 y 启用备用 IP，回车自动检测，或手动输入 IP
+    read -p "$(echo -e "${CYAN}\033[1;3;33m是否自检有效备用IP地址（输入y确认，直接回车自动检测主机地址，或手动输入IP地址）: ${RESET}") " choice
 
     if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
-        # 尝试从 netstat 获取备用 IP
-        IP=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
-
-        # 尝试从两个文件获取 IP
-        if [[ -z "$IP" ]]; then
-    for file in "$base_dir/.serv00_ip" "$ip_file"; do
-        if [[ -f "$file" ]]; then
-            IP=$(cat "$file")
-            if [[ -n "$IP" ]]; then
-                echo -e "${GREEN}\033[1;32m服务器备用 IP 地址是: $IP${RESET}"
-                break
+        # 首先调用 getUnblockIP 获取未被墙的 IP 地址
+        unblock_ips=($(getUnblockIP2))
+        
+        # 检查是否获取到未被墙的 IP 地址
+        if [[ ${#unblock_ips[@]} -gt 0 ]]; then
+            # 随机选择一个未被墙的 IP 地址作为备用 IP
+            IP=${unblock_ips[$((RANDOM % ${#unblock_ips[@]}))]}
+            echo -e "${GREEN}\033[1;32m选择的备用 IP 地址是: $IP${RESET}"
+        else
+            # 如果未获取到有效的未被墙的 IP，尝试从 netstat 获取备用 IP
+            IP=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
+            
+            if [[ -z "$IP" ]]; then
+                # 如果 netstat 获取不到 IP，再从文件读取备用 IP
+                for file in "$base_dir/.serv00_ip" "$ip_file"; do
+                    if [[ -f "$file" ]]; then
+                        IP=$(cat "$file")
+                        if [[ -n "$IP" ]]; then
+                            echo -e "${GREEN}\033[1;32m从文件获取的备用 IP 地址是: $IP${RESET}"
+                            break
+                        fi
+                    fi
+                done
+            fi
+            
+            # 如果 netstat 和文件都没有获取到 IP，给出提示
+            if [[ -z "$IP" ]]; then
+                echo -e "${RED}\033[1;31m未找到可用的备用 IP 地址，请稍后再试！${RESET}"
+                return 1
             fi
         fi
-    done
-fi
-    else
-        # 自动检测 IP 地址
+    elif [[ -z "$choice" ]]; then
+        # 如果用户直接回车，自动检测 IP 地址
         IP=$(curl -s https://api.ipify.org || { ipv6=$(curl -s --max-time 1 ipv6.ip.sb); echo "[$ipv6]"; })
         echo -e "${CYAN}\033[1;3;32m自动检测的设备 IP 地址是: $IP${RESET}"
+    else
+        # 如果用户输入其他内容，尝试手动输入 IP 地址
+        IP="$choice"
+        echo -e "${CYAN}\033[1;3;32m手动输入的 IP 地址是: $IP${RESET}"
     fi
 
-    # 将最终的 IP 存储到全局变量中
+    # 将最终的 IP 存储到全局变量 FINAL_IP
     FINAL_IP="$IP"
-      # 输出最终使用的IP地址
+    
+    # 输出最终使用的 IP 地址
     echo -e "${CYAN}\033[1;3;32m最终使用的IP地址是: $FINAL_IP${RESET}"
 }
+
+
+
 #获取临时或固定隧道域名
 get_argodomain() {
   if [[ -n $ARGO_AUTH ]]; then
