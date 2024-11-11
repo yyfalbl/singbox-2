@@ -2011,10 +2011,11 @@ if [[ -f "$WORKDIR/boot.log" ]]; then
 
 fi
 
-
  fi
-current_fqdn=$(hostname -f)
-
+ 
+ # 获取节点别名
+  current_fqdn=$(hostname -f)
+  USERNAME=$(whoami)
 # 检查域名是否以 serv00.com 结尾
 if [[ "$current_fqdn" == *.serv00.com ]]; then
 echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}"
@@ -2023,9 +2024,7 @@ echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}
     # 提取子域名（假设子域名在主域名前缀的第一部分）
     subdomain=${current_fqdn%%.*}    
   fi  
-    
-    # 获取用户名信息
-      USERNAME=$(whoami)
+      
   # 启动 bot 进程
   nohup $WORKDIR/bot $args >/dev/null 2>&1 &
   sleep 2
@@ -2039,8 +2038,11 @@ echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}
           # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
           green "===Argo临时隧道功能已开启==="
           echo ""
-           echo -n -e "\033[1;3;31m以下为新vmess开启隧道功能链接，替换www.visa.com.tw为自己的优选ip可获得极致体验\033[0m\n" 
-           printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+        # 生成新的 vmess 链接
+vmess_link=$(printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n")
+
+# 替换文件中所有的 argodomain 为新的 argodomain
+sed -i "s|$argodomain|$vmess_link|g" "$WORKDIR/list.txt"
            echo ""
     elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
           # 检查 tunnel.yml 文件中是否有 tunnel 配置，表示 Argo 隧道开启
