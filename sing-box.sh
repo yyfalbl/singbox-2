@@ -1987,7 +1987,7 @@ if [ -e "$WORKDIR/bot" ]; then
   if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
     args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}}"
   elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-    args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
+    args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
   else
     # 默认使用本地转发配置，判断是否设置了 vmess_port
 if [[ -f "$WORKDIR/boot.log" ]]; then
