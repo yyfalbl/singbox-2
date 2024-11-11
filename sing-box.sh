@@ -1953,6 +1953,8 @@ start_web() {
     purple() {
         echo -e "\\033[1;3;35m$*\\033[0m"
     }
+    
+WORKDIR="$HOME/sbox"
 
     # 保存光标位置
     echo -n -e "\033[1;3;31m正在启动sing-box服务,请稍后......\033[0m\n"
