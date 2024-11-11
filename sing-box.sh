@@ -2037,6 +2037,12 @@ fi
 else
   green "没有找到 bot 文件，无法启动 bot 进程。"
 fi
+
+if [ "$ARGO_CONFIGURED" = true ]; then
+    argodomain=$(get_argodomain)
+    echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
+fi
+
   echo "$WORKDIR/bot $args"
 }
     
