@@ -2038,7 +2038,7 @@ start_bot() {
             # 默认使用本地转发配置，判断是否设置了 vmess_port
             if [[ -f "$WORKDIR/boot.log" ]]; then
                 # 从 boot.log 中提取域名
-                argodomain=$(grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' $WORKDIR/boot.log | sed 's@https://@@') 
+                argodomain=$(grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' "$WORKDIR/boot.log" | sed 's@https://@@') 
                 # 从 boot.log 提取端口号
                 vmess_port=$(grep -oE 'localhost:([0-9]+)' "$WORKDIR/boot.log" | sed 's/localhost://')
                 # 如果同时提取到域名和端口号
@@ -2077,26 +2077,26 @@ start_bot() {
         green "没有找到 bot 文件，无法启动 bot 进程。"
     fi
 
-    # 直接从 argo_domain.txt 文件读取临时域名
+    # 直接从 argo_domain.txt 文件读取临时域名并重启临时隧道
     if [[ -f "$WORKDIR/argo_domain.txt" ]]; then
+        # 从文件中读取临时域名
         argodomain=$(cat "$WORKDIR/argo_domain.txt")
-        # 重新启动临时隧道，使用从 argo_domain.txt 中读取的临时域名
-        if [[ -n "$argodomain" ]]; then
+        if [[ -n "$argodomain" && -n "$vmess_port" ]]; then
             green "从 argo_domain.txt 中读取临时域名：$argodomain"
             # 使用保存的临时域名来重启隧道
             args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --url http://localhost:$vmess_port --hostname $argodomain"
+            # 重启隧道
             nohup $WORKDIR/bot $args > $WORKDIR/bot.log 2>&1 &
             sleep 2
             green "临时隧道已重新启动。"
         else
-            red "未能从 argo_domain.txt 文件中读取临时域名。"
+            red "从 argo_domain.txt 文件中读取临时域名失败，无法重启隧道。"
         fi
     else
-        red "未找到 argo_domain.txt 文件，无法读取临时域名。"
+        red "未找到 argo_domain.txt 文件，无法读取临时域名来重启隧道。"
     fi
 }
-
-   
+  
 #停止sing-box服务
 stop_web() {
     echo -n -e "\033[1;3;33m正在清理 web 和 bot 进程，请稍后......\033[0m\n"
