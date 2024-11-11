@@ -1999,8 +1999,6 @@ if [[ -f "$WORKDIR/boot.log" ]]; then
    # 提取第一个域名和端口号
    argodomain=$(grep -oE 'https://[a-zA-Z0-9\.-]+\.trycloudflare\.com' "$WORKDIR/boot.log" | tail -n 1 | sed 's/https:\/\///')
    vmess_port=$(grep -oE 'localhost:([0-9]+)' "$WORKDIR/boot.log" | tail -n 1 | sed 's/localhost://')
-    echo "$argodomain"
-     echo "$vmess_port"
     # 如果同时提取到域名和端口号
     if [[ -n "$argodomain" && -n "$vmess_port" ]]; then
         # 使用提取的域名和端口
@@ -2038,23 +2036,8 @@ echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}
           # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
           green "===Argo临时隧道功能已开启==="
           echo ""
-     # 生成新的 vmess 链接，注意这里是 Base64 编码的链接
-vmess_data="{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\" }"
-vmess_base64=$(echo -n "$vmess_data" | base64 -w0)
-
-# 构建完整的 vmess 链接
-vmess_link="vmess://$vmess_base64"
-
-# 调试输出 vmess_link 和 argodomain
-echo "Generated vmess link: $vmess_link"
-echo "argodomain: $argodomain"
-
-# 替换 list.txt 中包含 argodomain 的链接
-# 通过 sed 查找并替换包含 argodomain 的 vmess 链接
-sed -i '' "s|vmess://[A-Za-z0-9+/=]*$argodomain[A-Za-z0-9+/=]*|$vmess_link|g" "$WORKDIR/list.txt"
-
-# 打印替换后的文件内容（可选）
-cat "$WORKDIR/list.txt"
+echo -n -e "\033[1;3;31m以下为新vmess开启隧道功能链接，替换www.visa.com.tw为自己的优选ip可获得极致体验\033[0m\n" 
+           printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
            echo ""
     elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
           # 检查 tunnel.yml 文件中是否有 tunnel 配置，表示 Argo 隧道开启
@@ -2069,7 +2052,6 @@ else
   green "没有找到 bot 文件，无法启动 bot 进程。"
 fi
 
-  echo "$WORKDIR/bot $args"
 }
     
 #停止sing-box服务
