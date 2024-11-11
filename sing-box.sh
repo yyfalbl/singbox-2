@@ -1980,7 +1980,7 @@ if [ -e "$WORKDIR/bot" ]; then
     if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
       args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}}"
     # 如果 ARGO_AUTH 包含 TunnelSecret 字符串，表示可能是一个 JSON 格式的配置
-   elif [[ -f "$WORKDIR/tunnel.yml" ]]; then
+     elif [[ $ARGO_AUTH =~ TunnelSecret ]] && [[ -f "$WORKDIR/tunnel.yml" ]]; then
       args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
     # 如果 ARGO_AUTH 是有效的 JSON 格式（检查是否以 '{' 开头并包含 '}' 结尾）
     elif [[ $ARGO_AUTH =~ ^\{.*\}$ ]]; then
