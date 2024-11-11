@@ -2034,6 +2034,7 @@ if [[ "$current_fqdn" == *.serv00.com ]]; then
           green "===Argo临时隧道功能已开启==="
           echo ""
        # 生成新的 vmess 链接
+       cleaned_list=$(sed 's/\x1b\[[0-9;]*m//g' "$WORKDIR/list.txt")
  echo -n -e "\033[1;3;31m以下为新vmess开启隧道功能链接，替换www.visa.com.tw为自己的优选ip可获得极致体验\033[0m\n" 
 # 生成新的 vmess 链接
 link="vmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)"
@@ -2042,9 +2043,9 @@ link="vmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"ad
 printf "${YELLOW}\033[1m$link${RESET}\n"
 
  # 替换文件中的旧链接，确保只替换对应的链接
-sed -i '' "s|vmess://.*$CFIP.*$CFPORT.*|$link|" "$WORKDIR/list.txt"
+updated_list=$(echo "$cleaned_list" | sed "s|vmess://.*$CFIP.*$CFPORT.*|$link|")
 
-                green "链接已成功替换。"
+             echo "$updated_list" > "$WORKDIR/list.txt"
 
         echo ""
     elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
