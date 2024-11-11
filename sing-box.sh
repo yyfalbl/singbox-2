@@ -1694,7 +1694,7 @@ run_sb() {
     # 提取临时隧道的域名（如果是临时隧道）
     if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
       # 从 boot.log 中提取域名
-      argodomain=$(grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' $WORKDIR/boot.log | sed 's@https://@@')
+      argodomain=$(get_argodomain)
       
       if [[ -n "$argodomain" ]]; then
         # 保存临时域名
