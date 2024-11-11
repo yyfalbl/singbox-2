@@ -1736,12 +1736,10 @@ get_ip() {
     if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
         # 获取当前主机的域名
         local hostname=$(hostname)
-        echo "调试信息：当前主机名是: $hostname"  # 打印当前主机名
         
         # 根据主机域名判断使用不同的方法
         if [[ "$hostname" =~ \.serv00\.com$ ]]; then
             # 如果主机域名是 xxx.serv00.com，则采用两种方法
-            echo "调试信息：检测到主机域名是 xxx.serv00.com，采用两种方法获取 IP"
             unblock_ips=($(getUnblockIP2))  # 获取未被墙的 IP 地址
 
             # 如果 getUnblockIP2 获取失败，则 IP 会为空，跳过后续步骤
@@ -1755,7 +1753,6 @@ get_ip() {
             fi
         elif [[ "$hostname" =~ \.ct8\.pl$ ]]; then
             # 如果主机域名是 xxx.ct8.pl，仅采用 netstat 方法
-            echo "调试信息：检测到主机域名是 xxx.ct8.pl，仅采用 netstat 获取 IP"
             IP=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
 
             if [[ -z "$IP" ]]; then
@@ -1778,7 +1775,6 @@ get_ip() {
             fi
         else
             # 如果主机域名既不是 xxx.serv00.com 也不是 xxx.ct8.pl，默认只使用 netstat 获取 IP
-            echo "调试信息：主机域名未知，采用 netstat 获取备用 IP"
             IP=$(netstat -i | awk '/^ixl.*mail[0-9]+/ {print $3}' | cut -d '/' -f 1)
 
             if [[ -z "$IP" ]]; then
