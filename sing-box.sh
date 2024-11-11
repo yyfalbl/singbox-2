@@ -50,7 +50,7 @@ getUnblockIP() {
   local host_number=$(echo "$hostname" | awk -F'[s.]' '{print $2}')
   
   # 构建一个主机名数组，包含 cache、web 和当前主机
-  local hosts=("$hostname" "web${host_number}.serv00.com" "cache${host_number}.serv00.com" )
+  local hosts=("$hostname" "web${host_number}.serv00.com" "cache${host_number}.serv00.com")
 
   # 使用工作目录变量来定义存储未被墙IP的文件路径
   local ip_file="$WORKDIR/unblock_ips.txt"
@@ -1664,59 +1664,30 @@ run_sb() {
 
   # 启动 bot
   if [ -e "$WORKDIR/bot" ]; then
-  # 设置 args 参数
-  if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
     # 如果 ARGO_AUTH 是一个有效的 Token 格式
-    args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}}"
-  elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
+    if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
+      args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}}"
     # 如果 ARGO_AUTH 包含 TunnelSecret 字符串，表示可能是一个 JSON 格式的配置
-    args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
-  elif [[ $ARGO_AUTH =~ ^\{.*\}$ ]]; then
+    elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
+      args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
     # 如果 ARGO_AUTH 是有效的 JSON 格式（检查是否以 '{' 开头并包含 '}' 结尾）
-    args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}}"
-  else
-    # 默认配置，使用 http2 协议和本地转发
-    if [[ -n "$vmess_port" ]]; then
+    elif [[ $ARGO_AUTH =~ ^\{.*\}$ ]]; then
+      args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}}"
+    else
+      # 默认配置，使用 http2 协议和本地转发
+      if [[ -n "$vmess_port" ]]; then
       args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port}"
     else
       args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080}"
     fi
-  fi
+ fi
 
-  # 启动 bot 进程
-  nohup $WORKDIR/bot $args > /dev/null 2>&1 &
-  sleep 2
-
-  # 检查 bot 是否启动成功
-  if pgrep -x "bot" > /dev/null; then
-    green "BOT is running"
-
-    # 提取临时隧道的域名（如果是临时隧道）
-    if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
-      # 从 boot.log 中提取域名
-      argodomain=$(get_argodomain)
-      
-      if [[ -n "$argodomain" ]]; then
-        # 保存临时域名
-        echo "$argodomain" > "$WORKDIR/argo_domain.txt"
-        green "临时隧道域名已保存：$argodomain"
-      else
-        red "未能提取到临时域名，请检查 boot.log 文件。"
-      fi
-    fi
-  else
-    red "bot进程启动失败，请检查日志以获取更多信息。"
-    # 如果 bot 启动失败，尝试重启 bot
-    red "bot 启动失败，正在重启..."
-    pkill -x "bot" && nohup $WORKDIR/bot "$args" > /dev/null 2>&1 &
+    # 启动 bot 进程
+  nohup $WORKDIR/bot $args >/dev/null 2>&1 &
     sleep 2
-    purple "bot 已重新启动。"
+    pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
+   
   fi
-
-else
-  green "没有找到 bot 文件，无法启动 bot 进程。"
-fi
-
 }
 
 getUnblockIP2() {
@@ -1726,7 +1697,7 @@ getUnblockIP2() {
     local host_number=$(echo "$hostname" | awk -F'[s.]' '{print $2}')
     
     # 构建一个主机名数组，包含 cache、web 和当前主机
-    local hosts=( "$hostname" "web${host_number}.serv00.com" "cache${host_number}.serv00.com" )
+    local hosts=("$hostname" "web${host_number}.serv00.com" "cache${host_number}.serv00.com")
 
     # 定义一个数组，用于存储所有未被墙的IP
     local unblock_ips=()
@@ -1877,7 +1848,6 @@ get_links() {
 if [ "$ARGO_CONFIGURED" = true ]; then
     argodomain=$(get_argodomain)
     echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
-    echo "${argodomain}" > "$WORKDIR/argo_domain.txt"
 fi
 sleep 2
 
@@ -1885,12 +1855,12 @@ sleep 2
 # 检查args中是否包含临时隧道配置
 if [[ "$args" == *"--url http://localhost:$vmess_port"* && -n "$argodomain" ]]; then
     # 如果args包含临时隧道的配置，表示开启了Argo临时隧道
-    green "=== Argo临时隧道功能已开启 ==="
+    green "===Argo临时隧道功能已开启==="
 elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
     # 检查tunnel.yml文件中是否有tunnel配置，表示Argo隧道开启
     green "=== Argo固定隧道功能已开启 ==="
 else
-    red "=== Argo隧道功能未开启 ==="
+    red "===Argo隧道功能未开启==="
 fi
 
       
@@ -1969,7 +1939,8 @@ red() { echo -e "\e[1;91m$1\033[0m"; }
 purple() { echo -e "\e[1;35m$1\033[0m"; }
 reading() { read -p "$(red "$1")" "$2"; }
 
-# 启动 web和bot 函数 
+# 启动 web和bot 函数    
+
 start_web() {
     green() {
         echo -e "\\033[1;3;32m$*\\033[0m"
@@ -2011,84 +1982,63 @@ start_web() {
         echo -ne "\r\033[K"
         red "web可执行文件未找到，请检查路径是否正确。"
     fi
-}
-start_bot() {
-    green() {
-        echo -e "\\033[1;3;32m$*\\033[0m"
-    }
 
-    red() {
-        echo -e "\\033[1;3;31m$*\\033[0m"
-    }
-
-    purple() {
-        echo -e "\\033[1;3;35m$*\\033[0m"
-    }
-
-    # 检查 bot 文件是否存在
-    if [ -e "$WORKDIR/bot" ]; then
-        # 默认使用本地转发配置，检查是否有 vmess_port
-        if [[ -f "$WORKDIR/boot.log" ]]; then
-            # 从 boot.log 中提取端口号
-            vmess_port=$(grep -oE 'localhost:([0-9]+)' "$WORKDIR/boot.log" | sed 's/localhost://')
-        fi
-
-        # 如果存在 argo_domain.txt 文件，则优先读取临时域名来重启隧道
-        if [[ -f "$WORKDIR/argo_domain.txt" ]]; then
-            # 从文件中读取临时域名
-            argodomain=$(cat "$WORKDIR/argo_domain.txt")
-            if [[ -n "$argodomain" && -n "$vmess_port" ]]; then
-                green "从 argo_domain.txt 中读取临时域名：$argodomain"
-                # 使用保存的临时域名来重启隧道
-                args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --url http://localhost:$vmess_port --hostname $argodomain"
-                # 重启隧道
-                nohup $WORKDIR/bot $args > $WORKDIR/bot.log 2>&1 &
-                sleep 2
-                green "临时隧道已重新启动。"
-                return  # 重启隧道后直接返回，避免重复启动 bot 进程
-            else
-                red "从 argo_domain.txt 文件中读取临时域名失败，无法重启隧道。"
-            fi
-        fi
-
-        # 设置 args 参数，如果未设置，则使用默认值
-        args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --url http://localhost:8080}"
-
-        # 如果 ARGO_AUTH 存在，则用其值更新 args 参数
-        if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
-            args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"
-        elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
-            args="tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run"
-        elif [[ $ARGO_AUTH =~ ^\{.*\}$ ]]; then
-            args="tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}"
-        fi
-
-        # 启动 bot 进程
-        nohup $WORKDIR/bot $args > $WORKDIR/bot.log 2>&1 &
-        sleep 2
-
-        # 检查 bot 是否启动成功
-        if pgrep -x "bot" > /dev/null; then
-            green "BOT进程启动成功, 并正在运行！"
-            
-            # 检查 Argo 隧道是否开启
-            if [[ "$args" == *"--url http://localhost:$vmess_port"* && -n "$argodomain" ]]; then
-                # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
-                green "=== Argo临时隧道功能已开启 ==="
-            elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
-                # 检查 tunnel.yml 文件中是否有 tunnel 配置，表示 Argo 隧道开启
-                green "=== Argo固定隧道功能已开启 ==="
-            else
-                red "=== Argo隧道未开启 ==="
-            fi
-        else
-            red "bot进程启动失败，请检查日志以获取更多信息。"
-        fi
+  # 启动 bot 进程
+if [ -e "$WORKDIR/bot" ]; then
+  # 设置 args 参数
+  if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
+    args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}}"
+  elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
+    args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
+  elif [[ $ARGO_AUTH =~ ^\{.*\}$ ]]; then
+    args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}}"
+  else
+    # 默认使用本地转发配置，判断是否设置了 vmess_port
+if [[ -f "$WORKDIR/boot.log" ]]; then
+    # 从 boot.log 中提取域名
+    argodomain=$(grep -oE 'https://[[:alnum:]+\.-]+\.trycloudflare\.com' $WORKDIR/boot.log | sed 's@https://@@') 
+    # 从 boot.log 提取端口号
+    vmess_port=$(grep -oE 'localhost:([0-9]+)' "$WORKDIR/boot.log" | sed 's/localhost://')
+    # 如果同时提取到域名和端口号
+    if [[ -n "$argodomain" && -n "$vmess_port" ]]; then
+        # 使用提取的域名和端口
+        args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port --hostname $argodomain}"
     else
-        green "没有找到 bot 文件，无法启动 bot 进程。"
+        args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080}"
     fi
+
+fi
+
+
+ fi
+
+  # 启动 bot 进程
+  nohup $WORKDIR/bot $args >/dev/null 2>&1 &
+  sleep 2
+
+  # 检查 bot 是否启动成功
+  if pgrep -x "bot" > /dev/null; then
+      green "BOT进程启动成功, 并正在运行！"
+      
+      # 检查 Argo 隧道是否开启
+      if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
+          # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
+          green "===Argo临时隧道功能已开启==="
+      elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
+          # 检查 tunnel.yml 文件中是否有 tunnel 配置，表示 Argo 隧道开启
+          green "=== Argo固定隧道功能已开启 ==="
+      else
+          red "===Argo隧道未开启==="
+      fi
+  else
+      red "bot进程启动失败，请检查日志以获取更多信息。"
+  fi
+else
+  green "没有找到 bot 文件，无法启动 bot 进程。"
+fi
+
 }
-  
+    
 #停止sing-box服务
 stop_web() {
     echo -n -e "\033[1;3;33m正在清理 web 和 bot 进程，请稍后......\033[0m\n"
@@ -2295,7 +2245,6 @@ done
             ;;
         6)
             start_web
-            start_bot
             read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
             clear
             ;;
