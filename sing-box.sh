@@ -2035,13 +2035,22 @@ if [[ "$current_fqdn" == *.serv00.com ]]; then
           echo ""
        # 生成新的 vmess 链接
  echo -n -e "\033[1;3;31m以下为新vmess开启隧道功能链接，替换www.visa.com.tw为自己的优选ip可获得极致体验\033[0m\n" 
+# 生成新的 vmess 链接
 link="vmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)"
 
 # 打印生成的链接
 printf "${YELLOW}\033[1m$link${RESET}\n"
 
-# 将生成的链接写入 list.txt 文件（覆盖文件）
-echo "$link" > "$WORKDIR/list.txt"
+# 检查 list.txt 中是否已经存在相同的链接
+if grep -q "$CFIP" "$WORKDIR/list.txt"; then
+    # 如果文件中已有该链接，使用 sed 替换掉原有链接
+    sed -i '' "s|vmess://.*$CFIP.*$CFPORT.*|$link|" "$WORKDIR/list.txt"
+    green "链接已更新！"
+else
+    # 如果文件中没有该链接，将其添加到文件末尾
+    echo "$link" >> "$WORKDIR/list.txt"
+    green "链接已成功写入 $WORKDIR/list.txt 文件！"
+fi
 
         echo ""
     elif grep -q "tunnel:" "$WORKDIR/tunnel.yml" 2>/dev/null; then
