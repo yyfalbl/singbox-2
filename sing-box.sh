@@ -1940,22 +1940,11 @@ purple() { echo -e "\e[1;35m$1\033[0m"; }
 reading() { read -p "$(red "$1")" "$2"; }
 
 # 启动 web和bot 函数    
-
 start_web() {
-    green() {
-        echo -e "\\033[1;3;32m$*\\033[0m"
-    }
-
-    red() {
-        echo -e "\\033[1;3;31m$*\\033[0m"
-    }
-
-    purple() {
-        echo -e "\\033[1;3;35m$*\\033[0m"
-    }
+    green() { echo -e "\\033[1;3;32m$*\\033[0m"}
+    red() { echo -e "\\033[1;3;31m$*\\033[0m"}
+    purple() { echo -e "\\033[1;3;35m$*\\033[0m"}
     
-WORKDIR="$HOME/sbox"
-
     # 保存光标位置
     echo -n -e "\033[1;3;31m正在启动sing-box服务,请稍后......\033[0m\n"
     sleep 1  # 可选：在启动进程前稍作停顿
@@ -1991,7 +1980,7 @@ if [ -e "$WORKDIR/bot" ]; then
     if [[ $ARGO_AUTH =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
       args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}}"
     # 如果 ARGO_AUTH 包含 TunnelSecret 字符串，表示可能是一个 JSON 格式的配置
-    elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
+   elif [[ -f "$WORKDIR/tunnel.yml" ]]; then
       args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
     # 如果 ARGO_AUTH 是有效的 JSON 格式（检查是否以 '{' 开头并包含 '}' 结尾）
     elif [[ $ARGO_AUTH =~ ^\{.*\}$ ]]; then
