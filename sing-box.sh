@@ -50,7 +50,7 @@ getUnblockIP() {
   local host_number=$(echo "$hostname" | awk -F'[s.]' '{print $2}')
   
   # 构建一个主机名数组，包含 cache、web 和当前主机
-  local hosts=("$hostname" "web${host_number}.serv00.com" "cache${host_number}.serv00.com")
+  local hosts=("$hostname" "web${host_number}.serv00.com" "cache${host_number}.serv00.com" )
 
   # 使用工作目录变量来定义存储未被墙IP的文件路径
   local ip_file="$WORKDIR/unblock_ips.txt"
@@ -1670,6 +1670,9 @@ run_sb() {
     # 如果 ARGO_AUTH 包含 TunnelSecret 字符串，表示可能是一个 JSON 格式的配置
     elif [[ $ARGO_AUTH =~ TunnelSecret ]]; then
       args="${args:-tunnel --edge-ip-version auto --config $WORKDIR/tunnel.yml run}"
+    # 如果 ARGO_AUTH 是有效的 JSON 格式（检查是否以 '{' 开头并包含 '}' 结尾）
+    elif [[ $ARGO_AUTH =~ ^\{.*\}$ ]]; then
+      args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --json ${ARGO_AUTH}}"
     else
       # 默认配置，使用 http2 协议和本地转发
       if [[ -n "$vmess_port" ]]; then
@@ -1685,7 +1688,6 @@ run_sb() {
     pgrep -x "bot" > /dev/null && green "BOT is running" || { red "bot is not running, restarting..."; pkill -x "bot" && nohup $WORKDIR/bot "${args}" >/dev/null 2>&1 & sleep 2; purple "bot restarted"; }
    
   fi
-  echo "$args"
 }
 
 getUnblockIP2() {
@@ -1695,7 +1697,7 @@ getUnblockIP2() {
     local host_number=$(echo "$hostname" | awk -F'[s.]' '{print $2}')
     
     # 构建一个主机名数组，包含 cache、web 和当前主机
-    local hosts=("$hostname" "web${host_number}.serv00.com" "cache${host_number}.serv00.com")
+    local hosts=( "$hostname" "web${host_number}.serv00.com" "cache${host_number}.serv00.com" )
 
     # 定义一个数组，用于存储所有未被墙的IP
     local unblock_ips=()
@@ -2013,6 +2015,7 @@ fi
   # 启动 bot 进程
   nohup $WORKDIR/bot $args >/dev/null 2>&1 &
   sleep 2
+
   # 检查 bot 是否启动成功
   if pgrep -x "bot" > /dev/null; then
       green "BOT进程启动成功, 并正在运行！"
@@ -2033,7 +2036,7 @@ fi
 else
   green "没有找到 bot 文件，无法启动 bot 进程。"
 fi
-echo "$args"
+
 }
     
 #停止sing-box服务
