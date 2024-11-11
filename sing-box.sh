@@ -1877,6 +1877,7 @@ get_links() {
 if [ "$ARGO_CONFIGURED" = true ]; then
     argodomain=$(get_argodomain)
     echo -e "\e[1;3;32mArgoDomain:\e[1;3;35m${argodomain}\e[0m\n"
+    echo "${argodomain}" > "$WORKDIR/argo_domain.txt"
 fi
 sleep 2
 
