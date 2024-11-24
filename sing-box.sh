@@ -2251,7 +2251,7 @@ done
             clear
             ;;
         3)
-             cat $WORKDIR/list.txt
+             generate_client_links
             read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
             clear
             ;;
