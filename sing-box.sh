@@ -2266,6 +2266,7 @@ done
             clear
             ;;
         6)
+            generate_config
             start_web
             generate_client_links
             read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
