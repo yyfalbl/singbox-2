@@ -1843,7 +1843,8 @@ get_argodomain() {
 generate_client_links() {
    argodomain=$(grep -oE 'https://[a-zA-Z0-9\.-]+\.trycloudflare\.com' "$WORKDIR/boot.log" | tail -n 1 | sed 's/https:\/\///')
 vmess_port=$(grep -oE 'localhost:([0-9]+)' "$WORKDIR/boot.log" | tail -n 1 | sed 's/localhost://')
-
+echo  "$argodomain"
+echo  "$vmess_port"
    # 生成并保存配置文件
 cat <<EOF > "$WORKDIR/list.txt"
 $(if [ "$INSTALL_VLESS" = "true" ]; then
