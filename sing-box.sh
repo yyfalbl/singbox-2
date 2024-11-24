@@ -1839,6 +1839,50 @@ get_argodomain() {
     echo "$argodomain"
   fi
 }
+# 生成通用节点链接
+generate_client_links() {
+   # 生成并保存配置文件
+cat <<EOF > "$WORKDIR/list.txt"
+$(if [ "$INSTALL_VLESS" = "true" ]; then
+     echo -e "\033[1;32;3m以下为vless客户端通用链接\033[0m"
+     printf "\n"  
+     printf "${YELLOW}\033[1mvless://$UUID@$FINAL_IP:$vless_port/?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.ups.com&fp=chrome&pbk=$public_key&type=tcp&headerType=none#${USERNAME}-${subdomain}${RESET}\n"
+fi)
+
+$(if [ "$INSTALL_VMESS" = "true" ]; then
+    # 生成不带 argodomain 的链接
+    echo -e "\033[1;32;3m以下为vmess客户端通用链接\033[0m"
+    printf "\n"
+    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$FINAL_IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+   echo ""
+    # 如果 ARGO_CONFIGURED 为 true，生成带 argodomain 的链接
+    if [ "$ARGO_CONFIGURED" = true ]; then
+        echo -e "\033[1;32;3m以下为vmess开启隧道功能链接，替换www.visa.com.tw为自己的优选ip可获得极致体验\033[0m"
+        printf "\n"
+        printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+    fi
+fi)
+
+$(if [ "$INSTALL_HYSTERIA2" = "true" ]; then
+     echo -e "\033[1;32;3m以下为HYSTERIA2客户端通用链接\033[0m"
+     printf "\n"
+    printf "${YELLOW}\033[1mhysteria2://$UUID@$FINAL_IP:$hy2_port/?sni=www.bing.com&alpn=h3&insecure=1#${USERNAME}-${subdomain}${RESET}\n"
+fi)
+
+$(if [ "$INSTALL_TUIC" = "true" ]; then
+     echo -e "\033[1;32;3m以下为TUIC客户端通用链接\033[0m"
+     printf "\n"
+    printf "${YELLOW}\033[1mtuic://$UUID:admin123@$FINAL_IP:$tuic_port?sni=www.bing.com&congestion_control=bbr&udp_relay_mode=native&alpn=h3&allow_insecure=1#${USERNAME}-${subdomain}${RESET}\n"
+fi)
+
+$(if [ "$INSTALL_SOCKS5" = "true" ]; then
+    printf "${YELLOW}\033[1mSocks5 代理地址： $FINAL_IP:$SOCKS5_PORT 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS${RESET}\n"
+    printf "${YELLOW}\033[1msocks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${SOCKS5_PORT}${RESET}\n"
+fi)
+  
+EOF
+}
+
 #生成客户端通用链接
 get_links() {
   
@@ -1883,46 +1927,8 @@ echo -e "${GREEN_BOLD_ITALIC}当前服务器的地址是：$current_fqdn${RESET}
   printf "${RED}${BOLD_ITALIC}注意：v2ray或其他软件的跳过证书验证需设置为true, 否则hy2或tuic节点可能不通${RESET}\n"
      echo ""
       sleep 3
-    # 生成并保存配置文件
-cat <<EOF > "$WORKDIR/list.txt"
-$(if [ "$INSTALL_VLESS" = "true" ]; then
-     echo -e "\033[1;32;3m以下为vless客户端通用链接\033[0m"
-     printf "\n"  
-     printf "${YELLOW}\033[1mvless://$UUID@$FINAL_IP:$vless_port/?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.ups.com&fp=chrome&pbk=$public_key&type=tcp&headerType=none#${USERNAME}-${subdomain}${RESET}\n"
-fi)
-
-$(if [ "$INSTALL_VMESS" = "true" ]; then
-    # 生成不带 argodomain 的链接
-    echo -e "\033[1;32;3m以下为vmess客户端通用链接\033[0m"
-    printf "\n"
-    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$FINAL_IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
-   echo ""
-    # 如果 ARGO_CONFIGURED 为 true，生成带 argodomain 的链接
-    if [ "$ARGO_CONFIGURED" = true ]; then
-        echo -e "\033[1;32;3m以下为vmess开启隧道功能链接，替换www.visa.com.tw为自己的优选ip可获得极致体验\033[0m"
-        printf "\n"
-        printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
-    fi
-fi)
-
-$(if [ "$INSTALL_HYSTERIA2" = "true" ]; then
-     echo -e "\033[1;32;3m以下为HYSTERIA2客户端通用链接\033[0m"
-     printf "\n"
-    printf "${YELLOW}\033[1mhysteria2://$UUID@$FINAL_IP:$hy2_port/?sni=www.bing.com&alpn=h3&insecure=1#${USERNAME}-${subdomain}${RESET}\n"
-fi)
-
-$(if [ "$INSTALL_TUIC" = "true" ]; then
-     echo -e "\033[1;32;3m以下为TUIC客户端通用链接\033[0m"
-     printf "\n"
-    printf "${YELLOW}\033[1mtuic://$UUID:admin123@$FINAL_IP:$tuic_port?sni=www.bing.com&congestion_control=bbr&udp_relay_mode=native&alpn=h3&allow_insecure=1#${USERNAME}-${subdomain}${RESET}\n"
-fi)
-
-$(if [ "$INSTALL_SOCKS5" = "true" ]; then
-    printf "${YELLOW}\033[1mSocks5 代理地址： $FINAL_IP:$SOCKS5_PORT 用户名：$SOCKS5_USER 密码：$SOCKS5_PASS${RESET}\n"
-    printf "${YELLOW}\033[1msocks://${SOCKS5_USER}:${SOCKS5_PASS}@${SERV_DOMAIN}:${SOCKS5_PORT}${RESET}\n"
-fi)
-  
-EOF
+ #  调用生成链接函数
+generate_client_links
   echo ""
 # 显示生成的 list.txt 内容
 cat "$WORKDIR/list.txt"
@@ -2257,6 +2263,7 @@ done
             ;;
         6)
             start_web
+            generate_client_links
             read -p "$(echo -e "${YELLOW}${BOLD_ITALIC}操作完成，按任意键继续...${RESET}")" -n1 -s
             clear
             ;;
