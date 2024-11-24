@@ -1064,7 +1064,8 @@ RESET="\033[0m"
 }
 start_service() {
   if [ -f "$base_dir/.enabled_flag" ]; then
-    echo -e "\e[32;1;3m===<<Enabled>>已为你自动已开启===\e[33;1;3m注意：第一次开启Enabled后，请重启服务器后生效，切记！！！\e[0m"
+    echo -e "\e[32;1;3m=== <<Enabled>> 已为你自动已开启===\e[0m"
+    echo -e "\e[33;1;3m注意：第一次开启Enabled后，请重启服务器后生效，切记！！！\e[0m"
     return
   fi
 
