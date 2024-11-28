@@ -1391,6 +1391,14 @@ generate_config() {
         return 1
     fi
     
+# 定义要测试的 DNS
+dns_servers=("1.1.1.1" "8.8.8.8" "9.9.9.9")
+dns_names=("cloudflare" "google" "quad9")
+
+# 初始化变量
+latencies=()
+min_latency=9999
+fastest_dns=""    
 # 测试每个 DNS 的延迟
 for i in "${!dns_servers[@]}"; do
     # 使用 ping 测试延迟
@@ -1402,7 +1410,7 @@ for i in "${!dns_servers[@]}"; do
       echo -e "\033[1;3;35m${dns_names[i]} DNS 延迟: ${latency}ms\033[0m"
     else
         latencies[i]=9999
-        echo "${dns_names[i]} DNS latency: Unreachable"
+       echo -e "\033[1;3;31m${dns_names[i]} DNS latency: Unreachable\033[0m"
     fi
 done
 
