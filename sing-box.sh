@@ -1487,7 +1487,7 @@ EOF
       "transport": {
         "type": "ws",
         "path": "/vmess",  # WebSocket路径
-        "early_data_header_name": "Sec-WebSocket-Protocol"
+        "early_data_header_name": "Sec-WebSocket-Protocol",
         "server": "$argodomain" 
       },
       "outbounds": [
