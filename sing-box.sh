@@ -1391,44 +1391,6 @@ generate_config() {
         return 1
     fi
     
-# 定义要测试的 DNS
-dns_servers=("1.1.1.1" "8.8.8.8" "9.9.9.9")
-dns_names=("cloudflare" "google" "quad9")
-
-# 初始化变量
-latencies=()
-min_latency=9999
-fastest_dns=""    
-# 测试每个 DNS 的延迟
-for i in "${!dns_servers[@]}"; do
-    # 使用 ping 测试延迟
-    latency=$(ping -c 1 -W 1 "${dns_servers[i]}" 2>/dev/null | grep 'time=' | awk -F'time=' '{print $2}' | awk '{print $1}')
-    
-    # 检查是否成功获取延迟值
-    if [[ $latency =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-        latencies[i]=$latency
-      echo -e "\033[1;3;35m${dns_names[i]} DNS 延迟: ${latency}ms\033[0m"
-    else
-        latencies[i]=9999
-       echo -e "\033[1;3;31m${dns_names[i]} DNS latency: Unreachable\033[0m"
-    fi
-done
-
-# 找出最快的 DNS
-for i in "${!latencies[@]}"; do
-    if (( $(echo "${latencies[i]} < $min_latency" | bc -l) )); then
-        min_latency=${latencies[i]}
-        fastest_dns=${dns_names[i]}
-    fi
-done
-
-# 输出结果
-if [[ -n $fastest_dns ]]; then
-   echo -e "\033[1;3;33m最快的 DNS 是 ${fastest_dns}，延迟为 ${min_latency} 毫秒。\033[0m"
-else
-    echo -e "\033[1;3;31m找不到可访问的DNS。\033[0m"
-
-fi
     # 基于所选服务创建配置文件
     cat > "$WORKDIR/config.json" <<EOF
 {
@@ -1451,15 +1413,9 @@ fi
         "address": "tls://8.8.8.8",
         "strategy": "prefer_ipv4",
         "detour": "direct"
-      },
-      {
-        "tag": "quad9",
-        "address": "https://9.9.9.9/dns-query",
-        "strategy": "prefer_ipv4",
-        "detour": "direct"
       }
     ],
-    "final": "$fastest_dns",
+    "final": "cloudflare",
     "strategy": "prefer_ipv4",
     "disable_cache": false,
     "disable_expire": false
