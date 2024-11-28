@@ -1457,7 +1457,7 @@ EOF
             "server_port": 443
           },
           "private_key": "$private_key",
-          "short_id": [""]  # 这里填写实际的 short_id
+          "short_id": [""]
         }
       }
     }
@@ -1465,14 +1465,9 @@ EOF
         service_added=true
     fi
 
-    # 如果选择，则附加VMESS配置（包括临时隧道）
+    # Append VMESS configuration if selected
     if [ "$INSTALL_VMESS" = "true" ]; then
         [ "$service_added" = true ] && echo "," >> "$WORKDIR/config.json"
-        
-        # 临时隧道地址
-        tunnel_address=$argodomain 
-
-        # 生成 VMess 配置，包含 WebSocket 和 Cloudflare 隧道
         cat >> "$WORKDIR/config.json" <<EOF
     {
       "tag": "vmess-ws-in",
@@ -1486,22 +1481,15 @@ EOF
       ],
       "transport": {
         "type": "ws",
-        "path": "/vmess",  # WebSocket路径
-        "early_data_header_name": "Sec-WebSocket-Protocol",
-        "server": "$argodomain" 
-      },
-      "outbounds": [
-        {
-          "type": "direct",
-          "tag": "direct"
-        }
-      ]
+        "path": "/vmess",
+        "early_data_header_name": "Sec-WebSocket-Protocol"
+      }
     }
 EOF
         service_added=true
     fi
 
-    # 继续附加其他服务（如 Hysteria2, TUIC 等）
+    # Append Hysteria2 configuration if selected
     if [ "$INSTALL_HYSTERIA2" = "true" ]; then
         [ "$service_added" = true ] && echo "," >> "$WORKDIR/config.json"
         cat >> "$WORKDIR/config.json" <<EOF
@@ -1527,7 +1515,33 @@ EOF
         service_added=true
     fi
 
-    # 最后继续写入配置的其余部分
+    # Append TUIC configuration if selected
+    if [ "$INSTALL_TUIC" = "true" ]; then
+        [ "$service_added" = true ] && echo "," >> "$WORKDIR/config.json"
+        cat >> "$WORKDIR/config.json" <<EOF
+    {
+      "tag": "tuic-in",
+      "type": "tuic",
+      "listen": "$FINAL_IP",
+      "listen_port": $tuic_port,
+      "users": [
+        {
+          "uuid": "$UUID",
+          "password": "admin123"
+        }
+      ],
+      "congestion_control": "bbr",
+      "tls": {
+        "enabled": true,
+        "alpn": ["h3"],
+        "certificate_path": "$CERT_PATH",
+        "key_path": "$PRIVATE_KEY_PATH"
+      }
+    }
+EOF
+    fi
+
+    # 继续写入配置的其余部分
     cat >> "$WORKDIR/config.json" <<EOF
   ],
   "outbounds": [
@@ -1615,6 +1629,7 @@ EOF
 }
 EOF
 }
+
 
 # 启动服务的函数
 run_sb() {
