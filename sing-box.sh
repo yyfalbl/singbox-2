@@ -1474,7 +1474,7 @@ EOF
       ],
       "transport": {
         "type": "ws",
-        "path": "/vmess",
+        "path": "/vmess?ed=2048",
         "early_data_header_name": "Sec-WebSocket-Protocol"
       }
     }
@@ -1707,7 +1707,7 @@ run_sb() {
     else
       # 默认配置，使用 http2 协议和本地转发
       if [[ -n "$vmess_port" ]]; then
-      args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port/vmess}"
+      args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port}"
     else
       args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080}"
     fi
@@ -1926,13 +1926,13 @@ $(if [ "$INSTALL_VMESS" = "true" ]; then
     # 生成不带 argodomain 的链接
     echo -e "\033[1;32;3m以下为vmess客户端通用链接\033[0m"
     printf "\n"
-    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$FINAL_IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+    printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$FINAL_IP\", \"port\": \"$vmess_port\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"\", \"path\": \"/vmess?ed=2048\", \"tls\": \"\", \"sni\": \"\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
    echo ""
     # 如果 ARGO_CONFIGURED 为 true，生成带 argodomain 的链接
     if [ "$ARGO_CONFIGURED" = true ]; then
         echo -e "\033[1;32;3m以下为vmess开启隧道功能链接，替换www.visa.com.tw为自己的优选ip可获得极致体验\033[0m"
         printf "\n"
-        printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
+        printf "${YELLOW}\033[1mvmess://$(echo "{ \"v\": \"2\", \"ps\": \"${USERNAME}-${subdomain}\", \"add\": \"$CFIP\", \"port\": \"$CFPORT\", \"id\": \"$UUID\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"$argodomain\", \"path\": \"/vmess?ed=2048\", \"tls\": \"tls\", \"sni\": \"$argodomain\", \"alpn\": \"\", \"fp\": \"\"}" | base64 -w0)${RESET}\n"
     fi
 fi)
 
@@ -2033,7 +2033,7 @@ if [[ -f "$WORKDIR/boot.log" ]]; then
     # 如果同时提取到域名和端口号
     if [[ -n "$argodomain" && -n "$vmess_port" ]]; then
         # 使用提取的域名和端口
-        args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port/vmess --hostname $argodomain}"
+        args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:$vmess_port --hostname $argodomain}"
     else
         args="${args:-tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile $WORKDIR/boot.log --loglevel info --url http://localhost:8080}"
     fi
@@ -2060,7 +2060,7 @@ if [[ "$current_fqdn" == *.serv00.com ]]; then
       green "BOT进程启动成功, 并正在运行！"
     
       # 检查 Argo 隧道是否开启
-      if [[ "$args" == *"--url http://localhost:$vmess_port/vmess"* ]]; then
+      if [[ "$args" == *"--url http://localhost:$vmess_port"* ]]; then
           # 如果 args 包含临时隧道的配置，表示开启了 Argo 临时隧道
           green "===Argo临时隧道功能已开启==="
           echo ""
