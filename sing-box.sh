@@ -1474,7 +1474,7 @@ EOF
       ],
       "transport": {
         "type": "ws",
-        "path": "/vmess?ed=2048",
+        "path": "/vmess",
         "early_data_header_name": "Sec-WebSocket-Protocol"
       }
     }
